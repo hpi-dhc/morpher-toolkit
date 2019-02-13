@@ -1,0 +1,28 @@
+from setuptools import setup
+
+def readme():
+    with open('README.md') as f:
+        return f.read()
+
+setup(name='morpher',
+      version='0.0.1',
+      description='The funniest joke in the world',
+      long_description=readme(),
+      classifiers=[
+        'Development Status :: 3 - Alpha',
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 3.6',
+        'Topic :: Scientific/Engineering :: Bio-Informatics',
+      ],
+      url='https://github.com/hpi-dhc/morpher',
+      author='Harry Cruz',
+      author_email='harrycruz@gmail.com',
+      license='MIT',
+      packages=['morpher'],
+      tests_require=['pytest'],
+      setup_requires=['pytest-runner'],
+      install_requires=[
+          'markdown',
+      ],
+      #specifying a given version: 'chardet==3.0.4',
+      zip_safe=False)
