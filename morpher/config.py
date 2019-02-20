@@ -1,0 +1,8 @@
+FILE = "file"
+DATABASE = "database"
+DEFAULT = "default"
+KNN = "knn"
+ROBUST = "robust"
+NORMALIZER = "normalizer"
+DECISION_TREE = "DecisionTree"
+RANDOM_FOREST = "RandomForest"
