@@ -15,10 +15,6 @@ def evaluate(data, target, algorithms, **kvargs):
 			for clf in algorithms:
 				clf_name = clf.__class__.__name__
 				y_true, y_pred, y_probs = labels, clf.predict(features), clf.predict_proba(features)
-				results[clf_name] = {}
-				results[clf_name]["_actual_classes"] = y_true
-				results[clf_name]["_prediction_results"] = y_pred
-				results[clf_name]["_prediction_probabilities"] = y_probs
 				print_discrimination_statistics(clf_name, y_true, y_pred, y_probs)
 			return results
 		else:

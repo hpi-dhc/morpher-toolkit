@@ -17,7 +17,7 @@ def impute(data, **kvargs):
         kvarg_not_empty(method,"method")
 
         if (method == config.DEFAULT):
-          imputer = SimpleImputer()        
+          imputer = SimpleImputer() 
 
         elif (method == config.KNN):      
           imputer = KNNImputer()
