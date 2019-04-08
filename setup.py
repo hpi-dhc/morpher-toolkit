@@ -23,6 +23,14 @@ setup(name='morpher',
       setup_requires=['pytest-runner'],
       install_requires=[
           'markdown',
+          'scikit-learn',
+          'pandas',
+          'numpy',
+          'lime',
+          'sklearn_pandas',
+          'fancyimpute',
+          'imbalanced-learn',
+          'statsmodels'
       ],
       #specifying a given version: 'chardet==3.0.4',
       zip_safe=False)
