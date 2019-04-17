@@ -14,7 +14,7 @@ def train(data, target, **kvargs):
 
         ''' if split_data was called beforehand, data contains a subset of the original available data '''
         labels = data[target]
-        features = data.drop(target, axis=1)        
+        features = data.drop(target, axis=1)
 
         algorithms = kvargs.get("algorithms")
         kvarg_not_empty(algorithms,"algorithms")

@@ -92,10 +92,22 @@ class Base:
 
 	def predict_proba(self, features):
 		'''
-		Provides the algorithm probability predictions for a given set of features and labels 
+		Provides the algorithm probability predictions for a given set of features 
 		'''
 		try:
 			return self.clf.predict_proba(features)
+
+		except Exception as e:
+			logging.error(traceback.format_exc())
+
+		return None
+
+	def get_params(self):
+		'''
+		Provides the algorithm's hyperparameter list 
+		'''
+		try:
+			return self.clf.get_params()
 
 		except Exception as e:
 			logging.error(traceback.format_exc())
