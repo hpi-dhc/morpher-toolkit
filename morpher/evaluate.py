@@ -15,7 +15,8 @@ def evaluate(data, target, algorithms, **kvargs):
 			for clf in algorithms:
 				clf_name = clf.__class__.__name__
 				y_true, y_pred, y_probs = labels, clf.predict(features), clf.predict_proba(features)
-				print_discrimination_statistics(clf_name, y_true, y_pred, y_probs)
+				results[clf_name] = { "y_true": y_true, "y_pred": y_pred, "y_probs": y_probs}
+				print_clf_performance(clf_name, y_true, y_pred, y_probs)
 			return results
 		else:
 			raise AttributeError("No data provided, algorithms or target not available")
@@ -23,9 +24,9 @@ def evaluate(data, target, algorithms, **kvargs):
 		logging.error(traceback.format_exc())
 	return None
 
-def print_discrimination_statistics(clf_name, y_true, y_pred, y_probs):
+def print_clf_performance(clf_name, y_true, y_pred, y_probs):
 	'''
-	Prints statistics on the currently stored prediction results
+	Prints performance of the prediction results
 	'''
 	print("***Performance report for {}".format(clf_name))
 
