@@ -6,7 +6,7 @@ def readme():
 
 setup(name='morpher',
       version='0.0.1',
-      description='The funniest joke in the world',
+      description='Modeling of Outcome and Risk Prediction in Health Research',
       long_description=readme(),
       classifiers=[
         'Development Status :: 3 - Alpha',
@@ -18,7 +18,7 @@ setup(name='morpher',
       author='Harry Cruz',
       author_email='harrycruz@gmail.com',
       license='MIT',
-      packages=['morpher'],
+      packages=['morpher', 'morpher.jobs'],
       tests_require=['pytest'],
       setup_requires=['pytest-runner'],
       install_requires=[
