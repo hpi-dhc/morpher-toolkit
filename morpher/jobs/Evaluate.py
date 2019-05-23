@@ -39,7 +39,7 @@ class Evaluate(MorpherJob):
             model_id = model_ids[clf_name]
             description = "Model based on {clf_name} for target '{target}'".format(clf_name=clf_name, target=target)
             experiment_id = self.add_experiment(cohort_id=cohort_id, model_id=model_id,user_id=user_id,description=description,target=target,validation_mode=validation_mode,parameters={})
-            predictions = [ { "target_label": float(results[clf_name]["y_true"].iloc[i]),"predicted_label": float(results[clf_name]["y_pred"][i]),"predicted_proba": float(results[clf_name]["y_probs"][:,1][i]) } for i in range(len(results[clf_name]["y_true"])) ]
+            predictions = [ { "target_label": float(results[clf_name]["y_true"].iloc[i]),"predicted_label": float(results[clf_name]["y_pred"][i]),"predicted_proba": float(results[clf_name]["y_probs"][i]) } for i in range(len(results[clf_name]["y_true"])) ]
             self.add_batch(experiment_id, predictions)
 
         self.logger.info("*** Finished evaluation: \n{}".format(results))        
@@ -76,7 +76,7 @@ class Evaluate(MorpherJob):
                 features = data.drop(target, axis=1)
                 for clf in models:
                     clf_name = clf.__class__.__name__                   
-                    y_true, y_pred, y_probs = labels, clf.predict(features), clf.predict_proba(features)
+                    y_true, y_pred, y_probs = labels, clf.predict(features), clf.predict_proba(features)[:,1]
 
                     results[clf_name] = { "y_true": y_true, "y_pred": y_pred, "y_probs": y_probs}
                     self.print_clf_performance(clf_name, y_true, y_pred, y_probs)
@@ -99,7 +99,7 @@ class Evaluate(MorpherJob):
         print("Classification report:")
         print(classification_report(y_true, y_pred))
         print("AUROC score:")
-        print(roc_auc_score(y_true, y_probs[:, 1]))
+        print(roc_auc_score(y_true, y_probs))
         print("DOR:")
         tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
         dor = (tp/fp)/(fn/tn)
