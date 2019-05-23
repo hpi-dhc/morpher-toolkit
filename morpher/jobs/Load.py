@@ -17,8 +17,6 @@ class Load(MorpherJob):
         filename = self.get_input("filename")
         if os.path.isfile(filename):
             data = self.execute(filename=filename)
-            data = data.to_json() # object must be serialized
-            self.add_output("data", data)
             self.add_output("filename", self.save_to_file(data))
             self.logger.info("File {filename} loaded successfully.".format(filename=filename))
         else:            
