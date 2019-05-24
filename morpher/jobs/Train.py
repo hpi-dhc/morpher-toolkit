@@ -76,13 +76,13 @@ class Train(MorpherJob):
             algorithms = kwargs.get("algorithms")
             kwarg_not_empty(algorithms,"algorithms")
 
-            trained_models = []
+            trained_models = {}
 
             for algorithm in algorithms:
                 clf = eval("{algorithm}()".format(algorithm=algorithm)) #instantiate the algorithm in runtime
 
                 clf.fit(features, labels)
-                trained_models.append(clf)
+                trained_models[algorithm] = clf
 
             return trained_models
 

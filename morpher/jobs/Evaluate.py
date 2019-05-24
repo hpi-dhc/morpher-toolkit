@@ -74,8 +74,8 @@ class Evaluate(MorpherJob):
                 results = {}
                 labels = data[target] #true labels
                 features = data.drop(target, axis=1)
-                for clf in models:
-                    clf_name = clf.__class__.__name__                   
+                for clf_name in models:
+                    clf = models[clf_name]
                     y_true, y_pred, y_probs = labels, clf.predict(features), clf.predict_proba(features)[:,1]
 
                     results[clf_name] = { "y_true": y_true, "y_pred": y_pred, "y_probs": y_probs}

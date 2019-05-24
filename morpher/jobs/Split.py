@@ -27,13 +27,13 @@ class Split(MorpherJob):
         self.add_output("filenames", [self.save_to_file(train_data), self.save_to_file(test_data)])
         self.logger.info("Data split successfully, reserving {0:.0%} for test.".format(test_size))
 
-    def execute(self, data, **kwargs):
+    def execute(self, data, random_state=42, **kwargs):
 
         try:          
           if not data.empty:
             test_size = kwargs.get("test_size")
             kwarg_not_empty(test_size,"test_size")
-            return train_test_split(data, test_size=test_size)
+            return train_test_split(data, test_size=test_size, random_state=random_state)
           else:
             raise AttributeError("No data provided")        
         except Exception as e:
