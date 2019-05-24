@@ -1,4 +1,3 @@
-import altair as alt
 import pandas as pd
 from cycler import cycler
 import matplotlib.pyplot as plt, mpld3
