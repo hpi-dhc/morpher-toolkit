@@ -4,6 +4,7 @@ import logging
 from morpher.jobs import MorpherJob
 from morpher.exceptions import kwarg_not_empty
 from morpher.algorithms import *
+from morpher.metrics import *
 import os.path
 import pandas as pd
 import json
@@ -38,8 +39,9 @@ class Evaluate(MorpherJob):
             clf_name = model.__class__.__name__
             model_id = model_ids[clf_name]
             description = "Model based on {clf_name} for target '{target}'".format(clf_name=clf_name, target=target)
-            experiment_id = self.add_experiment(cohort_id=cohort_id, model_id=model_id,user_id=user_id,description=description,target=target,validation_mode=validation_mode,parameters={})
             predictions = [ { "target_label": float(results[clf_name]["y_true"].iloc[i]),"predicted_label": float(results[clf_name]["y_pred"][i]),"predicted_proba": float(results[clf_name]["y_probs"][i]) } for i in range(len(results[clf_name]["y_true"])) ]
+            discrimination = get_discrimination_metrics(results[clf_name]["y_true"], results[clf_name]["y_pred"], results[clf_name]["y_probs"])
+            experiment_id = self.add_experiment(cohort_id=cohort_id, model_id=model_id,user_id=user_id,description=description,target=target,validation_mode=validation_mode,parameters={"discrimination": discrimination})
             self.add_batch(experiment_id, predictions)
 
         self.logger.info("*** Finished evaluation: \n{}".format(results))        
