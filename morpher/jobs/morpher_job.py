@@ -17,8 +17,7 @@ class MorpherJob(Job):
         port = self.config.get('morpher', 'port')
         
         endpoint = "http://{hostname}:{port}/{blueprint}/{action}/".format(hostname=hostname, port=port, blueprint=blueprint, action=action)
-        self.logger.debug("Endpoint: ")
-        self.logger.debug(endpoint)
+        self.logger.debug("Endpoint: %s" % endpoint)
  
         try:
             request = Request(endpoint, data=json.dumps(data).encode('utf8'), headers={'content-type': 'application/json'})
@@ -28,8 +27,8 @@ class MorpherJob(Job):
         except Exception as e:
 
             self.logger.error("Could not process request. \n{0}".format(e))
-            #self.logger.debug("Endpoint: " + endpoint)
-            return {"status":"error"}
+            self.logger.debug("Endpoint: " + endpoint)
+            return {"status":"error", "msg":str(e)}
 
     def save_to_file(self, data):
         '''

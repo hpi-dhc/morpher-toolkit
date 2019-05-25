@@ -13,15 +13,15 @@ def get_discrimination_metrics(y_true, y_pred, y_probs, label="1.0"):
     results = defaultdict(lambda: {})
     report = classification_report(y_true, y_pred, output_dict=True)[label]
     for metric in ['precision','recall','f1-score','support']:
-        results[metric] = report[metric]
-    results['confusion_matrix'] = confusion_matrix(y_true, y_pred)
-    results['auc'] = roc_auc_score(y_true, y_probs)
+        results[metric] = float(report[metric])
+    results['confusion_matrix'] = confusion_matrix(y_true, y_pred).tolist()
+    results['auc'] = float(roc_auc_score(y_true, y_probs))
 
-    tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()   
-    results['tn'], results['fp'], results['fn'], results['tp'] = (tn, fp, fn, tp)
-    results['dor'] = dor = (tp/fp)/(fn/tn)
+    tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
+    results['tn'], results['fp'], results['fn'], results['tp'] = (int(tn), int(fp), int(fn), int(tp))
+    results['dor'] = float((tp/fp)/(fn/tn))
 
-    return results
+    return dict(results)
 
 
 

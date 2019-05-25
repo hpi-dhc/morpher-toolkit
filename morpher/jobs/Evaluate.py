@@ -33,18 +33,17 @@ class Evaluate(MorpherJob):
         user_id = 9999
         target = self.get_input("target")
 
-        results = self.execute(df, target=target, models=models)
+        results = self.execute(df, target=target, models={model.__class__.__name__: model for model in models})
 
         for model in models:
             clf_name = model.__class__.__name__
             model_id = model_ids[clf_name]
             description = "Model based on {clf_name} for target '{target}'".format(clf_name=clf_name, target=target)
             predictions = [ { "target_label": float(results[clf_name]["y_true"].iloc[i]),"predicted_label": float(results[clf_name]["y_pred"][i]),"predicted_proba": float(results[clf_name]["y_probs"][i]) } for i in range(len(results[clf_name]["y_true"])) ]
-            discrimination = get_discrimination_metrics(results[clf_name]["y_true"], results[clf_name]["y_pred"], results[clf_name]["y_probs"])
-            experiment_id = self.add_experiment(cohort_id=cohort_id, model_id=model_id,user_id=user_id,description=description,target=target,validation_mode=validation_mode,parameters={"discrimination": discrimination})
+            metrics = get_discrimination_metrics(results[clf_name]["y_true"], results[clf_name]["y_pred"], results[clf_name]["y_probs"])
+            experiment_id = self.add_experiment(cohort_id=cohort_id, model_id=model_id,user_id=user_id,description=description,target=target,validation_mode=validation_mode,parameters={"discrimination": metrics})
             self.add_batch(experiment_id, predictions)
 
-        self.logger.info("*** Finished evaluation: \n{}".format(results))        
         self.logger.info("Algorithms evaluated successfully.")
 
     def add_batch(self, experiment_id, predictions):
@@ -53,13 +52,13 @@ class Evaluate(MorpherJob):
         return response.get('status')
 
     def add_experiment(self, **kwargs):
-        
+     
         response = self.api("experiments", "new", data=kwargs)
 
         if response.get("status") == "success":
             return response.get("experiment_id")
         else:
-            raise Exception("There was an error creating an Experiment. Check the server")
+            raise Exception("There was an error creating an Experiment. Server returned: s%" % response.get("msg"))
 
     def get_models(self, model_ids):
         

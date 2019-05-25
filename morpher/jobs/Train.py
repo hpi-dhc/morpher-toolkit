@@ -34,8 +34,8 @@ class Train(MorpherJob):
         
         #store each model in the database and generate a dict in the form {"DecisionTree":999}
         model_ids = {}
-        for model in models:
-            model_ids[model.__class__.__name__] = self.add(model, params)
+        for clf_name in models:
+            model_ids[models[clf_name].__class__.__name__] = self.add(models[clf_name], params)
 
         #if we have a list of filenames coming from 'Split', we pass over the filenames
         if type(self.get_input("filenames")) == list:
