@@ -19,7 +19,11 @@ def get_discrimination_metrics(y_true, y_pred, y_probs, label="1.0"):
 
     tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
     results['tn'], results['fp'], results['fn'], results['tp'] = (int(tn), int(fp), int(fn), int(tp))
-    results['dor'] = float((tp/fp)/(fn/tn))
+
+    try:
+        results['dor'] = float((tp/fp)/(fn/tn))
+    except ZeroDivisionError as e:
+        results['dor'] = 0.0
 
     return dict(results)
 

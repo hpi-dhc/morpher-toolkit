@@ -58,7 +58,7 @@ class Evaluate(MorpherJob):
         if response.get("status") == "success":
             return response.get("experiment_id")
         else:
-            raise Exception("There was an error creating an Experiment. Server returned: s%" % response.get("msg"))
+            raise Exception("There was an error creating an Experiment. Server returned: %s" % response.get("msg"))
 
     def get_models(self, model_ids):
         
