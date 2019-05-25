@@ -90,7 +90,8 @@ class Train(MorpherJob):
             raise AttributeError("No data provided")        
 
         except Exception as e:
-          logging.error(traceback.format_exc())
+            print(traceback.format_exc())
+            logging.error(traceback.format_exc())
 
         return data
 

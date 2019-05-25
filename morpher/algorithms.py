@@ -6,7 +6,8 @@ from sklearn.metrics import confusion_matrix, classification_report, roc_auc_sco
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.model_selection import GridSearchCV, cross_val_predict, train_test_split, StratifiedKFold
 from sklearn.calibration import CalibratedClassifierCV, calibration_curve
-from sklearn.linear_model import BayesianRidge, LogisticRegression
+from sklearn.linear_model import BayesianRidge
+import sklearn.linear_model
 from sklearn.neural_network import MLPClassifier
 from sklearn.feature_selection import SelectPercentile, mutual_info_classif, f_classif
 from sklearn.exceptions import NotFittedError
@@ -180,6 +181,115 @@ class RandomForest(Base):
             }
             clf = GridSearchCV(
                 estimator = RandomForestClassifier(),
+                cv = 5,
+                n_jobs = -1,
+                scoring = roc_auc_score,
+                param_grid = param_grid
+            )
+        
+        super().__init__(clf, optimize, crossval)
+
+class MultilayerPerceptron(Base):
+
+    def __init__(self, optimize=None, crossval=None):
+
+        if not optimize:
+            '''
+            Trains and stores a multilayer perceptron classifier on the
+            current data using the current pipeline.
+            '''
+            activation='tanh'
+            solver='sgd'
+            alpha=1e-5
+            hidden_layer_sizes=(21, 2)
+            max_iter=500
+
+            clf = MLPClassifier(
+                activation=activation,
+                solver=solver,
+                alpha=alpha,
+                hidden_layer_sizes=hidden_layer_sizes,
+                max_iter=max_iter
+            )
+        else:
+            ''' gridsearch '''
+            param_grid = [
+                {
+                    'activation': ['identity', 'logistic', 'tanh', 'relu'],
+                    'solver': ['lbfgs', 'sgd', 'adam'],
+                    'hidden_layer_sizes': [
+                        (1,), (2,), (3,), (4,), (5,), (6,), (7,), (8,), (9,), (10,), (11,), (12,), (13,), (14,), (15,),
+                        (16,), (17,), (18,), (19,), (20,), (21,)
+                    ]
+                }
+            ]
+            clf = GridSearchCV(
+                estimator = MLPClassifier(),
+                cv = 5,
+                n_jobs = -1,
+                scoring = roc_auc_score,
+                param_grid = param_grid
+            )
+        
+        super().__init__(clf, optimize, crossval)
+
+class GradientBoostingTree(Base):
+
+    def __init__(self, optimize=None, crossval=None):
+
+        if not optimize:
+            '''
+            Trains and stores a random forest classifier on the
+            current data using the current pipeline.
+            '''
+            learning_rate = 0.1
+            n_estimators = 150
+            max_depth = 3
+
+            clf = GradientBoostingClassifier(
+                learning_rate = learning_rate,
+                n_estimators = n_estimators,
+                max_depth = max_depth
+            )
+        else:
+            ''' gridsearch '''
+            param_grid = {
+                #"learning_rate": [0.001, 0.005, 0.01, 0.05, 0.1, 0.2],
+                "max_depth": range(2,4),
+                "n_estimators": range(100, 200, 25)
+            }
+            clf = GridSearchCV(
+                estimator = GradientBoostingClassifier(),
+                cv = 5,
+                n_jobs = -1,
+                scoring = roc_auc_score,
+                param_grid = param_grid
+            )
+        
+        super().__init__(clf, optimize, crossval)
+
+class LogisticRegression(Base):
+
+    def __init__(self, optimize=None, crossval=None):
+
+        if not optimize:
+            '''
+            Trains and stores a random forest classifier on the
+            current data using the current pipeline.
+            '''
+            clf = sklearn.linear_model.LogisticRegression(
+                penalty = 'l1',
+                C = 1.0                
+            )
+        else:
+            ''' gridsearch '''
+            param_grid = {
+                "penalty": ['l1', 'l2'],
+                "C": np.logspace(0, 4, 10)
+
+            }
+            clf = GridSearchCV(
+                estimator = LogisticRegression(),
                 cv = 5,
                 n_jobs = -1,
                 scoring = roc_auc_score,
