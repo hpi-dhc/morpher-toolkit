@@ -233,7 +233,7 @@ class MultilayerPerceptron(Base):
         
         super().__init__(clf, optimize, crossval)
 
-class GradientBoostingTree(Base):
+class GradientBoostingDecisionTree(Base):
 
     def __init__(self, optimize=None, crossval=None):
 
