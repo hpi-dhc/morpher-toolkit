@@ -11,11 +11,14 @@ prop_cycle = (cycler('color', [u'#1f77b4', u'#ff7f0e', u'#2ca02c', u'#d62728', u
 
 from morpher.algorithms import *
 
-def plot_roc(results):
+def plot_roc(results, figsize=None):
     '''
     Plots the receiver operating curve of currently loaded results in a new
     window.
     '''
+    if figsize:
+        fig = plt.figure(figsize=figsize)
+
     plt.clf()
     plt.plot((0, 1), (0, 1), 'k--', label=None)
     plt.xlabel('False Positive Rate')
@@ -33,12 +36,15 @@ def plot_roc(results):
     plt.legend(fancybox=True, shadow=True)
 
 
-def plot_cc(models, train_data, test_data, target):
+def plot_cc(models, train_data, test_data, target, figsize=None):
     '''
     Plots calibration curve, we need the original train dataset to do this (!)
     '''
     if not models:
         raise AttributeError("No models available")
+
+    if figsize:
+        fig = plt.figure(figsize=figsize)
 
     y_train = train_data[target]
     X_train = train_data.drop(target, axis=1)
@@ -47,7 +53,7 @@ def plot_cc(models, train_data, test_data, target):
     X_test = test_data.drop(target, axis=1)
 
     plt.rc('axes', prop_cycle=prop_cycle)
-    fig = plt.figure(figsize=(10, 10))
+    
     ax = plt.subplot2grid((1, 1), (0, 0))
 
     for clf_name in models:
@@ -75,7 +81,7 @@ def plot_cc(models, train_data, test_data, target):
     ax.set_ylabel("Fraction of Positives")
     ax.set_xlabel("Mean Predicted Probability")
     ax.set_ylim([-0.05, 1.05])
-    ax.legend(loc="lower right")
+    ax.legend(loc="lower right", fancybox=True, shadow=True)
     ax.set_title('Calibration Plot')
 
     print("*** Model calibration performed.\n")
