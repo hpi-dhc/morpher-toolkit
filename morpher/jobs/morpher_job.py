@@ -4,7 +4,12 @@ import json
 import uuid
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
-from ag_worker.jobs import Job
+
+try:
+    from ag_worker.jobs import Job
+except ImportError:
+    print("No AG Worker found or not configured correctly. Using default 'Job' class instead")
+    from morpher.jobs import Job
 
 class MorpherJob(Job):
 
@@ -13,8 +18,8 @@ class MorpherJob(Job):
         Exposes API to Worker scripts.
         TODO: How can we secure those endpoints?
         '''
-        hostname = self.config.get('morpher', 'hostname')
-        port = self.config.get('morpher', 'port')
+        hostname = self.config.get('morpher', 'hostname') or self.config.get('hostname')
+        port = self.config.get('morpher', 'port') or self.config.get('port')
         
         endpoint = "http://{hostname}:{port}/{blueprint}/{action}/".format(hostname=hostname, port=port, blueprint=blueprint, action=action)
         self.logger.debug("Endpoint: %s" % endpoint)
