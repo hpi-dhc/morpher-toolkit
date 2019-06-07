@@ -23,11 +23,13 @@ class MorpherJob(Job):
         
         endpoint = "http://{hostname}:{port}/{blueprint}/{action}/".format(hostname=hostname, port=port, blueprint=blueprint, action=action)
         self.logger.debug("Endpoint: %s" % endpoint)
+        print("Endpoint: %s" % endpoint)
  
         try:
 
             request = Request(endpoint, data=json.dumps(data).encode('utf8'), headers={'content-type': 'application/json'})
             response = urlopen(request).read().decode()
+            print("response: %s" % response)
             return json.loads(response)
 
         except Exception as e:
