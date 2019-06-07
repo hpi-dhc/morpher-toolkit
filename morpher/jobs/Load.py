@@ -16,8 +16,12 @@ class Load(MorpherJob):
 
         filename = self.get_input("filename")
         if os.path.isfile(filename):
+
+            task = self.get_task()
             data = self.execute(filename=filename)
             self.add_output("filename", self.save_to_file(data))
+            self.add_output("cohort_id", task["parameters"]["cohort_id"])
+            self.add_output("user_id", task["parameters"]["user_id"])
             self.logger.info("File {filename} loaded successfully.".format(filename=filename))
         else:            
             self.logger.error("File {filename} could not be loaded.".format(filename=filename))        

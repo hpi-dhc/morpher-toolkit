@@ -3,7 +3,7 @@ import traceback
 import logging
 import pandas as pd
 import morpher.config as config
-from morpher.imputers import *
+#from morpher.imputers import *
 from morpher.jobs import MorpherJob
 from morpher.exceptions import kwarg_not_empty
 from sklearn.impute import SimpleImputer
@@ -13,10 +13,13 @@ class Impute(MorpherJob):
     def do_execute(self):
 
         filename = self.get_input("filename")
+
         df = pd.read_csv(filepath_or_buffer= filename)
         imputation_method = self.get_input_variables("imputation_method")
         df = self.execute(df, imputation_method=imputation_method)
         self.add_output("filename", self.save_to_file(df))
+        self.add_output("cohort_id", self.get_input("cohort_id"))
+        self.add_output("user_id", self.get_input("user_id"))
         self.logger.info("Data imputed successfully.")
 
     def execute(self, data, **kwargs):
@@ -30,8 +33,8 @@ class Impute(MorpherJob):
             if (imputation_method == config.DEFAULT):
               imputer = SimpleImputer()
 
-            elif (imputation_method == config.KNN):      
-              imputer = KNNImputer()
+#            elif (imputation_method == config.KNN):      
+#              imputer = KNNImputer()
 
             ''' columns where all values are NaN get assigned 0, otherwise imputer will throw them away '''
             data.loc[:, data.isna().all()] = 0.0

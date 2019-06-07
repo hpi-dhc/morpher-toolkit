@@ -29,8 +29,8 @@ class Evaluate(MorpherJob):
         model_ids = self.get_input("model_ids")  
         models = [jp.decode(json.dumps(model)) for model in self.get_models(list(model_ids.values()))]
 
-        cohort_id = self.get_input("cohort_id") or None
-        user_id = 9999
+        cohort_id = self.get_input("cohort_id")
+        user_id = self.get_input("user_id")
         target = self.get_input("target")
 
         results = self.execute(df, target=target, models={model.__class__.__name__: model for model in models})
