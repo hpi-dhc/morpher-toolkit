@@ -31,7 +31,9 @@ def get_discrimination_metrics(y_true, y_pred, y_probs, label="1.0"):
 def get_clinical_usefulness_metrics(discrimination_metrics, tr=0.7):
     '''
     Returns clinical usefulness of the prediction results in a dictionary
-    '''    
+    Based on:
+    Zhang, Z., Rousson, V., Lee, W.-C., Ferdynus, C., Chen, M., Qian, X., … written on behalf of AME Big-Data Clinical Trial Collaborative Group. (2018). Decision curve analysis: a technical note. Annals of Translational Medicine, 6(15), 308–308. https://doi.org/10.21037/atm.2018.07.02
+    '''
 
     results = discrimination_metrics
 
@@ -50,7 +52,7 @@ def get_clinical_usefulness_metrics(discrimination_metrics, tr=0.7):
 
     '''
     net benefit for treating all patients in the given threshould, according to disease prevalence
-    π – (1–π )pt/ (1-pt )
+    net_benefit_treated_all = π – (1–π )pt/ (1-pt )
     '''
     net_benefit_treated_all = pi - (1-pi) * tr / (1-tr)
 
