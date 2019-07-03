@@ -54,7 +54,7 @@ print('Mean AUC:', mean_auc)
 for i in auc:
 	dis_to_org += (i - auc_org)**2
 	dis_to_mean += (i - mean_auc)**2
-	r2 = 1 - (dis_to_org / dis_to_mean)
+r2 = 1 - (dis_to_org / dis_to_mean)
 
 print('Distance to original dataset:', dis_to_org)
 print('Distance to AUC Mean:', dis_to_mean)
