@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt, mpld3
 
 target = "STROKE"
 
-data = Load().execute(source=config.FILE, filename="stroke_preprocessed.csv")
+data = Load().execute(source=config.FILE, filename="stroke_preprocessed_train_70.csv")
 
 data = Impute().execute(data, imputation_method=config.DEFAULT)
 
@@ -46,7 +46,6 @@ for alg in results:
 	print("Printing metrics for %s" % alg)
 	print(get_clinical_usefulness_metrics(get_discrimination_metrics(**results[alg]), tr=0.03))
 	print(get_calibration_metrics(**results[alg]))
-	print(results[alg])
 
 
 
