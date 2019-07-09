@@ -5,9 +5,10 @@ from morpher.metrics import *
 from morpher.plots import *
 import matplotlib.pyplot as plt, mpld3
 
-target = "AKI"
 
-data = Load().execute(source=config.FILE, filename="full.csv")
+target = "STROKE"
+
+data = Load().execute(source=config.FILE, filename="stroke_preprocessed.csv")
 
 data = Impute().execute(data, imputation_method=config.DEFAULT)
 
@@ -29,21 +30,23 @@ plt.show()
 #plot_roc(results)
 
 
-#print (mpld3.fig_to_dict(fig=plt.gcf()))
-
+# print (mpld3.fig_to_dict(fig=plt.gcf()))
+#
 # #for clf_name in models:
 # #	results[clf_name]["clf"] = models[clf_name].clf
-
+#
 # #plot_cc(models, train, test, target)
 # mpld3.show()
-
+#
 # #print (mpld3.fig_to_dict(fig=plt.gcf()))
-
+#
 # #chart.serve()
 
 for alg in results:
 	print("Printing metrics for %s" % alg)
-	print (get_clinical_usefulness_metrics(get_discrimination_metrics(**results[alg]), tr=0.03))
+	print(get_clinical_usefulness_metrics(get_discrimination_metrics(**results[alg]), tr=0.03))
+	print(get_calibration_metrics(**results[alg]))
+	print(results[alg])
 
 
 

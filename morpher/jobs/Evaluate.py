@@ -80,7 +80,7 @@ class Evaluate(MorpherJob):
                     y_true, y_pred, y_probs = labels, clf.predict(features), clf.predict_proba(features)[:,1]
 
                     results[clf_name] = { "y_true": y_true, "y_pred": y_pred, "y_probs": y_probs}
-                    self.print_clf_performance(clf_name, y_true, y_pred, y_probs)
+                    #self.print_clf_performance(clf_name, y_true, y_pred, y_probs)
                 return results
             else:
                 raise AttributeError("No data provided, algorithms or target not available")
