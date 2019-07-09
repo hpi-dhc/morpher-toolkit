@@ -5,33 +5,68 @@ from morpher.metrics import *
 from morpher.plots import *
 import matplotlib.pyplot as plt, mpld3
 import pathlib
+import numpy as np
+from sklearn.metrics import r2_score, brier_score_loss, mean_absolute_error
+from collections import defaultdict
+import pickle as pickle
+
+
+def mean_absolute_percentage_error(y_true, y_pred): 
+    y_true, y_pred = np.array(y_true), np.array(y_pred)
+    return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
 
 target = "STROKE"
 
-data = Load().execute(source=config.FILE, filename='stroke_preprocessed_imputed_0.csv')
+data = Load().execute(source=config.FILE, filename='stroke_preprocessed.csv')
 
 data = Impute().execute(data, imputation_method=config.DEFAULT)
 
 train, test = Split().execute(data, test_size=0.3)
 
 models = Train().execute(train, target=target, algorithms=[
-	config.LOGISTIC_REGRESSION])#, config.RANDOM_FOREST, config.GRADIENT_BOOSTING_DECISION_TREE, config.MULTILAYER_PERCEPTRON])
+	config.LOGISTIC_REGRESSION])
+	#config.RANDOM_FOREST
+	#config.GRADIENT_BOOSTING_DECISION_TREE,
+	#config.MULTILAYER_PERCEPTRON])
 
-results = Evaluate().execute(test, target=target, models=models)
+results_org = Evaluate().execute(test, target=target, models=models)
 
-for alg in results:
-	auc_org = int(get_discrimination_metrics(**results[alg])['auc']*100)
+auc_org = defaultdict(lambda: {})
+auc_org_list = []
+
+for alg in results_org:
+	#auc_org = int(get_discrimination_metrics(**results_org[alg])['auc']*100)
+	#auc_org = get_discrimination_metrics(**results_org[alg])['auc'])
+	auc_org[alg] = get_discrimination_metrics(**results_org[alg])
+	auc_org[alg] = auc_org[alg]['auc']
+	auc_org_list.append(auc_org[alg])
+auc_org = dict(auc_org)  # change default dict to normal dict
 
 
-path = pathlib.Path('./Stroke_data_test')
-auc = []
+pickle.dump(train, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\train.pkl', "wb"))
+pickle.dump(test, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\test.pkl', "wb"))
+pickle.dump(models, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\models.pkl', "wb"))
+pickle.dump(results_org, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\results_org.pkl', "wb"))
+pickle.dump(auc_org_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\auc_org_list.pkl', "wb"))
+pickle.dump(auc_org, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\auc_org.pkl', "wb"))
 
+# train = pickle.load(open(r'results_performance\train.pkl', "rb"))
+# test = pickle.load(open(r'results_performance\test.pkl', "rb"))
+# models = pickle.load(open(r'results_performance\models.pkl', "rb"))
+# results_org = pickle.load(open(r'results_performance\results_org.pkl', "rb"))
+# auc_org_list = pickle.load(open(r'results_performance\auc_list.pkl', "rb"))
+# auc_org = pickle.load(open(r'results_performance\auc_org.pkl', "rb"))
+
+# loading of datasets to compare
+path = pathlib.Path(r'C:\Users\Margaux\Documents\GitHub\morpher\Generated_stroke_data') # change path according to yours
+dis = defaultdict(lambda: {})
+auc_list = []
+auc = {k: [] for k in results_org}  # init dict with lists
+
+# execute evaluations for every dataset
 for entry in path.iterdir():
 
 	test = Load().execute(source=config.FILE, filename=entry)
-
-	test = Impute().execute(test, imputation_method=config.DEFAULT)
-
 	results = Evaluate().execute(test, target=target, models=models)
 
 	# get AUC results for each algorithmn
@@ -39,30 +74,63 @@ for entry in path.iterdir():
 
 		dis[alg] = get_discrimination_metrics(**results[alg])
 
-		auc.append(int(test['auc']*100))
+		# a list of all AUC values
+		auc_list.append(dis[alg]['auc'])
+		# dict categorizing AUC for each algorithmn
+		auc[alg].append(dis[alg]['auc'])
 
-		print('Original AUC:', auc_org)
-		print('AUCs:', auc)
+pickle.dump(results, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\results.pkl', "wb"))
+pickle.dump(auc_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\auc_list.pkl', "wb"))
+pickle.dump(auc, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\auc.pkl', "wb"))
 
 # results = pickle.load(open(r'results_performance\results.pkl', "rb"))
 # auc_list = pickle.load(open(r'results_performance\auc_list.pkl', "rb"))
 # auc = pickle.load(open(r'results_performance\auc.pkl', "rb"))
 
-mean_auc = (sum(auc)+auc_org)/(len(auc)+1)
+# mean AUC calculations
+mean_auc_total = (sum(auc_list))/(len(auc_list)) # mean without original AUC
+#mean_auc = (sum(auc)+auc_org)/(len(auc)+1)
+mean_auc_org_total = (sum(auc_org_list))/(len(auc_org_list)) # calculates an average as AUC original score of all algorithmns
 
 mean_auc = defaultdict(lambda: {})
 for alg in results:
 	mean_auc[alg] = (sum(auc[alg]))/(len(auc[alg]))
 
-for i in auc:
-	dis_to_org += (i - auc_org)**2
-	dis_to_mean += (i - mean_auc)**2
-r2 = 1 - (dis_to_org / dis_to_mean)
 
-print('Distance to original dataset:', dis_to_org)
-print('Distance to AUC Mean:', dis_to_mean)
-print('R2:', r2)
+# distance to original and mean AUC and R2
 
+# for total AUC
+dis_to_org_total = 0
+dis_to_mean_total = 0
+r2_total = 0
+
+for auc_i in auc_list:
+	dis_to_org_total += (auc_i - mean_auc_org_total)**2
+	#dis_to_mean_total += (auc_org - mean_auc)**2 ?? Harry why did you use the original auc here??
+	dis_to_mean_total += (auc_i - mean_auc_total)**2
+r2_total = 1 - (dis_to_org_total / dis_to_mean_total)
+
+# for each algorithmn
+dis_mean = 0
+dis_org = 0
+dis_to_org = defaultdict(lambda: {})
+dis_to_mean = defaultdict(lambda: {})
+r2 = defaultdict(lambda: {})
+
+for alg in results:
+	for auc_i in auc[alg]:
+		dis_org += (auc_i - auc_org[alg]) ** 2
+		dis_mean += (auc_i - mean_auc[alg]) ** 2
+	dis_to_org[alg] = dis_org
+	dis_to_mean[alg] = dis_mean
+	r2[alg] = 1 - (dis_to_org[alg] / dis_to_mean[alg])
+
+# variance regarding original AUC
+var = defaultdict(lambda: {})
+var_total = 0
+for alg in results:
+	var[alg] = sum((i - auc_org[alg]) ** 2 for i in auc[alg]) / len(auc[alg])
+var_total = sum((i - mean_auc_org_total) ** 2 for i in auc_list) / len(auc_list)
 
 
 # Output
