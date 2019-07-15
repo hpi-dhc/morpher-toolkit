@@ -17,75 +17,76 @@ def mean_absolute_percentage_error(y_true, y_pred):
 
 target = "STROKE"
 
-data = Load().execute(source=config.FILE, filename='stroke_preprocessed.csv')
+# data = Load().execute(source=config.FILE, filename='stroke_preprocessed.csv')
+#
+# data = Impute().execute(data, imputation_method=config.DEFAULT)
+#
+# train, test = Split().execute(data, test_size=0.3)
+#
+# models = Train().execute(train, target=target, algorithms=[
+# 	config.LOGISTIC_REGRESSION,
+# 	config.RANDOM_FOREST,
+# 	config.DECISION_TREE,
+# 	config.GRADIENT_BOOSTING_DECISION_TREE,
+# 	config.MULTILAYER_PERCEPTRON])
+#
+# results_org = Evaluate().execute(test, target=target, models=models)
+#
+# auc_org = defaultdict(lambda: {})
+# auc_org_list = []
+#
+# for alg in results_org:
+# 	#auc_org = int(get_discrimination_metrics(**results_org[alg])['auc']*100)
+# 	#auc_org = get_discrimination_metrics(**results_org[alg])['auc'])
+# 	auc_org[alg] = get_discrimination_metrics(**results_org[alg])
+# 	auc_org[alg] = auc_org[alg]['auc']
+# 	auc_org_list.append(auc_org[alg])
+# auc_org = dict(auc_org)  # change default dict to normal dict
+#
+#
+# pickle.dump(train, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\train.pkl', "wb"))
+# pickle.dump(test, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\test.pkl', "wb"))
+# pickle.dump(models, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\models.pkl', "wb"))
+# pickle.dump(results_org, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\results_org.pkl', "wb"))
+# pickle.dump(auc_org_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\auc_org_list.pkl', "wb"))
+# pickle.dump(auc_org, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\auc_org.pkl', "wb"))
 
-data = Impute().execute(data, imputation_method=config.DEFAULT)
+train = pickle.load(open(r'results_performance\train.pkl', "rb"))
+test = pickle.load(open(r'results_performance\test.pkl', "rb"))
+models = pickle.load(open(r'results_performance\models.pkl', "rb"))
+results_org = pickle.load(open(r'results_performance\results_org.pkl', "rb"))
+auc_org_list = pickle.load(open(r'results_performance\auc_list.pkl', "rb"))
+auc_org = pickle.load(open(r'results_performance\auc_org.pkl', "rb"))
 
-train, test = Split().execute(data, test_size=0.3)
+# # loading of datasets to compare
+# path = pathlib.Path(r'C:\Users\Margaux\Documents\GitHub\morpher\Generated_stroke_data') # change path according to yours
+# dis = defaultdict(lambda: {})
+# auc_list = []
+# auc = {k: [] for k in results_org}  # init dict with lists
+#
+# # execute evaluations for every dataset
+# for entry in path.iterdir():
+#
+# 	test = Load().execute(source=config.FILE, filename=entry)
+# 	results = Evaluate().execute(test, target=target, models=models)
+#
+# 	# get AUC results for each algorithmn
+# 	for alg in results:
+#
+# 		dis[alg] = get_discrimination_metrics(**results[alg])
+#
+# 		# a list of all AUC values
+# 		auc_list.append(dis[alg]['auc'])
+# 		# dict categorizing AUC for each algorithmn
+# 		auc[alg].append(dis[alg]['auc'])
+#
+# pickle.dump(results, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\results.pkl', "wb"))
+# pickle.dump(auc_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\auc_list.pkl', "wb"))
+# pickle.dump(auc, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\auc.pkl', "wb"))
 
-models = Train().execute(train, target=target, algorithms=[
-	config.LOGISTIC_REGRESSION])
-	#config.RANDOM_FOREST
-	#config.GRADIENT_BOOSTING_DECISION_TREE,
-	#config.MULTILAYER_PERCEPTRON])
-
-results_org = Evaluate().execute(test, target=target, models=models)
-
-auc_org = defaultdict(lambda: {})
-auc_org_list = []
-
-for alg in results_org:
-	#auc_org = int(get_discrimination_metrics(**results_org[alg])['auc']*100)
-	#auc_org = get_discrimination_metrics(**results_org[alg])['auc'])
-	auc_org[alg] = get_discrimination_metrics(**results_org[alg])
-	auc_org[alg] = auc_org[alg]['auc']
-	auc_org_list.append(auc_org[alg])
-auc_org = dict(auc_org)  # change default dict to normal dict
-
-
-pickle.dump(train, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\train.pkl', "wb"))
-pickle.dump(test, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\test.pkl', "wb"))
-pickle.dump(models, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\models.pkl', "wb"))
-pickle.dump(results_org, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\results_org.pkl', "wb"))
-pickle.dump(auc_org_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\auc_org_list.pkl', "wb"))
-pickle.dump(auc_org, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\auc_org.pkl', "wb"))
-
-# train = pickle.load(open(r'results_performance\train.pkl', "rb"))
-# test = pickle.load(open(r'results_performance\test.pkl', "rb"))
-# models = pickle.load(open(r'results_performance\models.pkl', "rb"))
-# results_org = pickle.load(open(r'results_performance\results_org.pkl', "rb"))
-# auc_org_list = pickle.load(open(r'results_performance\auc_list.pkl', "rb"))
-# auc_org = pickle.load(open(r'results_performance\auc_org.pkl', "rb"))
-
-# loading of datasets to compare
-path = pathlib.Path(r'C:\Users\Margaux\Documents\GitHub\morpher\Generated_stroke_data') # change path according to yours
-dis = defaultdict(lambda: {})
-auc_list = []
-auc = {k: [] for k in results_org}  # init dict with lists
-
-# execute evaluations for every dataset
-for entry in path.iterdir():
-
-	test = Load().execute(source=config.FILE, filename=entry)
-	results = Evaluate().execute(test, target=target, models=models)
-
-	# get AUC results for each algorithmn
-	for alg in results:
-
-		dis[alg] = get_discrimination_metrics(**results[alg])
-
-		# a list of all AUC values
-		auc_list.append(dis[alg]['auc'])
-		# dict categorizing AUC for each algorithmn
-		auc[alg].append(dis[alg]['auc'])
-
-pickle.dump(results, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\results.pkl', "wb"))
-pickle.dump(auc_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\auc_list.pkl', "wb"))
-pickle.dump(auc, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\auc.pkl', "wb"))
-
-# results = pickle.load(open(r'results_performance\results.pkl', "rb"))
-# auc_list = pickle.load(open(r'results_performance\auc_list.pkl', "rb"))
-# auc = pickle.load(open(r'results_performance\auc.pkl', "rb"))
+results = pickle.load(open(r'results_performance\results.pkl', "rb"))
+auc_list = pickle.load(open(r'results_performance\auc_list.pkl', "rb"))
+auc = pickle.load(open(r'results_performance\auc.pkl', "rb"))
 
 # mean AUC calculations
 mean_auc_total = (sum(auc_list))/(len(auc_list)) # mean without original AUC
@@ -137,20 +138,21 @@ var_total = sum((i - mean_auc_org_total) ** 2 for i in auc_list) / len(auc_list)
 
 # For each algorithmn
 for alg in results:
-	print('Values for', alg, ':')
-	print('Mean AUC for', alg, ':', mean_auc[alg])
-	print('Distance to original dataset:', dis_to_org[alg])
-	print('Distance to AUC Mean:', dis_to_mean[alg])
-	print('R2:', r2[alg])
+	print('Transferability Performances Measures for', alg, ':')
+	print('\n')
+	print('Mean AUC for', alg, ':', round(mean_auc[alg], 3))
+	print('Distance to original dataset:', round(dis_to_org[alg], 3))
+	print('Distance to AUC Mean:', round(dis_to_mean[alg], 3))
+	print('R2:', round(r2[alg], 3))
 	print('R2 (sklearn):',
-		  r2_score([auc_org[alg]] * len(auc[alg]), auc[alg]))  # the values are extremly different
-	print('Brier:', brier_score_loss([auc_org[alg]] * len(auc[alg]), auc[alg]))
-	print('Mean absolute error:', mean_absolute_error([auc_org[alg]] * len(auc[alg]), auc[alg]))
+		  round(r2_score([auc_org[alg]] * len(auc[alg]), auc[alg]), 2))  # the values are extremly different
+	print('Brier:', round(brier_score_loss([auc_org[alg]] * len(auc[alg]), auc[alg]), 3))
+	print('Mean absolute error:', round(mean_absolute_error([auc_org[alg]] * len(auc[alg]), auc[alg]), 3))
 	print('Mean absolute percentage error:',
-		  mean_absolute_percentage_error([auc_org[alg]] * len(auc[alg]), auc[alg]), '%')
+		  round(mean_absolute_percentage_error([auc_org[alg]] * len(auc[alg]), auc[alg]), 3), '%', )
 	# Percentage difference between the mean of AUCs and the original AUC
 	print('Transferability for', alg, ':', 100 - (int(np.abs(auc_org[alg] - mean_auc[alg]) * 100)), "%")
-	print('Variance of', alg, 'AUC in regard to orginal AUC:', var[alg])
+	print('Variance of', alg, 'AUC in regard to orginal AUC:', round(var[alg], 5))
 	print('\n')
 
 # Total Scores
@@ -169,11 +171,12 @@ print('Variance of AUC in regard to orginal AUC:', var_total)
 print('\n')
 
 # Calibrations and Clinical Usefulness metrics
-for alg in results_org:
-	print("Printing metrics for %s" % alg)
-	print(get_calibration_metrics(**results_org[alg]))
-	print(get_clinical_usefulness_metrics(get_discrimination_metrics(**results_org[alg]), tr=0.03))
-	print('\n')
+#for alg in results_org:
+	#print("Printing metrics for %s" % alg)
+	#print(get_discrimination_metrics(**results_org[alg]))
+	# print(get_calibration_metrics(**results_org[alg]))
+	# print(get_clinical_usefulness_metrics(get_discrimination_metrics(**results_org[alg]), tr=0.03))
+	#print('\n')
 
 
 # Plot of orginal AUC against all AUCs (maybe we should also use the means here, or its not really comparable)
@@ -191,24 +194,24 @@ for alg in results_org:
 n = 101  # subplot number must be a three digit number
 n += len(results) * 10  # second digit shows number of graph in one row
 subplot_ylabel = n
-plt.figure(2, figsize=(17, 9))
+plt.figure(2, figsize=(18.5, 7))
 
 for alg in results:
 	plt.subplot(n)
 	plt.plot(auc[alg], 'ro')
 	plt.plot(auc[alg], label='AUC\'s')
 	plt.plot([auc_org[alg]] * len(auc[alg]), label='AUC original dataset')
-	plt.title(alg)
+	plt.title('Area Under the ROC Curv')
 
 
 	plt.xlabel('Datasets')
 	if n == subplot_ylabel:  # shows only the label on the left
-		plt.ylabel('Area Under the ROC Curve')
-	plt.title('Receiver Operating Curve')
+		plt.ylabel(alg)
+	plt.title(alg)
 
 	n += 1
 #plt.subplots_adjust(left=0.1)
-plt.legend(bbox_to_anchor=(1.6, 1.05))
+plt.legend(bbox_to_anchor=(0.8, 1.05))
 plt.show()
 
 # seperates plots of each algorithmn
@@ -227,15 +230,35 @@ plt.show()
 #
 # 	i += 1
 
+# plt.figure(4)
+# plot_roc(results_org)
+# plt.show()
+
+
 # # plot Decision Curve
 # plt.figure(3)
 # plot_dc(results_org)
 # plt.show()
 #
 # plot Calibration Curve
-plt.figure(4)
-plot_cc(models, train, test, target)
-plt.legend(bbox_to_anchor=(1.3, 1.05))
-plt.show()
+# plt.figure(4)
+# plot_cc(models, train, test, target)
+# plt.legend(bbox_to_anchor=(1.3, 1.05))
+# plt.show()
 
 
+# Transferability metrics for presentation
+for alg in results:
+	print('Transferability Performances Measures for', alg, ':')
+	print('')
+	print('Mean AUC for', alg, ':', round(mean_auc[alg], 3))
+	print('AUC for', alg, 'of original data set:', round(auc_org[alg], 3))
+	print('')
+	print('Transferability for', alg, ':', 100 - (int(np.abs(auc_org[alg] - mean_auc[alg]) * 100)), "%")
+	print('Variance of', alg, 'AUC in regard to original AUC:', round(var[alg], 5))
+	print('')
+	print('Brier Score:', round(brier_score_loss([auc_org[alg]] * len(auc[alg]), auc[alg]), 3))
+	print('')
+	print('Mean absolute percentage error:',
+		  round(mean_absolute_percentage_error([auc_org[alg]] * len(auc[alg]), auc[alg]), 3), '%', )
+	print('\n')
