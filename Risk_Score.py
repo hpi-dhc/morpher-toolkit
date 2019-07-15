@@ -1,6 +1,4 @@
-import csv
 import pandas as pd
-import numpy as np
 
 
 def main():
@@ -33,249 +31,250 @@ def main():
 
     print(df.head(5))
 
+    df.to_csv('Stroke_Risk_Score.csv')
 
 def risk_score(GENDER, ADMISSION_TYPE, AGE_AT_ADMISSION, LVEF, DIABETES_COMPLICATED, DIABETES_UNCOMPLICATED, PERIPHERAL_VASCULAR, RENAL_FAILURE):
 
-    stroke_score = 0
+    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE
+
 
     if 18 <= AGE_AT_ADMISSION <= 54:
         if ADMISSION_TYPE == 0:
             if GENDER == 0:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1
+                    stroke_score += 1.5 + 1
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1
+                    stroke_score += 1
             else:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5
-                else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE
+                    stroke_score += 1.5
+
         elif ADMISSION_TYPE == 1:
             if GENDER == 0:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1 + 1.5
+                    stroke_score += 1.5 + 1 + 1.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1 + 1.5
+                    stroke_score += 1 + 1.5
             else:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1.5
+                    stroke_score += 1.5 + 1.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5
+                    stroke_score += 1.5
         else:
             if GENDER == 0:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1 + 2.5
+                    stroke_score += 1.5 + 1 + 2.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1 + 2.5
+                    stroke_score += 1 + 2.5
             else:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 2.5
+                    stroke_score += 1.5 + 2.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 2.5
+                    stroke_score += 2.5
     elif 55 <= AGE_AT_ADMISSION <= 59:
         if ADMISSION_TYPE == 0:
             if GENDER == 0:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1 + 1.5
+                    stroke_score += 1.5 + 1 + 1.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1 + 1.5
+                    stroke_score += 1 + 1.5
             else:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1.5
+                    stroke_score += 1.5 + 1.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5
+                    stroke_score += 1.5
         elif ADMISSION_TYPE == 1:
             if GENDER == 0:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1 + 1.5 + 1.5
+                    stroke_score += 1.5 + 1 + 1.5 + 1.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1 + 1.5 + 1.5
+                    stroke_score += 1 + 1.5 + 1.5
             else:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1.5 + 1.5
+                    stroke_score += 1.5 + 1.5 + 1.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1.5
+                    stroke_score += 1.5 + 1.5
         else:
             if GENDER == 0:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1 + 2.5 + 1.5
+                    stroke_score += 1.5 + 1 + 2.5 + 1.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1 + 2.5 + 1.5
+                    stroke_score += 1 + 2.5 + 1.5
             else:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 2.5 + 1.5
+                    stroke_score += 1.5 + 2.5 + 1.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 2.5 + 1.5
+                    stroke_score += 2.5 + 1.5
     elif 60 <= AGE_AT_ADMISSION <= 64:
         if ADMISSION_TYPE == 0:
             if GENDER == 0:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1 + 2.5
+                    stroke_score += 1.5 + 1 + 2.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1 + 2.5
+                    stroke_score += 1 + 2.5
             else:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 2.5
+                    stroke_score += 1.5 + 2.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 2.5
+                    stroke_score += 2.5
         elif ADMISSION_TYPE == 1:
             if GENDER == 0:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1 + 1.5 + 2.5
+                    stroke_score += 1.5 + 1 + 1.5 + 2.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1 + 1.5 + 2.5
+                    stroke_score += 1 + 1.5 + 2.5
             else:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1.5 + 2.5
+                    stroke_score += 1.5 + 1.5 + 2.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 2.5
+                    stroke_score += 1.5 + 2.5
         else:
             if GENDER == 0:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1 + 2.5 + 2.5
+                    stroke_score += 1.5 + 1 + 2.5 + 2.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1 + 2.5 + 2.5
+                    stroke_score += 1 + 2.5 + 2.5
             else:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 2.5 + 2.5
+                    stroke_score += 1.5 + 2.5 + 2.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 2.5 + 2.5
+                    stroke_score += 2.5 + 2.5
     elif 65 <= AGE_AT_ADMISSION <= 69:
         if ADMISSION_TYPE == 0:
             if GENDER == 0:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1 + 3.5
+                    stroke_score += 1.5 + 1 + 3.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1 + 3.5
+                    stroke_score += 1 + 3.5
             else:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 3.5
+                    stroke_score += 1.5 + 3.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 3.5
+                    stroke_score += 3.5
         elif ADMISSION_TYPE == 1:
             if GENDER == 0:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1 + 1.5 + 3.5
+                    stroke_score += 1.5 + 1 + 1.5 + 3.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1 + 1.5 + 3.5
+                    stroke_score += 1 + 1.5 + 3.5
             else:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1.5 + 3.5
+                    stroke_score += 1.5 + 1.5 + 3.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 3.5
+                    stroke_score += 1.5 + 3.5
         else:
             if GENDER == 0:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1 + 2.5 + 3.5
+                    stroke_score += 1.5 + 1 + 2.5 + 3.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1 + 2.5 + 3.5
+                    stroke_score += 1 + 2.5 + 3.5
             else:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 2.5 + 3.5
+                    stroke_score += 1.5 + 2.5 + 3.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 2.5 + 3.5
+                    stroke_score = + 2.5 + 3.5
     elif 70 <= AGE_AT_ADMISSION <= 74:
         if ADMISSION_TYPE == 0:
             if GENDER == 0:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1 + 4
+                    stroke_score += 1.5 + 1 + 4
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1 + 4
+                    stroke_score += 1 + 4
             else:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 4
+                    stroke_score += 1.5 + 4
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 4
+                    stroke_score += 4
         elif ADMISSION_TYPE == 1:
             if GENDER == 0:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1 + 1.5 + 4
+                    stroke_score += 1.5 + 1 + 1.5 + 4
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1 + 1.5 + 4
+                    stroke_score += 1 + 1.5 + 4
             else:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1.5 + 4
+                    stroke_score += 1.5 + 1.5 + 4
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 4
+                    stroke_score += 1.5 + 4
         else:
             if GENDER == 0:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1 + 2.5 + 4
+                    stroke_score += 1.5 + 1 + 2.5 + 4
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1 + 2.5 + 4
+                    stroke_score += 1 + 2.5 + 4
             else:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 2.5 + 4
+                    stroke_score += 1.5 + 2.5 + 4
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 2.5 + 4
+                    stroke_score += 2.5 + 4
     elif 75 <= AGE_AT_ADMISSION <= 79:
         if ADMISSION_TYPE == 0:
             if GENDER == 0:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1 + 4.5
+                    stroke_score += 1.5 + 1 + 4.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1 + 4.5
+                    stroke_score += 1 + 4.5
             else:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 4.5
+                    stroke_score += 1.5 + 4.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 4.5
+                    stroke_score += 4.5
         elif ADMISSION_TYPE == 1:
             if GENDER == 0:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1 + 1.5 + 4.5
+                    stroke_score += 1.5 + 1 + 1.5 + 4.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1 + 1.5 + 4.5
+                    stroke_score += 1 + 1.5 + 4.5
             else:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1.5 + 4.5
+                    stroke_score += 1.5 + 1.5 + 4.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 4.5
+                    stroke_score += 1.5 + 4.5
         else:
             if GENDER == 0:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1 + 2.5 + 4.5
+                    stroke_score += 1.5 + 1 + 2.5 + 4.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1 + 2.5 + 4.5
+                    stroke_score += 1 + 2.5 + 4.5
             else:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 2.5 + 4.5
+                    stroke_score += 1.5 + 2.5 + 4.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 2.5 + 4.5
+                    stroke_score += 2.5 + 4.5
     elif 80 <= AGE_AT_ADMISSION <= 99:
         if ADMISSION_TYPE == 0:
             if GENDER == 0:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1 + 5.5
+                    stroke_score += 1.5 + 1 + 5.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1 + 5.5
+                    stroke_score += 1 + 5.5
             else:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 5.5
+                    stroke_score += 1.5 + 5.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 5.5
+                    stroke_score += 5.5
         elif ADMISSION_TYPE == 1:
             if GENDER == 0:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1 + 1.5 + 5.5
+                    stroke_score += 1.5 + 1 + 1.5 + 5.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1 + 1.5 + 5.5
+                    stroke_score += 1 + 1.5 + 5.5
             else:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1.5 + 5.5
+                    stroke_score += 1.5 + 1.5 + 5.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 5.5
+                    stroke_score += 1.5 + 5.5
         else:
             if GENDER == 0:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 1 + 2.5 + 5.5
+                    stroke_score += 1.5 + 1 + 2.5 + 5.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1 + 2.5 + 5.5
+                    stroke_score += 1 + 2.5 + 5.5
             else:
                 if LVEF < 40:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 1.5 + 2.5 + 5.5
+                    stroke_score += 1.5 + 2.5 + 5.5
                 else:
-                    stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE + 2.5 + 5.5
+                    stroke_score += 2.5 + 5.5
 
     return stroke_score
 
