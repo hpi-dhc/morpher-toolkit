@@ -41,7 +41,7 @@ class Evaluate(MorpherJob):
             description = "Model based on {clf_name} for target '{target}'".format(clf_name=clf_name, target=target)
             predictions = [ { "target_label": float(results[clf_name]["y_true"].iloc[i]),"predicted_label": float(results[clf_name]["y_pred"][i]),"predicted_proba": float(results[clf_name]["y_probs"][i]) } for i in range(len(results[clf_name]["y_true"])) ]
             disc_metrics = get_discrimination_metrics(results[clf_name]["y_true"], results[clf_name]["y_pred"], results[clf_name]["y_probs"])
-            cal_metrics = get_discrimination_metrics(results[clf_name]["y_true"], results[clf_name]["y_probs"])
+            cal_metrics = get_calibration_metrics(results[clf_name]["y_true"], results[clf_name]["y_probs"])
             cu_metrics = get_clinical_usefulness_metrics(disc_metrics)
             experiment_id = self.add_experiment(cohort_id=cohort_id, model_id=model_id,user_id=user_id,description=description,target=target,validation_mode=validation_mode,parameters={"discrimination": disc_metrics, "calibration": cal_metrics, "clinical_usefulness": cu_metrics})
             self.add_batch(experiment_id, predictions)
