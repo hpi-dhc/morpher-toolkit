@@ -114,9 +114,7 @@ def plot_dc(results, tr_start=0.01, tr_end=0.99, tr_step=0.01, metric_type="trea
     plt.ylabel('Net Benefit')
     plt.title('Decision Curve ({0})'.format(metric_type))
     plt.rc('axes', prop_cycle=prop_cycle)
-    plt.xticks(np.arange(0, 1.25, step=0.25))    
-
-    print(np.arange(tr_start, tr_end, tr_step))
+    plt.xticks(np.arange(0, 1.25, step=0.25))
     
     tr_probs = np.arange(tr_start, tr_end + tr_step, tr_step)
     
@@ -143,9 +141,9 @@ def plot_dc(results, tr_start=0.01, tr_end=0.99, tr_step=0.01, metric_type="trea
         current_max = np.amax(net_benefit + net_benefit_treated_all)
         if current_max > ymax:
             ymax = current_max
-        
-    plt.plot(tr_probs, net_benefit_treated_all, label='All')    
-    plt.axhline(y=0.0, color='gray', linestyle='--', label='None')
+    
+    plt.plot(tr_probs, net_benefit_treated_all, label=metric_type + '(all)')    
+    plt.axhline(y=0.0, color='gray', linestyle='--', label=metric_type + '(none)')
     plt.legend(fancybox=True, shadow=True)
 
     '''
