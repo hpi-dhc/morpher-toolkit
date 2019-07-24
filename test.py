@@ -22,6 +22,8 @@ models = Train().execute(train, target=target, algorithms=[config.LOGISTIC_REGRE
 
 results = Evaluate().execute(test, target=target, models=models)
 
+print(results)
+
 plot_dc(results)
 
 plt.show()
