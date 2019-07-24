@@ -17,7 +17,7 @@ def get_discrimination_metrics(y_true, y_pred, y_probs, label="1.0"):
         results[metric] = float(report[metric])
     results['confusion_matrix'] = confusion_matrix(y_true, y_pred).tolist()
     results['auc'] = float(roc_auc_score(y_true, y_probs))
-    results['n'] = y_true.shape[0]
+    results['n'] = len(y_true)
 
     tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
     results['tn'], results['fp'], results['fn'], results['tp'] = (int(tn), int(fp), int(fn), int(tp))

@@ -95,6 +95,7 @@ def plot_dc(results, tr_start=0.01, tr_end=0.99, tr_step=0.01, metric_type="trea
     
     Params:
     
+    results               outputs of a given classifier
     tr_start              start of thresholds
     tr_end                end of thresholds
     tr_end                step_size of thresholds
