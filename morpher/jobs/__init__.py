@@ -4,10 +4,11 @@ from .Load import Load
 from .Impute import Impute
 from .Split import Split
 from .Train import Train
+from .Retrieve import Retrieve
 from .Evaluate import Evaluate
 
 __all__ = [
-	'Job',
+    'Job',
     'MorpherJob',
     'Load',
     'Impute',
