@@ -13,5 +13,6 @@ __all__ = [
     'Impute',
     'Split',
     'Train',
+    'Apply',
     'Evaluate',
 ]

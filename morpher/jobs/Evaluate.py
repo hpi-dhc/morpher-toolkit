@@ -2,6 +2,7 @@
 import traceback
 import logging
 from morpher.jobs import MorpherJob
+from morpher.jobs import Retrieve
 from morpher.exceptions import kwarg_not_empty
 from morpher.algorithms import *
 from morpher.metrics import *
@@ -11,6 +12,7 @@ import json
 import jsonpickle as jp
 from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve, brier_score_loss, explained_variance_score, mean_squared_error, mean_absolute_error
 
+
 class Evaluate(MorpherJob):
 
     def do_execute(self):
@@ -18,8 +20,7 @@ class Evaluate(MorpherJob):
         #if we have a list of filenames coming from 'Split', we pass over the 'test' set for evaluation (pos. 1); otherwise we pass over the file we got
         if type(self.get_input("filenames")) == list:
             filename = self.get_input("filenames")[1]
-            validation_mode = 0
-
+            validation_mode = 0            
         else:
             filename = self.get_input("filename")
             validation_mode = 1
@@ -27,7 +28,7 @@ class Evaluate(MorpherJob):
         df = pd.read_csv(filepath_or_buffer= filename)
 
         model_ids = self.get_input("model_ids")  
-        models = [jp.decode(json.dumps(model)) for model in self.get_models(list(model_ids.values()))]
+        models = [jp.decode(json.dumps(model)) for model in Retrieve().get_models(list(model_ids.values()))]
 
         cohort_id = self.get_input("cohort_id")
         user_id = self.get_input("user_id")
@@ -62,15 +63,6 @@ class Evaluate(MorpherJob):
         else:
             raise Exception("There was an error creating an Experiment. Server returned: %s" % response.get("msg"))
 
-    def get_models(self, model_ids):
-        
-        response = self.api("models", "get", data={"model_ids": model_ids})
-
-        if response.get("status") == "success":
-            return response.get("models")
-        else:
-            raise Exception("There was an error retrieving the trained models. Check the server")
-
     def execute(self, data, target, models, **kwargs):
         try:
             if not data.empty and models and target:
@@ -80,7 +72,6 @@ class Evaluate(MorpherJob):
                 for clf_name in models:
                     clf = models[clf_name]
                     y_true, y_pred, y_probs = labels, clf.predict(features), clf.predict_proba(features)[:,1]
-
                     results[clf_name] = { "y_true": y_true, "y_pred": y_pred, "y_probs": y_probs}
                     self.print_clf_performance(clf_name, y_true, y_pred, y_probs)
                 return results

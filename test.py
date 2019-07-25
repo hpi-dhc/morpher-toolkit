@@ -4,6 +4,7 @@ from morpher.jobs import *
 from morpher.metrics import *
 from morpher.plots import *
 import matplotlib.pyplot as plt, mpld3
+import pickle as pickle
 
 target = "AKI"
 
@@ -18,7 +19,11 @@ train, test = Split().execute(data, test_size=0.3)
 #models = Train(None).execute(train, target=target, algorithms=[config.DECISION_TREE, config.RANDOM_FOREST])
 #models = Train().execute(train, target=target, algorithms=[config.LOGISTIC_REGRESSION])
 
-models = Train().execute(train, target=target, algorithms=[config.LOGISTIC_REGRESSION, config.RANDOM_FOREST, config.GRADIENT_BOOSTING_DECISION_TREE, config.MULTILAYER_PERCEPTRON])
+#models = Train().execute(train, target=target, algorithms=[config.LOGISTIC_REGRESSION, config.RANDOM_FOREST, config.GRADIENT_BOOSTING_DECISION_TREE, config.MULTILAYER_PERCEPTRON])
+
+#pickle.dump(models, open("models", "wb"))
+
+models = pickle.load(open("models", "rb"))
 
 results = Evaluate().execute(test, target=target, models=models)
 

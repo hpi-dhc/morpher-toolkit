@@ -142,8 +142,8 @@ def plot_dc(results, tr_start=0.01, tr_end=0.99, tr_step=0.01, metric_type="trea
         if current_max > ymax:
             ymax = current_max
     
-    plt.plot(tr_probs, net_benefit_treated_all, label=metric_type + '(all)')    
-    plt.axhline(y=0.0, color='gray', linestyle='--', label=metric_type + '(none)')
+    plt.plot(tr_probs, net_benefit_treated_all, label=metric_type + ' (all)')    
+    plt.axhline(y=0.0, color='gray', linestyle='--', label=metric_type + ' (none)')
     plt.legend(fancybox=True, shadow=True)
 
     '''
@@ -151,6 +151,7 @@ def plot_dc(results, tr_start=0.01, tr_end=0.99, tr_step=0.01, metric_type="trea
     '''
     ax = plt.gca()
     ax.set_ylim([ymin,ymax])
+    ax.set_xlim([0,1])
 
 
     
