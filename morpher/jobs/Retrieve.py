@@ -43,22 +43,21 @@ class Retrieve(MorpherJob):
             for model in models:
 
                 error_msg = ""
-                if model.target != target:
-                    error_msg += "Targets do not match for model '{0}'. Expected '{1}', but '{2}' was provided. \n".format(model.name, model.target, target)
+                if model["parameters"]["target"] != target:
+                    error_msg += "Targets do not match for model '{0}'. Expected '{1}', but '{2}' was provided. \n".format(model["name"], model["target"], target)
 
-                if model.features != params["features"]:
-                    error_msg += "Features do not match for model '{0}'. Please check data provided. \n".format(model.name)
+                if model["parameters"]["features"] != params["features"]:
+                    error_msg += "Features do not match for model '{0}'. Please check data provided. \n".format(model["name"])
                 
                 if error_msg == "":
-                    model_ids.append(models.id)
+                    model_ids.append(model["id"])
 
                 error_summary += error_msg
 
-            if error_summary != ""
+            if error_summary != "":
                 raise AttributeError("Error while validating models and inputs. Error summary: {0}".format(error_summary))
 
-        except Exception e:
-            except Exception as e:
+        except Exception as e:            
             print(traceback.format_exc())
             logging.error(traceback.format_exc())
 

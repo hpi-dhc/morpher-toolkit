@@ -28,7 +28,10 @@ class Evaluate(MorpherJob):
         df = pd.read_csv(filepath_or_buffer= filename)
 
         model_ids = self.get_input("model_ids")  
-        models = [jp.decode(json.dumps(model)) for model in Retrieve().get_models(list(model_ids.values()))]
+        models = [jp.decode(json.dumps(model["content"])) for model in Retrieve(self.session).get_models(model_ids)]
+
+        #go for zip here, model_id_mapping
+        model_id_mapping = dict(zip([model.__class__.__name__ for model in models], model_ids))
 
         cohort_id = self.get_input("cohort_id")
         user_id = self.get_input("user_id")
@@ -38,7 +41,7 @@ class Evaluate(MorpherJob):
 
         for model in models:
             clf_name = model.__class__.__name__
-            model_id = model_ids[clf_name]
+            model_id = model_id_mapping[clf_name]
             description = "Model based on {clf_name} for target '{target}'".format(clf_name=clf_name, target=target)
             predictions = [ { "target_label": float(results[clf_name]["y_true"].iloc[i]),"predicted_label": float(results[clf_name]["y_pred"][i]),"predicted_proba": float(results[clf_name]["y_probs"][i]) } for i in range(len(results[clf_name]["y_true"])) ]
             disc_metrics = get_discrimination_metrics(results[clf_name]["y_true"], results[clf_name]["y_pred"], results[clf_name]["y_probs"])

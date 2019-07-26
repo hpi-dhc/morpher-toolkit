@@ -50,9 +50,9 @@ class Train(MorpherJob):
         self.logger.info("Models trained successfully.")
 
     def persist(self, models, params):
-        model_ids = {}
+        model_ids = []
         for clf_name in models:
-            model_ids[models[clf_name].__class__.__name__] = self.add(models[clf_name], params)
+            model_ids.append(self.add(models[clf_name], params))
 
         return model_ids
 

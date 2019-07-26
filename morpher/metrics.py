@@ -4,6 +4,7 @@ import logging
 import pandas as pd
 import numpy as np
 from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve, brier_score_loss, explained_variance_score, mean_squared_error, mean_absolute_error
+from sklearn.calibration import calibration_curve
 from collections import defaultdict
 from scipy.stats import linregress
 
