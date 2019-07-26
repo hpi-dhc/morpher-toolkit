@@ -69,7 +69,7 @@ def get_clinical_usefulness_metrics(discrimination_metrics, tr=0.7):
     results['untreated'] = net_benefit_untreated
     results['overall'] = net_benefit_treated + net_benefit_untreated
     results['prevalence'] = pi
-    results['adapt'] = pi
+    results['adapt'] = adapt
 
     return dict(results)
 
