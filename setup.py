@@ -32,7 +32,8 @@ setup(name='morpher',
           'sklearn_pandas',
           'fancyimpute',
           'imbalanced-learn',
-          'statsmodels'
+          'statsmodels',
+          'jsonpickle==1.2'
       ],
       #specifying a given version: 'chardet==3.0.4',
       zip_safe=False)
