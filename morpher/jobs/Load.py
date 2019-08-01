@@ -19,7 +19,7 @@ class Load(MorpherJob):
         task = self.get_task()
         task_params = {}
         if type(task["parameters"]) == str:
-            task["parameters"] = json.loads(task["parameters"])
+            task_params = json.loads(task["parameters"])
         if type(task["parameters"] == dict):
             task_params = task["parameters"]
         data = self.execute(filename=filename)
