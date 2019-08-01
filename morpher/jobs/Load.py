@@ -9,6 +9,7 @@ import pyhdb
 from morpher.jobs import MorpherJob
 import os.path
 import os
+import json
 
 class Load(MorpherJob):
 
@@ -16,11 +17,13 @@ class Load(MorpherJob):
 
         filename = self.get_input("filename")
         task = self.get_task()
+        if type(task["parameters"]) == str:
+            task["parameters"] = json.loads(task["parameters"])
         data = self.execute(filename=filename)
-        self.add_output("filename", self.save_to_file(data))
+        self.add_output("filename", filename)
         self.add_output("cohort_id", task["parameters"]["cohort_id"])
         self.add_output("user_id", task["parameters"]["user_id"])
-                         
+
     def execute(self, source=config.FILE, **kwargs):
 
         data = pd.DataFrame()
