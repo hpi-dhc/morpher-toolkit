@@ -20,8 +20,12 @@ class MorpherJob(Job):
         '''
         hostname = self.config.get('morpher', 'hostname') or self.config.get('hostname')
         port = self.config.get('morpher', 'port') or self.config.get('port')
+        prefix = self.config.get('morpher', 'prefix')
+        if prefix:
+            endpoint = "http://{hostname}:{port}/{blueprint}/{action}/".format(hostname=hostname, port=port, blueprint=blueprint, action=action)
+        else:
+            endpoint = "http://{hostname}:{port}/{prefix}/{blueprint}/{action}/".format(hostname=hostname, prefix=prefix ,port=port, blueprint=blueprint, action=action)
         
-        endpoint = "http://{hostname}:{port}/{blueprint}/{action}/".format(hostname=hostname, port=port, blueprint=blueprint, action=action)
         self.logger.debug("Endpoint: %s" % endpoint)
         print("Endpoint: %s" % endpoint)
  
