@@ -60,7 +60,7 @@ class MorpherJob(Job):
         
         try:
             #return rowproxy as a dict
-            task = {column: value for column, value in self.execute_select_stmt(stmt, {"task_id" : self.task_id}).fetchone()}
+            task = {column: value for column, value in self.execute_select_stmt(stmt, {"task_id" : self.task_id}).fetchone().items()}
             return task
         
         except Exception as e:
