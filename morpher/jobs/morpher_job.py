@@ -59,7 +59,9 @@ class MorpherJob(Job):
         stmt = "SELECT id, status, pipeline_id, parameters, fastq_readcount, created_at, user FROM worker.\"TASKS\" WHERE id = :task_id";
         
         try:
-            return self.execute_select_stmt(stmt, {"task_id" : self.task_id}).fetchone()
+            #return rowproxy as a dict
+            task = {column: value for column, value in self.execute_select_stmt(stmt, {"task_id" : self.task_id}).fetchone()}
+            return task
         
         except Exception as e:
             self.logger.error(traceback.format_exc())

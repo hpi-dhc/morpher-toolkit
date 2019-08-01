@@ -16,12 +16,11 @@ class Load(MorpherJob):
     def do_execute(self):
 
         filename = self.get_input("filename")
-        task = self.get_task()
-        task_params = {}
+        task = self.get_task()        
+        
         if type(task["parameters"]) == str:
-            task_params = json.loads(task["parameters"])
-        if type(task["parameters"] == dict):
-            task_params = task["parameters"]
+            task["parameters"] = json.loads(task["parameters"])
+
         data = self.execute(filename=filename)
         self.add_output("filename", filename)
         self.add_output("cohort_id", task_params["cohort_id"])
