@@ -66,7 +66,7 @@ class Evaluate(MorpherJob):
         else:
             raise Exception("There was an error creating an Experiment. Server returned: %s" % response.get("msg"))
 
-    def execute(self, data, target, models, **kwargs):
+    def execute(self, data, target, models, print_performance=False, **kwargs):
         try:
             if not data.empty and models and target:
                 results = {}
@@ -76,7 +76,8 @@ class Evaluate(MorpherJob):
                     clf = models[clf_name]
                     y_true, y_pred, y_probs = labels, clf.predict(features), clf.predict_proba(features)[:,1]
                     results[clf_name] = { "y_true": y_true, "y_pred": y_pred, "y_probs": y_probs}
-                    self.print_clf_performance(clf_name, y_true, y_pred, y_probs)
+                    if print_performance:
+                        self.print_clf_performance(clf_name, y_true, y_pred, y_probs)
                 return results
             else:
                 raise AttributeError("No data provided, algorithms or target not available")
