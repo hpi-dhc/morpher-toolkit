@@ -14,7 +14,7 @@ from morpher.algorithms import *
 
 from morpher.metrics import *
 
-def plot_roc(results, title="Receiver Operating Curve", ax=None, figsize=None):
+def plot_roc(results, title="Receiver Operating Curve", ax=None, figsize=None, legend_loc=None):
     '''
     Plots the receiver operating curve of currently loaded results in a new
     window.
@@ -39,9 +39,9 @@ def plot_roc(results, title="Receiver Operating Curve", ax=None, figsize=None):
 
         ax.plot(fpr, tpr, label='{0} (AUC={1:.2f})'.format(clf_name, roc_auc_score(y_true, y_probs)))
 
-    ax.legend(loc="lower right", fancybox=True, shadow=True)
+    ax.legend(loc=legend_loc, fancybox=True, shadow=True)
 
-def plot_prc(results, title="Precision-Recall Curve", ax=None, figsize=None):
+def plot_prc(results, title="Precision-Recall Curve", ax=None, figsize=None, legend_loc=None):
     '''
     Plots the precision recall curve currently loaded results in a new
     window.
@@ -68,11 +68,11 @@ def plot_prc(results, title="Precision-Recall Curve", ax=None, figsize=None):
 
     ax.plot([0, 1], [0.5, 0.5], label='No skill', color='lightgray', linestyle='--')
 
-    ax.legend(loc="upper right", fancybox=True, shadow=True)
+    ax.legend(loc=legend_loc, fancybox=True, shadow=True)
     ax.autoscale(enable=True) 
 
 
-def plot_cc(models, train_data, test_data, target, title="Calibration Plot", ax=None, figsize=None):
+def plot_cc(models, train_data, test_data, target, title="Calibration Plot", ax=None, figsize=None, legend_loc=None):
     '''
     Plots calibration curve, we need the original train dataset to do this (!)
     '''
@@ -119,12 +119,12 @@ def plot_cc(models, train_data, test_data, target, title="Calibration Plot", ax=
     ax.set_ylabel("Fraction of Positives")
     ax.set_xlabel("Mean Predicted Probability")
     ax.set_ylim([-0.05, 1.05])
-    ax.legend(loc="lower right", fancybox=True, shadow=True)
+    ax.legend(loc=legend_loc, fancybox=True, shadow=True)
     ax.set_title(title)
 
     print("*** Model calibration performed.\n")
 
-def plot_dc(results, tr_start=0.01, tr_end=0.99, tr_step=0.01, metric_type="treated", ymin=-0.1, title="Decision Curve", ax=None, figsize=None):
+def plot_dc(results, tr_start=0.01, tr_end=0.99, tr_step=0.01, metric_type="treated", ymin=-0.1, title="Decision Curve", ax=None, figsize=None, legend_loc=None):
     '''
     Plots decision curve for treating a patient based on the predicted probability
     
@@ -182,7 +182,7 @@ def plot_dc(results, tr_start=0.01, tr_end=0.99, tr_step=0.01, metric_type="trea
     
     ax.plot(tr_probs, net_benefit_treated_all, label=metric_type + ' (all)')    
     ax.axhline(y=0.0, color='gray', linestyle='--', label=metric_type + ' (none)')
-    ax.legend(loc="upper right", fancybox=True, shadow=True)
+    ax.legend(loc=legend_loc, fancybox=True, shadow=True)
 
     '''
     Define plotting limits
