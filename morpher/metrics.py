@@ -31,7 +31,7 @@ def get_discrimination_metrics(y_true, y_pred, y_probs, label="1.0"):
     except ZeroDivisionError as e:
         results['dor'] = 0.0 # undefined
 
-    if results['dor'] == math.inf or results['dor'] == -math.inf or results['dor'] == math.isnan(results['dor']):
+    if results['dor'] == math.inf or results['dor'] == -math.inf or math.isnan(results['dor']):
         results['dor'] = 0.0 # undefined
 
     return dict(results)
