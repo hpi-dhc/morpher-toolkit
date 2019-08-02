@@ -30,21 +30,22 @@ models = pickle.load(open("models", "rb"))
 
 results = Evaluate().execute(test, target=target, models=models)
 
-fig, axs = plt.subplots(2, 2, figsize=(15,15))
+#fig, axs = plt.subplots(2, 2, figsize=(15,15))
 
 #fig.suptitle('Vertically stacked subplots')
 
-plot_roc(results, title="Receiver Operating Curve (A)", ax=axs[0,0])
-plot_prc(results, title="Precision-Recall Curve (B)", ax=axs[0,1])
-plot_cc({k:v for k,v in models.items() if k == config.RANDOM_FOREST}, train, test, target, title="Calibration Plot (C)", ax=axs[1,0])
-plot_dc(results, title="Decision Curve (D)", ax=axs[1,1])
+#plot_roc(results, title="Receiver Operating Curve (A)", ax=axs[0,0])
+#plot_prc(results, title="Precision-Recall Curve (B)", ax=axs[0,1])
+#plot_cc({k:v for k,v in models.items() if k == config.RANDOM_FOREST}, train, test, target, title="Calibration Plot (C)", ax=axs[1,0])
+#plot_dc(results, title="Decision Curve (D)", ax=axs[1,1])
 
 #fig.tight_layout()
-plt.show()
+#plt.show()
 
-#plot_roc(results)
+plot_roc(results)
 
-#print (mpld3.fig_to_dict(fig=plt.gcf()))
+#mpld3.fig_to_dict(fig=plt.gcf())
+mpld3.show()
 
 # #for clf_name in models:
 # #	results[clf_name]["clf"] = models[clf_name].clf

@@ -18,13 +18,13 @@ def plot_roc(results, title="Receiver Operating Curve", ax=None, figsize=None):
     '''
     Plots the receiver operating curve of currently loaded results in a new
     window.
-    '''
-    if not ax:
-        ax = plt.gca()
-    
+    '''    
     if figsize:
         plt.clf()
         fig = plt.figure(figsize=figsize)
+
+    if not ax:
+        ax = plt.gca()
 
     ax.plot((0, 1), (0, 1), 'k--', label=None)
     ax.set_xlabel('False Positive Rate')
@@ -46,12 +46,12 @@ def plot_prc(results, title="Precision-Recall Curve", ax=None, figsize=None):
     Plots the precision recall curve currently loaded results in a new
     window.
     '''
-    if not ax:
-        ax = plt.gca()
-    
     if figsize:
         plt.clf()
         fig = plt.figure(figsize=figsize)
+
+    if not ax:
+        ax = plt.gca()
 
     ax.set_ylim([0.0, 1.05])
     ax.set_xlim([0.0, 1.0])
@@ -79,12 +79,12 @@ def plot_cc(models, train_data, test_data, target, title="Calibration Plot", ax=
     if not models:
         raise AttributeError("No models available")
 
-    if not ax:
-        ax = plt.gca()
-    
     if figsize:
         plt.clf()
         fig = plt.figure(figsize=figsize)
+
+    if not ax:
+        ax = plt.gca()
 
     y_train = train_data[target]
     X_train = train_data.drop(target, axis=1)
@@ -141,12 +141,12 @@ def plot_dc(results, tr_start=0.01, tr_end=0.99, tr_step=0.01, metric_type="trea
     if not results:
         raise AttributeError("No results available")
 
-    if not ax:
-        ax = plt.gca()
-    
     if figsize:
         plt.clf()
         fig = plt.figure(figsize=figsize)
+
+    if not ax:
+        ax = plt.gca()
 
     ax.set_xlabel('Threshold Probability')
     ax.set_label('Net Benefit')
