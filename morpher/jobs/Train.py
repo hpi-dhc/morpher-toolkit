@@ -63,7 +63,7 @@ class Train(MorpherJob):
         data["task_id"] = self.task_id
         data["cohort_id"] = params["cohort_id"]
         data["user_id"] = params["user_id"]
-        data["name"] = model.__class__.__name__
+        data["name"] = model.__class__.__name__ + " for " + params["target"]
         data["fqn"] =  model.clf.__class__.__module__ + '.' + model.clf.__class__.__qualname__        
         data["content"] = json.loads(jp.encode(model))
         data["parameters"] = params
