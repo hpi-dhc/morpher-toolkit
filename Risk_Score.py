@@ -13,7 +13,7 @@ def main():
     for column in data:
         if (column == 'AGE_AT_ADMISSION' or column == 'ADMISSION_TYPE' or column == 'GENDER' or column == 'LVEF' or
                 column == 'DIABETES_COMPLICATED' or column == 'DIABETES_UNCOMPLICATED' or column == 'PERIPHERAL_VASCULAR'
-                or column == 'RENAL_FAILURE'):
+                or column == 'RENAL_FAILURE' or column == 'STROKE'):
             df[column] = data[column]
 
     # apply risk score calculation and paste into new column
@@ -21,10 +21,31 @@ def main():
                                                        row['LVEF'], row['DIABETES_COMPLICATED'], row['DIABETES_UNCOMPLICATED'],
                                                        row['PERIPHERAL_VASCULAR'], row['RENAL_FAILURE']), axis=1)
 
+    # find values of confusion matrix
+    df['TP'] = df.apply(lambda row: is_tp(row['STROKE'], row['Risk_Score']), axis=1)
+    df['FP'] = df.apply(lambda row: is_fp(row['STROKE'], row['Risk_Score']), axis=1)
+    df['FN'] = df.apply(lambda row: is_fn(row['STROKE'], row['Risk_Score']), axis=1)
+    df['TN'] = df.apply(lambda row: is_tn(row['STROKE'], row['Risk_Score']), axis=1)
+
     print(df.head(5))
+
+    # calculate confusion matrix
+    tp = sum(df['TP'])
+    fp = sum(df['FP'])
+    fn = sum(df['FN'])
+    tn = sum(df['TN'])
+
+    print('True Positive:', tp, 'False Positive:', fp)
+    print('False Negative:', fn, 'True Negative:', tn)
+
+    # calculate accuracy
+    acc = ((tp + tn) / (tp + fp + fn + tn)) * 100
+
+    print('Accuracy:', int(acc), '%')
 
     # save as new csv file
     df.to_csv('Stroke_Calculated_Risk_Score.csv')
+
 
 # risk score calculation
 def risk_score(GENDER, ADMISSION_TYPE, AGE_AT_ADMISSION, LVEF, DIABETES_COMPLICATED, DIABETES_UNCOMPLICATED, PERIPHERAL_VASCULAR, RENAL_FAILURE):
@@ -56,6 +77,38 @@ def risk_score(GENDER, ADMISSION_TYPE, AGE_AT_ADMISSION, LVEF, DIABETES_COMPLICA
         stroke_score += 1.5
 
     return stroke_score
+
+
+def is_tp(Stroke, Risk_Score):
+
+    if Stroke == 1.0 and Risk_Score > 5.25:
+        return 1
+    else:
+        return 0
+
+
+def is_fn(Stroke, Risk_Score):
+
+    if Stroke == 1.0 and Risk_Score < 5.25:
+        return 1
+    else:
+        return 0
+
+
+def is_fp(Stroke, Risk_Score):
+
+    if Stroke == 0.0 and Risk_Score > 5.25:
+        return 1
+    else:
+        return 0
+
+
+def is_tn(Stroke, Risk_Score):
+
+    if Stroke == 0.0 and Risk_Score < 5.25:
+        return 1
+    else:
+        return 0
 
 
 if __name__ == "__main__":

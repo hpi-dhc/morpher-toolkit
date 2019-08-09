@@ -17,18 +17,15 @@ def mean_absolute_percentage_error(y_true, y_pred):
 
 target = "STROKE"
 
-# data = Load().execute(source=config.FILE, filename='stroke_preprocessed.csv')
+# data = Load().execute(source=config.FILE, filename='stroke_preprocessed_imputed_lvef.csv')
 #
 # data = Impute().execute(data, imputation_method=config.DEFAULT)
 #
 # train, test = Split().execute(data, test_size=0.3)
 #
-# models = Train().execute(train, target=target, algorithms=[
-# 	config.LOGISTIC_REGRESSION,
-# 	config.RANDOM_FOREST,
-# 	config.DECISION_TREE,
-# 	config.GRADIENT_BOOSTING_DECISION_TREE,
-# 	config.MULTILAYER_PERCEPTRON])
+# models = Train().execute(train, target=target, algorithms=[config.LOGISTIC_REGRESSION, config.RANDOM_FOREST,
+# 														   config.DECISION_TREE, config.GRADIENT_BOOSTING_DECISION_TREE,
+# 														   config.MULTILAYER_PERCEPTRON])
 #
 # results_org = Evaluate().execute(test, target=target, models=models)
 #
@@ -58,21 +55,19 @@ results_org = pickle.load(open(r'results_performance\results_org.pkl', "rb"))
 auc_org_list = pickle.load(open(r'results_performance\auc_list.pkl', "rb"))
 auc_org = pickle.load(open(r'results_performance\auc_org.pkl', "rb"))
 
-# # loading of datasets to compare
-# path = pathlib.Path(r'C:\Users\Margaux\Documents\GitHub\morpher\Generated_stroke_data') # change path according to yours
+# loading of datasets to compare
+# path = pathlib.Path(r'C:\Users\Margaux\Documents\GitHub\morpher\stroke_preprocessed_imputed_lvef_fake') # change path according to yours
 # dis = defaultdict(lambda: {})
 # auc_list = []
 # auc = {k: [] for k in results_org}  # init dict with lists
 #
 # # execute evaluations for every dataset
 # for entry in path.iterdir():
-#
 # 	test = Load().execute(source=config.FILE, filename=entry)
 # 	results = Evaluate().execute(test, target=target, models=models)
 #
 # 	# get AUC results for each algorithmn
 # 	for alg in results:
-#
 # 		dis[alg] = get_discrimination_metrics(**results[alg])
 #
 # 		# a list of all AUC values
