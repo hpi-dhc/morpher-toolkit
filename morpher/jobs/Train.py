@@ -86,15 +86,15 @@ class Train(MorpherJob):
                 params = {}
                 algorithms = kwargs.get("algorithms")
                 kwarg_not_empty(algorithms,"algorithms")
+                hyperparams = kwargs.get("hyperparams")
+                optimize = kwargs.get("optimize")
+                param_grid = kwargs.get("param_grid")
 
                 trained_models = {}
-
+                
                 for algorithm in algorithms:
-                    if optimize:
-                         clf = eval("{algorithm}(optimize='yes')".format(algorithm=algorithm)) #instantiate the algorithm in runtime gridsearch
-                    else:
-                         clf = eval("{algorithm}()".format(algorithm=algorithm)) #instantiate the algorithm in runtime
-
+                
+                    clf = globals()[algorithm](hyperparams=hyperparams, optimize=optimize, param_grid=param_grid) #instantiate the algorithm in runtime
                     clf.fit(features, labels)
                     trained_models[algorithm] = clf
 
