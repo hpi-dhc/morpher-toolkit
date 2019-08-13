@@ -2,6 +2,7 @@
 import traceback
 import logging
 from morpher.jobs import MorpherJob
+from morpher.jobs import Retrieve
 from morpher.exceptions import kwarg_not_empty
 from morpher.algorithms import *
 from morpher.metrics import *
@@ -11,6 +12,7 @@ import json
 import jsonpickle as jp
 from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve, brier_score_loss, explained_variance_score, mean_squared_error, mean_absolute_error
 
+
 class Evaluate(MorpherJob):
 
     def do_execute(self):
@@ -18,8 +20,7 @@ class Evaluate(MorpherJob):
         #if we have a list of filenames coming from 'Split', we pass over the 'test' set for evaluation (pos. 1); otherwise we pass over the file we got
         if type(self.get_input("filenames")) == list:
             filename = self.get_input("filenames")[1]
-            validation_mode = 0
-
+            validation_mode = 0            
         else:
             filename = self.get_input("filename")
             validation_mode = 1
@@ -27,7 +28,10 @@ class Evaluate(MorpherJob):
         df = pd.read_csv(filepath_or_buffer= filename)
 
         model_ids = self.get_input("model_ids")  
-        models = [jp.decode(json.dumps(model)) for model in self.get_models(list(model_ids.values()))]
+        models = [jp.decode(json.dumps(model["content"])) for model in Retrieve(self.session).get_models(model_ids)]
+
+        #go for zip here, model_id_mapping
+        model_id_mapping = dict(zip([model.__class__.__name__ for model in models], model_ids))
 
         cohort_id = self.get_input("cohort_id")
         user_id = self.get_input("user_id")
@@ -37,11 +41,13 @@ class Evaluate(MorpherJob):
 
         for model in models:
             clf_name = model.__class__.__name__
-            model_id = model_ids[clf_name]
+            model_id = model_id_mapping[clf_name]
             description = "Model based on {clf_name} for target '{target}'".format(clf_name=clf_name, target=target)
             predictions = [ { "target_label": float(results[clf_name]["y_true"].iloc[i]),"predicted_label": float(results[clf_name]["y_pred"][i]),"predicted_proba": float(results[clf_name]["y_probs"][i]) } for i in range(len(results[clf_name]["y_true"])) ]
-            metrics = get_discrimination_metrics(results[clf_name]["y_true"], results[clf_name]["y_pred"], results[clf_name]["y_probs"])
-            experiment_id = self.add_experiment(cohort_id=cohort_id, model_id=model_id,user_id=user_id,description=description,target=target,validation_mode=validation_mode,parameters={"discrimination": metrics})
+            disc_metrics = get_discrimination_metrics(results[clf_name]["y_true"], results[clf_name]["y_pred"], results[clf_name]["y_probs"])
+            cal_metrics = get_calibration_metrics(results[clf_name]["y_true"], results[clf_name]["y_probs"])
+            cu_metrics = get_clinical_usefulness_metrics(disc_metrics)
+            experiment_id = self.add_experiment(cohort_id=cohort_id, model_id=model_id,user_id=user_id,description=description,target=target,validation_mode=validation_mode,parameters={"discrimination": disc_metrics, "calibration": cal_metrics, "clinical_usefulness": cu_metrics})
             self.add_batch(experiment_id, predictions)
 
         self.logger.info("Algorithms evaluated successfully.")
@@ -60,16 +66,7 @@ class Evaluate(MorpherJob):
         else:
             raise Exception("There was an error creating an Experiment. Server returned: %s" % response.get("msg"))
 
-    def get_models(self, model_ids):
-        
-        response = self.api("models", "get", data={"model_ids": model_ids})
-
-        if response.get("status") == "success":
-            return response.get("models")
-        else:
-            raise Exception("There was an error retrieving the trained models. Check the server")
-
-    def execute(self, data, target, models, **kwargs):
+    def execute(self, data, target, models, print_performance=False, **kwargs):
         try:
             if not data.empty and models and target:
                 results = {}
@@ -78,9 +75,9 @@ class Evaluate(MorpherJob):
                 for clf_name in models:
                     clf = models[clf_name]
                     y_true, y_pred, y_probs = labels, clf.predict(features), clf.predict_proba(features)[:,1]
-
                     results[clf_name] = { "y_true": y_true, "y_pred": y_pred, "y_probs": y_probs}
-                    self.print_clf_performance(clf_name, y_true, y_pred, y_probs)
+                    if print_performance:
+                        self.print_clf_performance(clf_name, y_true, y_pred, y_probs)
                 return results
             else:
                 raise AttributeError("No data provided, algorithms or target not available")

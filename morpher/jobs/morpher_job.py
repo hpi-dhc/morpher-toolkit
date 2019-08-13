@@ -20,8 +20,12 @@ class MorpherJob(Job):
         '''
         hostname = self.config.get('morpher', 'hostname') or self.config.get('hostname')
         port = self.config.get('morpher', 'port') or self.config.get('port')
+        prefix = self.config.get('morpher', 'prefix')
+        if prefix:
+            endpoint = "http://{hostname}:{port}/{prefix}/{blueprint}/{action}/".format(hostname=hostname, prefix=prefix ,port=port, blueprint=blueprint, action=action)
+        else:
+            endpoint = "http://{hostname}:{port}/{blueprint}/{action}/".format(hostname=hostname, port=port, blueprint=blueprint, action=action)
         
-        endpoint = "http://{hostname}:{port}/{blueprint}/{action}/".format(hostname=hostname, port=port, blueprint=blueprint, action=action)
         self.logger.debug("Endpoint: %s" % endpoint)
         print("Endpoint: %s" % endpoint)
  
@@ -56,10 +60,12 @@ class MorpherJob(Job):
         '''
         Gets the parameters defined for the given task_id.
         '''
-        stmt = "SELECT id, status, pipeline_id, parameters, fastq_readcount, created_at, \"user\" FROM worker.\"TASKS\" WHERE id = :task_id";
+        stmt = "SELECT id, status, pipeline_id, parameters, fastq_readcount, created_at, user FROM worker.\"TASKS\" WHERE id = :task_id";
         
         try:
-            return self.execute_select_stmt(stmt, {"task_id" : self.task_id}).first()
+            #return rowproxy as a dict
+            task = {column: value for column, value in self.execute_select_stmt(stmt, {"task_id" : self.task_id}).fetchone().items()}
+            return task
         
         except Exception as e:
             self.logger.error(traceback.format_exc())

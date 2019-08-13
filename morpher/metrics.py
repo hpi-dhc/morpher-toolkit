@@ -4,10 +4,10 @@ import logging
 import pandas as pd
 import numpy as np
 from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve, brier_score_loss, explained_variance_score, mean_squared_error, mean_absolute_error
-from collections import defaultdict
 from sklearn.calibration import calibration_curve
+from collections import defaultdict
 from scipy.stats import linregress
-
+import math
 
 def get_discrimination_metrics(y_true, y_pred, y_probs, label="1.0"):
     '''
@@ -19,15 +19,20 @@ def get_discrimination_metrics(y_true, y_pred, y_probs, label="1.0"):
         results[metric] = float(report[metric])
     results['confusion_matrix'] = confusion_matrix(y_true, y_pred).tolist()
     results['auc'] = float(roc_auc_score(y_true, y_probs))
-    results['n'] = y_true.shape[0]
+    results['n'] = len(y_true)
 
     tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
     results['tn'], results['fp'], results['fn'], results['tp'] = (int(tn), int(fp), int(fn), int(tp))
 
+    results['dor'] = 0.0
+
     try:
         results['dor'] = float((tp/fp)/(fn/tn))
     except ZeroDivisionError as e:
-        results['dor'] = 0.0
+        results['dor'] = 0.0 # undefined
+
+    if results['dor'] == math.inf or results['dor'] == -math.inf or math.isnan(results['dor']):
+        results['dor'] = 0.0 # undefined
 
     return dict(results)
 
@@ -85,16 +90,32 @@ def get_clinical_usefulness_metrics(discrimination_metrics, tr=0.7):
     '''
     adapt = (1 - tr) * net_benefit_treated + tr * net_benefit_untreated
 
+    results = {}
+
     results['treated'] = net_benefit_treated
     results['treated_all'] = net_benefit_treated_all
     results['untreated'] = net_benefit_untreated
     results['overall'] = net_benefit_treated + net_benefit_untreated
     results['prevalence'] = pi
-    results['adapt'] = pi
+    results['adapt'] = adapt
+    results['n'] = n
 
-    return results
+    return dict(results)
 
 
+def get_calibration_metrics(y_true, y_probs, n_bins=10):
+
+    '''
+     Returns calibration metrics of the prediction results in a dictionary:
+    '''
+
+    results = defaultdict(lambda: {})
+    fraction_of_positives, mean_predicted_value = calibration_curve(y_true, y_probs, n_bins=n_bins)
+    slope, intercept, r_value, p_value, std_err = linregress(fraction_of_positives, mean_predicted_value)
+    results['slope'] = slope
+    results['intercept'] = intercept
+
+    return dict(results)
 
 
 

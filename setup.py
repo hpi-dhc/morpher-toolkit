@@ -27,11 +27,13 @@ setup(name='morpher',
           'pandas',
           'numpy',
           'lime',
+          'scipy',
           'matplotlib==3.1.0',
           'sklearn_pandas',
           'fancyimpute',
           'imbalanced-learn',
-          'statsmodels'
+          'statsmodels',
+          'jsonpickle==1.2'
       ],
       #specifying a given version: 'chardet==3.0.4',
       zip_safe=False)

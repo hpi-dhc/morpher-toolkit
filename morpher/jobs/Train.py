@@ -50,9 +50,9 @@ class Train(MorpherJob):
         self.logger.info("Models trained successfully.")
 
     def persist(self, models, params):
-        model_ids = {}
+        model_ids = []
         for clf_name in models:
-            model_ids[models[clf_name].__class__.__name__] = self.add(models[clf_name], params)
+            model_ids.append(self.add(models[clf_name], params))
 
         return model_ids
 
@@ -63,7 +63,7 @@ class Train(MorpherJob):
         data["task_id"] = self.task_id
         data["cohort_id"] = params["cohort_id"]
         data["user_id"] = params["user_id"]
-        data["name"] = model.__class__.__name__
+        data["name"] = model.__class__.__name__ + " for " + params["target"]
         data["fqn"] =  model.clf.__class__.__module__ + '.' + model.clf.__class__.__qualname__        
         data["content"] = json.loads(jp.encode(model))
         data["parameters"] = params
@@ -75,7 +75,7 @@ class Train(MorpherJob):
 
         return response.get("model_id")
 
-    def execute(self, data, target, **kwargs):
+    def execute(self, data, target,optimize=None, **kwargs):
         try:
 
           if not data.empty:
@@ -90,7 +90,10 @@ class Train(MorpherJob):
             trained_models = {}
 
             for algorithm in algorithms:
-                clf = eval("{algorithm}()".format(algorithm=algorithm)) #instantiate the algorithm in runtime
+	        if optimize:                   		
+                     clf = eval("{algorithm}(optimize='yes')".format(algorithm=algorithm)) #instantiate the algorithm in runtime gridsearch
+            	else:
+                     clf = eval("{algorithm}()".format(algorithm=algorithm)) #instantiate the algorithm in runtime
 
                 clf.fit(features, labels)
                 trained_models[algorithm] = clf
