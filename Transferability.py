@@ -56,7 +56,7 @@ auc_org = dict(auc_org)  # change default dict to normal dict
 # auc_org = pickle.load(open(r'results_performance\auc_org.pkl', "rb"))
 
 # loading of datasets to compare
-path = pathlib.Path(r'C:\Users\Margaux\Documents\GitHub\morpher\stroke_preprocessed_imputed_lvef_fake') # change path according to yours
+path = pathlib.Path(r'stroke_preprocessed_imputed_lvef_fake') # change path according to yours
 dis = defaultdict(lambda: {})
 auc_list = []
 auc = {k: [] for k in results_org}  # init dict with lists
