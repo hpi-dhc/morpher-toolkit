@@ -48,12 +48,12 @@ auc_org = dict(auc_org)  # change default dict to normal dict
 # pickle.dump(auc_org_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\auc_org_list.pkl', "wb"))
 # pickle.dump(auc_org, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\auc_org.pkl', "wb"))
 
-train = pickle.load(open(r'results_performance\train.pkl', "rb"))
-test = pickle.load(open(r'results_performance\test.pkl', "rb"))
-models = pickle.load(open(r'results_performance\models.pkl', "rb"))
-results_org = pickle.load(open(r'results_performance\results_org.pkl', "rb"))
-auc_org_list = pickle.load(open(r'results_performance\auc_list.pkl', "rb"))
-auc_org = pickle.load(open(r'results_performance\auc_org.pkl', "rb"))
+# train = pickle.load(open(r'results_performance\train.pkl', "rb"))
+# test = pickle.load(open(r'results_performance\test.pkl', "rb"))
+# models = pickle.load(open(r'results_performance\models.pkl', "rb"))
+# results_org = pickle.load(open(r'results_performance\results_org.pkl', "rb"))
+# auc_org_list = pickle.load(open(r'results_performance\auc_list.pkl', "rb"))
+# auc_org = pickle.load(open(r'results_performance\auc_org.pkl', "rb"))
 
 # loading of datasets to compare
 path = pathlib.Path(r'C:\Users\Margaux\Documents\GitHub\morpher\stroke_preprocessed_imputed_lvef_fake') # change path according to yours
