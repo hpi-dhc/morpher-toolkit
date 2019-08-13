@@ -7,8 +7,7 @@ from urllib.request import Request, urlopen
 
 try:
     from ag_worker.jobs import Job
-except ImportError:
-    print("No AG Worker found or not configured correctly. Using default 'Job' class instead")
+except ImportError:    
     from morpher.jobs import Job
 
 class MorpherJob(Job):
