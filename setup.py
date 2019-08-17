@@ -34,7 +34,6 @@ setup(name='morpher',
           'imbalanced-learn==0.4.3',
           'statsmodels',
           'jsonpickle==1.2',
-          'pickle',
           'jinja2',
           'mpld3'
       ],
