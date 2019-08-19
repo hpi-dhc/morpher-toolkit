@@ -23,11 +23,24 @@ data = Impute().execute(data, imputation_method=config.DEFAULT)
 
 train, test = Split().execute(data, test_size=0.3)
 
-models = Train().execute(train, target=target, algorithms=[config.LOGISTIC_REGRESSION, config.RANDOM_FOREST,
-														   config.DECISION_TREE, config.GRADIENT_BOOSTING_DECISION_TREE,
-														   config.MULTILAYER_PERCEPTRON])
+#models = Train().execute(train, target=target, algorithms=[config.LOGISTIC_REGRESSION, config.RANDOM_FOREST,
+#														   config.DECISION_TREE, config.GRADIENT_BOOSTING_DECISION_TREE,
+#														   config.MULTILAYER_PERCEPTRON])
+
+param_grid_lr = {
+    "penalty": ['none', 'l2'],
+    "C": np.logspace(0, 4, 10),
+    "solver": ['lbfgs'],
+    "max_iter":[10000]
+}
+
+models = {}
+
+models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_lr,
+							  algorithms=[config.LOGISTIC_REGRESSION]))
 
 results_org = Evaluate().execute(test, target=target, models=models)
+
 
 auc_org = defaultdict(lambda: {})
 auc_org_list = []
@@ -39,8 +52,7 @@ for alg in results_org:
 	auc_org[alg] = auc_org[alg]['auc']
 	auc_org_list.append(auc_org[alg])
 auc_org = dict(auc_org)  # change default dict to normal dict
-#
-#
+
 # pickle.dump(train, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\train.pkl', "wb"))
 # pickle.dump(test, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\test.pkl', "wb"))
 # pickle.dump(models, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\models.pkl', "wb"))
@@ -106,6 +118,7 @@ for auc_i in auc_list:
 	dis_to_mean_total += (auc_i - mean_auc_total)**2
 r2_total = 1 - (dis_to_org_total / dis_to_mean_total)
 
+
 # for each algorithmn
 dis_mean = 0
 dis_org = 0
@@ -120,6 +133,7 @@ for alg in results:
 	dis_to_org[alg] = dis_org
 	dis_to_mean[alg] = dis_mean
 	r2[alg] = 1 - (dis_to_org[alg] / dis_to_mean[alg])
+
 
 # variance regarding original AUC
 var = defaultdict(lambda: {})

@@ -30,9 +30,10 @@ train = Impute().execute(Load().execute(source=config.FILE, filename="train"), i
 test = Impute().execute(Load().execute(source=config.FILE, filename="test"), imputation_method=config.DEFAULT)
 
 #models = Train().execute(train, target=target, algorithms=[config.LOGISTIC_REGRESSION, config.DECISION_TREE, config.RANDOM_FOREST, config.GRADIENT_BOOSTING_DECISION_TREE, config.MULTILAYER_PERCEPTRON])
-#pickle.dump(models, open("models", "wb"))
 
-models = pickle.load(open(r'models', "rb"))
+pickle.dump(models, open("models", "wb"))
+
+#models = pickle.load(open(r'models', "rb"))
 
 #plt.rc('axes', prop_cycle=prop_cycle)
 
