@@ -52,7 +52,11 @@ class Base:
             if not self.optimize:
                 msg = "*** Training of model '{0}' started.".format(self.clf.__class__.__name__)
                 logging.info(msg)
-                print(msg)
+                print(msg)              
+                print(features, labels)
+                print(type(features))
+                print(type(labels))
+
                 self.clf.fit(features, labels)
 
             else:
@@ -140,7 +144,7 @@ class DecisionTree(Base):
     def __init__(self, hyperparams=None, optimize=None, param_grid=None, crossval=None):
 
         if not hyperparams:
-            hyperparams = {'max_depth': 5, 'class_weight': {'0':1, '1':10}}
+            hyperparams = {'max_depth': 5, 'class_weight': {0:1, 1:10}}
 
         if not optimize:
             clf = DecisionTreeClassifier(**hyperparams)
