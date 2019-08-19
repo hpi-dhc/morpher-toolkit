@@ -75,38 +75,38 @@ class Train(MorpherJob):
 
         return response.get("model_id")
 
-    def execute(self, data, target,optimize=None, **kwargs):
+    def execute(self, data, target, **kwargs):
         try:
 
-            if not data.empty:
+          if not data.empty:
 
-                ''' if split_data was called beforehand, data contains a subset of the original available data '''
-                labels = data[target]
-                features = data.drop(target, axis=1)
-                params = {}
-                algorithms = kwargs.get("algorithms")
-                kwarg_not_empty(algorithms,"algorithms")
-                hyperparams = kwargs.get("hyperparams")
-                optimize = kwargs.get("optimize")
-                param_grid = kwargs.get("param_grid")
+            ''' if split_data was called beforehand, data contains a subset of the original available data '''
+            labels = data[target]
+            features = data.drop(target, axis=1)
+            params = {}
+            algorithms = kwargs.get("algorithms")
+            kwarg_not_empty(algorithms,"algorithms")
+            hyperparams = kwargs.get("hyperparams")
+            optimize = kwargs.get("optimize")
+            param_grid = kwargs.get("param_grid")
 
-                trained_models = {}
+            trained_models = {}
+
+            for algorithm in algorithms:
                 
-                for algorithm in algorithms:
-                
-                    clf = globals()[algorithm](hyperparams=hyperparams, optimize=optimize, param_grid=param_grid) #instantiate the algorithm in runtime
-                    clf.fit(features, labels)
-                    trained_models[algorithm] = clf
+                clf = globals()[algorithm](hyperparams=hyperparams, optimize=optimize, param_grid=param_grid) #instantiate the algorithm in runtime
+                clf.fit(features, labels)
+                trained_models[algorithm] = clf
 
-                if kwargs.get("persist") is True:
-                    params["target"] = target
-                    params["features"] = features.columns
-                    self.persist(trained_models, params)
+            if kwargs.get("persist") is True:
+                params["target"] = target
+                params["features"] = features.columns
+                self.persist(trained_models, params)
 
-                return trained_models
+            return trained_models
 
-            else:
-                raise AttributeError("No data provided")
+          else:
+            raise AttributeError("No data provided")        
 
         except Exception as e:
             print(traceback.format_exc())
