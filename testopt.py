@@ -15,10 +15,12 @@ import json
 import pathlib
 import inspect
 
-target = "AKI"
+target = "STROKE"
 
-train = Impute().execute(Load().execute(source=config.FILE, filename="train"), imputation_method=config.DEFAULT)
-test = Impute().execute(Load().execute(source=config.FILE, filename="test"), imputation_method=config.DEFAULT)
+data = Impute().execute(Load().execute(source=config.FILE, filename="stroke_preprocessed_imputed_lvef.csv"), imputation_method=config.DEFAULT)
+#test = Impute().execute(Load().execute(source=config.FILE, filename="test"), imputation_method=config.DEFAULT)
+
+train, test = Split().execute(data, test_size=0.3)
 
 param_grid_lr = {
     "penalty": ['l2'],
@@ -41,21 +43,4 @@ results = Evaluate().execute(test, target=target, models=models)
 
 for algorithm in results:
     print("Metrics for {}".format(algorithm))
-    print (get_discrimination_metrics(**results[algorithm])) 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    print(get_discrimination_metrics(**results[algorithm]))
