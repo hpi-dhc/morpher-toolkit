@@ -31,14 +31,13 @@ class MorpherJob(Job):
         try:
 
             request = Request(endpoint, data=json.dumps(data).encode('utf8'), headers={'content-type': 'application/json'})
-            response = urlopen(request).read().decode()
-            print("response: %s" % response)
+            response = urlopen(request).read().decode()            
             return json.loads(response)
 
         except Exception as e:
 
             self.logger.error("Could not process request. \n{0}".format(e))
-            self.logger.debug("Endpoint: " + endpoint)
+            self.logger.debug("Endpoint: " + endpoint)            
             return {"status":"error", "msg":str(e)}
 
     def save_to_file(self, data):
