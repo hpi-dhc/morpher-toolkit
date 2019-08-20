@@ -20,9 +20,9 @@ data = Impute().execute(data, imputation_method=config.DEFAULT)
 train, test = Split().execute(data, test_size=0.3)
 
 param_grid_dt = {
-                    "max_depth": range(4,7),
-                    "min_samples_split": range(3,7),
-                    "min_samples_leaf": range(1, 16)
+                    "max_depth": range(1, 30),
+                    "min_samples_split": range(1, 30),
+                    "min_samples_leaf": range(1, 30)
                     #"min_impurity_decrease": np.arange(0.0, 0.3, 0.025)
                 }
 
@@ -62,14 +62,14 @@ models = {}
 
 models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_dt,
 							  algorithms=[config.DECISION_TREE]))
-models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_rf,
-							  algorithms=[config.RANDOM_FOREST]))
-models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_mp,
-							  algorithms=[config.MULTILAYER_PERCEPTRON]))
-models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_gb,
-							  algorithms=[config.GRADIENT_BOOSTING_DECISION_TREE]))
-models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_lr,
-							  algorithms=[config.LOGISTIC_REGRESSION]))
+#models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_rf,
+#							  algorithms=[config.RANDOM_FOREST]))
+#models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_mp,
+#							  algorithms=[config.MULTILAYER_PERCEPTRON]))
+#models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_gb,
+#							  algorithms=[config.GRADIENT_BOOSTING_DECISION_TREE]))
+#models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_lr,
+#							  algorithms=[config.LOGISTIC_REGRESSION]))
 
 results= Evaluate().execute(test, target=target, models=models)
 
