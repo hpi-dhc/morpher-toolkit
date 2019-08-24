@@ -35,6 +35,7 @@ setup(name='morpher',
           'statsmodels',
           'jsonpickle==1.2',
           'jinja2',
+          'pyhdb',
           'mpld3'
       ],
       #specifying a given version: 'chardet==3.0.4',
