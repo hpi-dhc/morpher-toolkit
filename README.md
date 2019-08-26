@@ -13,7 +13,7 @@ Among other functions, it provides encapsulated functionalities for the followin
 
 ## Developing and Evaluating a Model 
 
-To start, clone the repository and run `pip install .`. This command will install MORPHER Toolkit and its dependencies to your current environment. We recommended setting up a dedicated environment using [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/download.html "Conda") or your favorite environment manager.
+To start, clone the repository and run `pip install -e .`. This command will install MORPHER Toolkit and its dependencies to your current environment. We recommended setting up a dedicated environment using [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/download.html "Conda") or your favorite environment manager. The option `-e` makes sure that any local changes you make to the library, e.g., adding now jobs, are directly visible enviroment-wide.
 
 The toolkit functionalities are exposed by means of MORPHER Jobs to impute, train, and evaluate models. Import the specific modules and classes in your code:
 
@@ -53,7 +53,7 @@ plot_roc(results)
 plt.show()
 ```
 
-<img src="https://lh4.googleusercontent.com/d4KHJDyjN0ipEaMWPVIO3946lOGIleBxAtHxPK4CfH51Vh8Jv_mxQi3YtJHIuuDdme9LFKyqzHE1EA=w1191-h766"
+<img src="https://i.ibb.co/M9TpM5F/roc.png"
      alt="ROC Curve"
      style="float: left; margin-right: 10px;" width="512" />
 
