@@ -4,157 +4,163 @@ from morpher.jobs import *
 from morpher.metrics import *
 from morpher.plots import *
 import matplotlib.pyplot as plt, mpld3
+import pathlib
 import numpy as np
+from sklearn.metrics import r2_score, brier_score_loss, mean_absolute_error
+from collections import defaultdict
 import pickle as pickle
-from sklearn.ensemble import ExtraTreesClassifier
-from collections import Counter
-from sklearn.feature_selection import SelectPercentile, chi2
-import pandas as pd
 
 
 target = "STROKE"
 
 data = Load().execute(source=config.FILE, filename='stroke_preprocessed_imputed_lvef.csv')
-
 data = Impute().execute(data, imputation_method=config.DEFAULT)
 
-#-----------------------------------------------------------------------------------------------------------------------
+def train_models(data):
 
-# Extract most important features
+    # model building
+    train, test = Split().execute(data, test_size=0.3)
 
-selected_features = pd.DataFrame(data)
-selected_features2 = pd.DataFrame(data)
-
-# data = data['ELIXHAUSER_SCORE'].abs()
-
-array_data = data.values
-
-y = array_data[:, 2]
-X = np.delete(array_data, [2, 5], 1)
-
-# Features via Mutual Information
-
-selector = SelectPercentile(chi2, percentile=25)
-
-selection = selector.fit(X, y)
-
-sup = selection.get_support()
-not_selected_features = []
-
-i = 0  # index counter
-for x in np.nditer(sup):
-    if i == 0 or i == 1:
-        if not x:
-            not_selected_features.append(i)
-    elif not x:
-        not_selected_features.append(i+1)  # +1 because of STROKE column index at 2
-    i += 1
-
-selected_features.drop(selected_features.columns[not_selected_features], axis=1, inplace=True)
-
-print(selected_features.columns.values)
-
-
-# Features via Tree
-
-# liste = []
-# num_features = 20  # number of wanted features here
-#
-# for i in range(1000):  # random comparing 1000 times
-#     selector2 = ExtraTreesClassifier()
-#     selection2 = selector2.fit(X, y)
-#     feat_impo = selection2.feature_importances_
-#     ind = np.argpartition(-feat_impo, num_features)
-#     highest_ind = ind[:num_features].tolist()
-#     liste += highest_ind
-#
-# dic_features = Counter(liste)
-#
-# not_selected_features2 = []
-#
-# for i in range(104):  # build list of possible feature indexes (set number of columns)
-#     not_selected_features2.append(i)
-#
-# list_of_features2 = list(dic_features.keys())[:num_features]
-#
-# not_selected_features2 = [ele for ele in not_selected_features2 if ele not in list_of_features2]  # subtractes list of features
-#
-# for i, val in enumerate(not_selected_features2):  # +1 because of STROKE column index at 2
-#     if val > 1:
-#         not_selected_features2[i] += 1
-#
-# selected_features2.drop(selected_features2.columns[not_selected_features], axis=1, inplace=True)
-#
-# print(selected_features2.columns.values)
-
-# top 10 results: 4: 1000, 1: 1000, 2: 1000, 27: 1000, 25: 996, 8: 991, 3: 776, 15: 721, 0: 578, 77: 319
-
-#-----------------------------------------------------------------------------------------------------------------------
-
-# Feature selecetion
-
-data.drop(data.columns[not_selected_features], axis=1, inplace=True)
-
-#-----------------------------------------------------------------------------------------------------------------------
-
-# Training
-
-train, test = Split().execute(data, test_size=0.3)
-
-param_grid_dt = {
-                    "max_depth": range(2, 20),
-                    "min_samples_split": range(2, 100),
-                    "min_samples_leaf": range(1, 20)
-                    #"min_impurity_decrease": np.arange(0.0, 0.3, 0.025)
-                }
-
-param_grid_rf = {
-
-    'bootstrap': [True],
-    'max_depth': [2, 4, 8, 16],
-    'max_features': [2, 4, 8],
-    'min_samples_leaf': [3, 4, 5],
-    'min_samples_split': [8, 10, 12],
-    'n_estimators': [100, 200, 300]
-}
-
-param_grid_mp = [
-    {
-        'activation': ['identity', 'logistic', 'tanh', 'relu'],
-        'solver': ['lbfgs', 'sgd', 'adam'],
-        'hidden_layer_sizes': [
-            (1,), (2,), (3,), (4,), (5,), (6,), (7,), (8,), (9,), (10,), (11,), (12,), (13,), (14,), (15,),
-            (16,), (17,), (18,), (19,), (20,), (21,)
-        ]
+    models = Train().execute(train, target=target, algorithms=[config.RANDOM_FOREST,
+                                                               config.DECISION_TREE,
+                                                               config.GRADIENT_BOOSTING_DECISION_TREE])
+    param_grid_lr = {
+        "penalty": ['l2'],
+        "C": np.logspace(0, 4, 10),
+        "solver": ['lbfgs'],
+        "max_iter":[1000]
     }
-]
 
-param_grid_gb = {
-    "max_depth": range(2, 10),
-    "n_estimators": range(1, 85, 1)
-}
+    hyperparams_lr = {
+        'penalty': 'l2',
+        'C': 1.0,
+        'solver': 'lbfgs'
+    }
 
-param_grid_lr = {
-    "penalty": ['none', 'l1', 'l2'],
-    "C": np.logspace(0, 10, 10),
-    "solver": ['newton_sg'] #, 'lbfgs', 'liblinear', 'sag', 'saga']
-}
+    hyperparams_rf = {
+        'n_estimators': 100,
+        'max_depth': 32,
+        'max_features': 12,
+        'min_samples_leaf': 4,
+        'min_samples_split': 8,
+    }
 
-models = {}
+    hyperparams_dt = {
+        'max_depth': 7,
+        'class_weight': {0:1, 1:10}
+    }
 
-models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_dt,
-							  algorithms=[config.DECISION_TREE]))
-#models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_rf,
-#							  algorithms=[config.RANDOM_FOREST]))
-#models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_mp,
-#							  algorithms=[config.MULTILAYER_PERCEPTRON]))
-#models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_gb,
-#							  algorithms=[config.GRADIENT_BOOSTING_DECISION_TREE]))
-#models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_lr,
-#							  algorithms=[config.LOGISTIC_REGRESSION]))
+    hyperparams_gb = {
+        'learning_rate': 0.1,
+        'n_estimators': 49,
+        'max_depth': 3
+    }
 
-results= Evaluate().execute(test, target=target, models=models)
+    hyperparams_mp = {
+        'activation': 'tanh',
+        'solver': 'sgd',
+        'alpha': 1e-5,
+        'hidden_layer_sizes': (21, 2),
+        'max_iter': 500
+    }
 
-for algorithm in results:
-    print("Metrics for {}".format(algorithm))
-    print(get_discrimination_metrics(**results[algorithm]))
+    models = {}
+
+    #models.update(Train().execute(train, target=target, optimize='no', hyperparams=hyperparams_lr,
+     #                             algorithms=[config.LOGISTIC_REGRESSION]))
+    models.update(Train().execute(train, target=target, hyperparams=hyperparams_rf,
+                                  algorithms=[config.RANDOM_FOREST]))
+    models.update(Train().execute(train, target=target, hyperparams=hyperparams_dt,
+                                  algorithms=[config.DECISION_TREE]))
+    models.update(Train().execute(train, target=target, hyperparams=hyperparams_gb,
+                                  algorithms=[config.GRADIENT_BOOSTING_DECISION_TREE]))
+    #models.update(Train().execute(train, target=target, optimize='no', hyperparams=hyperparams_mp,
+     #                             algorithms=[config.MULTILAYER_PERCEPTRON]))
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+    # model evaluation on original dataset
+    results_org = Evaluate().execute(test, target=target, models=models)
+
+    auc_org = defaultdict(lambda: {})
+    auc_org_list = []
+    cal_org = defaultdict(lambda: {})
+    a_cal_org = defaultdict(lambda: {})
+    a_cal_org_list = []
+    b_cal_org = defaultdict(lambda: {})
+    b_cal_org_list = []
+
+    for alg in results_org:
+        #auc_org = int(get_discrimination_metrics(**results_org[alg])['auc']*100)
+        #auc_org = get_discrimination_metrics(**results_org[alg])['auc'])
+        auc_org[alg] = get_discrimination_metrics(**results_org[alg])
+        auc_org[alg] = auc_org[alg]['auc']
+        auc_org_list.append(auc_org[alg])
+        cal_org[alg] = get_calibration_metrics(results_org[alg]["y_true"], results_org[alg]["y_probs"])
+        a_cal_org[alg] = cal_org[alg]['intercept']
+        a_cal_org_list.append(a_cal_org[alg])
+        b_cal_org[alg] = cal_org[alg]['slope']
+        b_cal_org_list.append(a_cal_org[alg])
+
+    auc_org = dict(auc_org)  # change default dict to normal dict
+    a_cal_org = dict(a_cal_org)
+    b_cal_org = dict(b_cal_org)
+
+    print('Test auc:', auc_org_list)
+    print('Test a_cal:', a_cal_org_list)
+
+    pickle.dump(train, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\train.pkl', "wb"))
+    pickle.dump(test, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\test.pkl', "wb"))
+    pickle.dump(models, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\models.pkl', "wb"))
+    pickle.dump(results_org, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\results_org.pkl', "wb"))
+    pickle.dump(auc_org_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\auc_org_list.pkl', "wb"))
+    pickle.dump(auc_org, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\auc_org.pkl', "wb"))
+    pickle.dump(a_cal_org_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\a_cal_org_list.pkl', "wb"))
+    pickle.dump(a_cal_org, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\a_cal_org.pkl', "wb"))
+    pickle.dump(b_cal_org_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\b_cal_org_list.pkl', "wb"))
+    pickle.dump(b_cal_org, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\b_cal_org.pkl', "wb"))
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+    # model evaluation on artificial datasets
+    # loading of datasets to compare
+    path = pathlib.Path(r'stroke_preprocessed_imputed_lvef_fake') # change path according to yours
+    dis = defaultdict(lambda: {})
+    cal = defaultdict(lambda: {})
+    auc_list = []
+    a_cal_list = []
+    b_cal_list = []
+    auc = {k: [] for k in results_org}  # init dict with lists
+    a_cal = {k: [] for k in results_org}
+    b_cal = {k: [] for k in results_org}
+
+    # execute evaluations for every dataset
+    for entry in path.iterdir():
+        test = Load().execute(source=config.FILE, filename=entry)
+        results = Evaluate().execute(test, target=target, models=models)
+
+    # get AUC results for each algorithmn
+    for alg in results:
+        dis[alg] = get_discrimination_metrics(**results[alg])
+        cal[alg] = get_calibration_metrics(results_org[alg]["y_true"], results_org[alg]["y_probs"])
+        # a list of all AUC values
+        auc_list.append(dis[alg]['auc'])
+        a_cal_list.append(cal[alg]['intercept'])
+        b_cal_list.append(cal[alg]['slope'])
+        # dict categorizing AUC for each algorithmn
+        auc[alg].append(dis[alg]['auc'])
+        a_cal[alg].append(cal[alg]['intercept'])
+        b_cal[alg].append(cal[alg]['slope'])
+
+    pickle.dump(results, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\results.pkl', "wb"))
+    pickle.dump(auc_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\auc_list.pkl', "wb"))
+    pickle.dump(auc, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\auc.pkl', "wb"))
+    pickle.dump(a_cal_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\a_cal_list.pkl', "wb"))
+    pickle.dump(a_cal, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\a_cal.pkl', "wb"))
+    pickle.dump(b_cal_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\b_cal_list.pkl', "wb"))
+    pickle.dump(b_cal, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\b_cal.pkl', "wb"))
+
+    return train, test, models, results_org, auc_org_list, auc_org, a_cal_org_list, a_cal_org, b_cal_org_list, \
+           b_cal_org, results, auc_list, auc, a_cal_list, a_cal, b_cal_list, b_cal
+
+#train_models(data)
