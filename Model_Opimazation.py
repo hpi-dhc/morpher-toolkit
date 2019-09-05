@@ -79,6 +79,7 @@ selected_features = data[X.columns[sup]]
 # Feature selecetion
 
 data = selected_features
+data['STROKE'] = y
 
 #-----------------------------------------------------------------------------------------------------------------------
 
@@ -127,10 +128,10 @@ param_grid_lr = {
 
 models = {}
 
-#models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_dt,
-#							  algorithms=[config.DECISION_TREE]))
-models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_rf,
-							  algorithms=[config.RANDOM_FOREST]))
+models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_dt,
+							  algorithms=[config.DECISION_TREE]))
+#models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_rf,
+#							  algorithms=[config.RANDOM_FOREST]))
 #models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_mp,
 #							  algorithms=[config.MULTILAYER_PERCEPTRON]))
 #models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_gb,

@@ -89,6 +89,8 @@ def train_models(data):
     a_cal_org_list = []
     b_cal_org = defaultdict(lambda: {})
     b_cal_org_list = []
+    nb_org = defaultdict(lambda: {})
+    nb_org_list = []
 
     for alg in results_org:
         #auc_org = int(get_discrimination_metrics(**results_org[alg])['auc']*100)
@@ -97,17 +99,18 @@ def train_models(data):
         auc_org[alg] = auc_org[alg]['auc']
         auc_org_list.append(auc_org[alg])
         cal_org[alg] = get_calibration_metrics(results_org[alg]["y_true"], results_org[alg]["y_probs"])
+        nb_org[alg] = (get_clinical_usefulness_metrics(get_discrimination_metrics(**results_org[alg])))
         a_cal_org[alg] = cal_org[alg]['intercept']
         a_cal_org_list.append(a_cal_org[alg])
         b_cal_org[alg] = cal_org[alg]['slope']
         b_cal_org_list.append(a_cal_org[alg])
+        nb_org[alg] = nb_org[alg]['treated']
+        nb_org_list.append(nb_org[alg])
 
     auc_org = dict(auc_org)  # change default dict to normal dict
     a_cal_org = dict(a_cal_org)
     b_cal_org = dict(b_cal_org)
-
-    print('Test auc:', auc_org_list)
-    print('Test a_cal:', a_cal_org_list)
+    nb_org = dict(nb_org)
 
     pickle.dump(train, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\train.pkl', "wb"))
     pickle.dump(test, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\test.pkl', "wb"))
@@ -119,6 +122,9 @@ def train_models(data):
     pickle.dump(a_cal_org, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\a_cal_org.pkl', "wb"))
     pickle.dump(b_cal_org_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\b_cal_org_list.pkl', "wb"))
     pickle.dump(b_cal_org, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\b_cal_org.pkl', "wb"))
+    pickle.dump(nb_org_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\nb_org_list.pkl', "wb"))
+    pickle.dump(nb_org, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\nb_org.pkl', "wb"))
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -127,12 +133,15 @@ def train_models(data):
     path = pathlib.Path(r'stroke_preprocessed_imputed_lvef_fake') # change path according to yours
     dis = defaultdict(lambda: {})
     cal = defaultdict(lambda: {})
+    cu = defaultdict(lambda: {})
     auc_list = []
     a_cal_list = []
     b_cal_list = []
+    nb_list = []
     auc = {k: [] for k in results_org}  # init dict with lists
     a_cal = {k: [] for k in results_org}
     b_cal = {k: [] for k in results_org}
+    nb = {k: [] for k in results_org}
 
     # execute evaluations for every dataset
     for entry in path.iterdir():
@@ -143,14 +152,17 @@ def train_models(data):
     for alg in results:
         dis[alg] = get_discrimination_metrics(**results[alg])
         cal[alg] = get_calibration_metrics(results_org[alg]["y_true"], results_org[alg]["y_probs"])
+        cu[alg] = get_clinical_usefulness_metrics(get_discrimination_metrics(**results_org[alg]))
         # a list of all AUC values
         auc_list.append(dis[alg]['auc'])
         a_cal_list.append(cal[alg]['intercept'])
         b_cal_list.append(cal[alg]['slope'])
+        nb_list.append(cu[alg]['treated'])
         # dict categorizing AUC for each algorithmn
         auc[alg].append(dis[alg]['auc'])
         a_cal[alg].append(cal[alg]['intercept'])
         b_cal[alg].append(cal[alg]['slope'])
+        nb[alg].append(cu[alg]['treated'])
 
     pickle.dump(results, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\results.pkl', "wb"))
     pickle.dump(auc_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\auc_list.pkl', "wb"))
@@ -159,8 +171,10 @@ def train_models(data):
     pickle.dump(a_cal, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\a_cal.pkl', "wb"))
     pickle.dump(b_cal_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\b_cal_list.pkl', "wb"))
     pickle.dump(b_cal, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\b_cal.pkl', "wb"))
+    pickle.dump(nb_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\nb_list.pkl', "wb"))
+    pickle.dump(nb, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\nb.pkl', "wb"))
 
     return train, test, models, results_org, auc_org_list, auc_org, a_cal_org_list, a_cal_org, b_cal_org_list, \
-           b_cal_org, results, auc_list, auc, a_cal_list, a_cal, b_cal_list, b_cal
+           b_cal_org, results, auc_list, auc, a_cal_list, a_cal, b_cal_list, b_cal, nb, nb_list
 
 #train_models(data)

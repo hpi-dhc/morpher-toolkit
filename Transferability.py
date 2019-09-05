@@ -12,7 +12,6 @@ import pickle as pickle
 from stroke_modeling import *
 
 # ToDo change structure
-# ToDo get calibration metrics and build score
 # ToDo get net benefit metrics and build score
 # ToDo build a combination of different scores
 
@@ -39,6 +38,8 @@ a_cal_org_list = pickle.load(open(r'results_performance\a_cal_org_list.pkl', "rb
 a_cal_org = pickle.load(open(r'results_performance\a_cal_org.pkl', "rb"))
 b_cal_org_list = pickle.load(open(r'results_performance\b_cal_org_list.pkl', "rb"))
 b_cal_org = pickle.load(open(r'results_performance\b_cal_org.pkl', "rb"))
+nb_org_list = pickle.load(open(r'results_performance\nb_org_list.pkl', "rb"))
+nb_org = pickle.load(open(r'results_performance\nb_org.pkl', "rb"))
 
 results = pickle.load(open(r'results_performance\results.pkl', "rb"))
 auc_list = pickle.load(open(r'results_performance\auc_list.pkl', "rb"))
@@ -47,6 +48,8 @@ a_cal_list = pickle.load(open(r'results_performance\a_cal_list.pkl', "rb"))
 a_cal = pickle.load(open(r'results_performance\a_cal.pkl', "rb"))
 b_cal_list = pickle.load(open(r'results_performance\b_cal_list.pkl', "rb"))
 b_cal = pickle.load(open(r'results_performance\b_cal.pkl', "rb"))
+nb_list = pickle.load(open(r'results_performance\nb_list.pkl', "rb"))
+nb = pickle.load(open(r'results_performance\nb.pkl', "rb"))
 
 # ----------------------------------------------------------------------------------------------------------------------
 # mean calculations
@@ -59,17 +62,18 @@ mean_a_cal_org_total = (sum(a_cal_org_list))/(len(a_cal_org_list))
 mean_b_cal_total = (sum(b_cal_list))/(len(b_cal_list))
 mean_b_cal_org_total = (sum(b_cal_org_list))/(len(b_cal_org_list))
 
+mean_nb_total = (sum(nb_list))/(len(nb_list))
+mean_nb_org_total = (sum(nb_org_list))/(len(nb_org_list))
+
 mean_auc = defaultdict(lambda: {})
+mean_a_cal = defaultdict(lambda: {})
+mean_b_cal = defaultdict(lambda: {})
+mean_nb = defaultdict(lambda: {})
 for alg in results:
 	mean_auc[alg] = (sum(auc[alg]))/(len(auc[alg]))
-
-mean_a_cal = defaultdict(lambda: {})
-for alg in results:
 	mean_a_cal[alg] = (sum(a_cal[alg]))/(len(a_cal[alg]))
-
-mean_b_cal = defaultdict(lambda: {})
-for alg in results:
 	mean_b_cal[alg] = (sum(b_cal[alg]))/(len(b_cal[alg]))
+	mean_nb[alg] = (sum(nb[alg]))/(len(nb[alg]))
 
 # distance to original and mean AUC and R2
 
@@ -84,6 +88,9 @@ dis_to_mean_a_cal_total = 0
 dis_to_b_cal_org_total = 0
 dis_to_mean_b_cal_total = 0
 
+dis_to_nb_org_total = 0
+dis_to_mean_nb_total = 0
+
 for auc_i in auc_list:
 	dis_to_auc_org_total += (auc_i - mean_auc_org_total)**2
 	#dis_to_mean_total += (auc_org - mean_auc)**2 ?? Harry why did you use the original auc here??
@@ -97,6 +104,10 @@ for a_cal_i in a_cal_list:
 for b_cal_i in b_cal_list:
 	dis_to_b_cal_org_total += (b_cal_i - mean_b_cal_org_total)**2
 	dis_to_mean_b_cal_total += (b_cal_i - mean_b_cal_total)**2
+
+for nb_i in nb_list:
+	dis_to_nb_org_total += (nb_i - mean_nb_org_total)**2
+	dis_to_mean_nb_total += (nb_i - mean_nb_total)**2
 
 
 # for each algorithmn
@@ -116,6 +127,11 @@ dis_b_cal_org = 0
 dis_to_b_cal_org = defaultdict(lambda: {})
 dis_to_b_cal_mean = defaultdict(lambda: {})
 
+dis_nb_mean = 0
+dis_nb_org = 0
+dis_to_nb_org = defaultdict(lambda: {})
+dis_to_nb_mean = defaultdict(lambda: {})
+
 for alg in results:
 	for auc_i in auc[alg]:
 		dis_auc_org += (auc_i - auc_org[alg]) ** 2
@@ -124,19 +140,23 @@ for alg in results:
 	dis_to_auc_mean[alg] = dis_auc_mean
 	#r2[alg] = 1 - (dis_to_auc_org[alg] / dis_to_auc_mean[alg])
 
-for alg in results:
 	for a_cal_i in a_cal[alg]:
 		dis_a_cal_org += (a_cal_i - a_cal_org[alg]) ** 2
 		dis_a_cal_mean += (a_cal_i - mean_a_cal[alg]) ** 2
 	dis_to_a_cal_org[alg] = dis_a_cal_org
 	dis_to_a_cal_mean[alg] = dis_a_cal_mean
 
-for alg in results:
 	for b_cal_i in b_cal[alg]:
 		dis_b_cal_org += (b_cal_i - b_cal_org[alg]) ** 2
 		dis_b_cal_mean += (b_cal_i - mean_b_cal[alg]) ** 2
 	dis_to_b_cal_org[alg] = dis_b_cal_org
 	dis_to_b_cal_mean[alg] = dis_b_cal_mean
+
+	for nb_i in nb[alg]:
+		dis_nb_org += (nb_i - nb_org[alg]) ** 2
+		dis_nb_mean += (nb_i - mean_nb[alg]) ** 2
+	dis_to_nb_org[alg] = dis_nb_org
+	dis_to_nb_mean[alg] = dis_nb_mean
 
 
 # variance regarding original AUC
@@ -157,6 +177,12 @@ var_b_cal_total = 0
 for alg in results:
 	var_b_cal[alg] = sum((i - b_cal_org[alg]) ** 2 for i in b_cal[alg]) / len(b_cal[alg])
 var_b_cal_total = sum((i - mean_b_cal_org_total) ** 2 for i in b_cal_list) / len(b_cal_list)
+
+var_nb = defaultdict(lambda: {})
+var_nb_total = 0
+for alg in results:
+	var_nb[alg] = sum((i - nb_org[alg]) ** 2 for i in nb[alg]) / len(nb[alg])
+var_nb_total = sum((i - mean_nb_org_total) ** 2 for i in nb_list) / len(nb_list)
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -300,5 +326,11 @@ for alg in results:
 		print('Brier Score:', round(brier_score_loss([b_cal_org[alg]] * len(b_cal[alg]), b_cal[alg]),
 									3))  # B_cal can be > 1, therefore Brier Score can not always be applied
 	print('Mean absolute percentage error:',
-		  round(mean_absolute_percentage_error([a_cal_org[alg]] * len(b_cal[alg]), b_cal[alg]), 3), '%', )
+		  round(mean_absolute_percentage_error([b_cal_org[alg]] * len(b_cal[alg]), b_cal[alg]), 3), '%', )
 	print('\n')
+	print('Mean Net Benefit for', alg, ':', round(mean_nb[alg], 3))
+	print('Net Benefit for', alg, 'of original data set:', round(nb_org[alg], 3))
+	print('Transferability for', alg, ':', 100 - (int(np.abs(nb_org[alg] - mean_nb[alg]) * 100)), "%")
+	print('Variance of', alg, 'Net Benefit in regard to original Net Benefit:', round(var_nb[alg], 5))
+	print('Mean absolute percentage error:',
+		  round(mean_absolute_percentage_error([nb_org[alg]] * len(nb[alg]), nb[alg]), 3), '%', )
