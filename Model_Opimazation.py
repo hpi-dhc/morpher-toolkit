@@ -28,7 +28,8 @@ selected_features2 = pd.DataFrame(data)
 data['ELIXHAUSER_SCORE'] = data['ELIXHAUSER_SCORE'].abs()
 
 y = data['STROKE']
-X = data.drop("STROKE", axis=1)
+X = data.drop(['STROKE', 'OTHER_NEUROLOGICAL', 'PARALYSIS'], axis=1)
+
 
 # Features via Mutual Information
 
@@ -90,7 +91,7 @@ train, test = Split().execute(data, test_size=0.3)
 param_grid_dt = {
                     "max_depth": range(2, 20),
                     "min_samples_split": range(2, 100),
-                    "min_samples_leaf": range(1, 20)
+                    "min_samples_leaf": range(2, 100)
                     #"min_impurity_decrease": np.arange(0.0, 0.3, 0.025)
                 }
 
@@ -108,16 +109,17 @@ param_grid_mp = [
     {
         'activation': ['identity', 'logistic', 'tanh', 'relu'],
         'solver': ['lbfgs', 'sgd', 'adam'],
+        'max_iter': [3000],
         'hidden_layer_sizes': [
             (1,), (2,), (3,), (4,), (5,), (6,), (7,), (8,), (9,), (10,), (11,), (12,), (13,), (14,), (15,),
-            (16,), (17,), (18,), (19,), (20,), (21,)
+            (16,), (17,), (18,), (19,), (20,), (21,), (22,), (23,), (24,), (25,), (26,)
         ]
     }
 ]
 
 param_grid_gb = {
-    "max_depth": range(2, 10),
-    "n_estimators": range(1, 85, 1)
+    "max_depth": range(2, 20),
+    "n_estimators": range(1, 100)
 }
 
 param_grid_lr = {
@@ -128,14 +130,14 @@ param_grid_lr = {
 
 models = {}
 
-models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_dt,
-							  algorithms=[config.DECISION_TREE]))
+#models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_dt,
+#							  algorithms=[config.DECISION_TREE]))
 #models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_rf,
 #							  algorithms=[config.RANDOM_FOREST]))
 #models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_mp,
 #							  algorithms=[config.MULTILAYER_PERCEPTRON]))
-#models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_gb,
-#							  algorithms=[config.GRADIENT_BOOSTING_DECISION_TREE]))
+models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_gb,
+							  algorithms=[config.GRADIENT_BOOSTING_DECISION_TREE]))
 #models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_lr,
 #							  algorithms=[config.LOGISTIC_REGRESSION]))
 
@@ -144,3 +146,4 @@ results = Evaluate().execute(test, target=target, models=models)
 for algorithm in results:
     print("Metrics for {}".format(algorithm))
     print(get_discrimination_metrics(**results[algorithm]))
+

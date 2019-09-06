@@ -9,10 +9,10 @@ import numpy as np
 from sklearn.metrics import r2_score, brier_score_loss, mean_absolute_error
 from collections import defaultdict
 import pickle as pickle
-from stroke_modeling import *
 
 # ToDo change structure
-# ToDo get net benefit metrics and build score
+# ToDo check scoring
+# ToDo check NB
 # ToDo build a combination of different scores
 
 
@@ -41,7 +41,7 @@ b_cal_org = pickle.load(open(r'results_performance\b_cal_org.pkl', "rb"))
 nb_org_list = pickle.load(open(r'results_performance\nb_org_list.pkl', "rb"))
 nb_org = pickle.load(open(r'results_performance\nb_org.pkl', "rb"))
 
-results = pickle.load(open(r'results_performance\results.pkl', "rb"))
+results_list = pickle.load(open(r'results_performance\results.pkl', "rb"))
 auc_list = pickle.load(open(r'results_performance\auc_list.pkl', "rb"))
 auc = pickle.load(open(r'results_performance\auc.pkl', "rb"))
 a_cal_list = pickle.load(open(r'results_performance\a_cal_list.pkl', "rb"))
@@ -69,11 +69,13 @@ mean_auc = defaultdict(lambda: {})
 mean_a_cal = defaultdict(lambda: {})
 mean_b_cal = defaultdict(lambda: {})
 mean_nb = defaultdict(lambda: {})
-for alg in results:
-	mean_auc[alg] = (sum(auc[alg]))/(len(auc[alg]))
-	mean_a_cal[alg] = (sum(a_cal[alg]))/(len(a_cal[alg]))
-	mean_b_cal[alg] = (sum(b_cal[alg]))/(len(b_cal[alg]))
-	mean_nb[alg] = (sum(nb[alg]))/(len(nb[alg]))
+
+for results in results_list:
+	for alg in results:
+		mean_auc[alg] = (sum(auc[alg]))/(len(auc[alg]))
+		mean_a_cal[alg] = (sum(a_cal[alg]))/(len(a_cal[alg]))
+		mean_b_cal[alg] = (sum(b_cal[alg]))/(len(b_cal[alg]))
+		mean_nb[alg] = (sum(nb[alg]))/(len(nb[alg]))
 
 # distance to original and mean AUC and R2
 
@@ -132,56 +134,54 @@ dis_nb_org = 0
 dis_to_nb_org = defaultdict(lambda: {})
 dis_to_nb_mean = defaultdict(lambda: {})
 
-for alg in results:
-	for auc_i in auc[alg]:
-		dis_auc_org += (auc_i - auc_org[alg]) ** 2
-		dis_auc_mean += (auc_i - mean_auc[alg]) ** 2
-	dis_to_auc_org[alg] = dis_auc_org
-	dis_to_auc_mean[alg] = dis_auc_mean
-	#r2[alg] = 1 - (dis_to_auc_org[alg] / dis_to_auc_mean[alg])
+for results in results_list:
+	for alg in results:
+		for auc_i in auc[alg]:
+			dis_auc_org += (auc_i - auc_org[alg]) ** 2
+			dis_auc_mean += (auc_i - mean_auc[alg]) ** 2
+		dis_to_auc_org[alg] = dis_auc_org
+		dis_to_auc_mean[alg] = dis_auc_mean
+		#r2[alg] = 1 - (dis_to_auc_org[alg] / dis_to_auc_mean[alg])
 
-	for a_cal_i in a_cal[alg]:
-		dis_a_cal_org += (a_cal_i - a_cal_org[alg]) ** 2
-		dis_a_cal_mean += (a_cal_i - mean_a_cal[alg]) ** 2
-	dis_to_a_cal_org[alg] = dis_a_cal_org
-	dis_to_a_cal_mean[alg] = dis_a_cal_mean
+		for a_cal_i in a_cal[alg]:
+			dis_a_cal_org += (a_cal_i - a_cal_org[alg]) ** 2
+			dis_a_cal_mean += (a_cal_i - mean_a_cal[alg]) ** 2
+		dis_to_a_cal_org[alg] = dis_a_cal_org
+		dis_to_a_cal_mean[alg] = dis_a_cal_mean
 
-	for b_cal_i in b_cal[alg]:
-		dis_b_cal_org += (b_cal_i - b_cal_org[alg]) ** 2
-		dis_b_cal_mean += (b_cal_i - mean_b_cal[alg]) ** 2
-	dis_to_b_cal_org[alg] = dis_b_cal_org
-	dis_to_b_cal_mean[alg] = dis_b_cal_mean
+		for b_cal_i in b_cal[alg]:
+			dis_b_cal_org += (b_cal_i - b_cal_org[alg]) ** 2
+			dis_b_cal_mean += (b_cal_i - mean_b_cal[alg]) ** 2
+		dis_to_b_cal_org[alg] = dis_b_cal_org
+		dis_to_b_cal_mean[alg] = dis_b_cal_mean
 
-	for nb_i in nb[alg]:
-		dis_nb_org += (nb_i - nb_org[alg]) ** 2
-		dis_nb_mean += (nb_i - mean_nb[alg]) ** 2
-	dis_to_nb_org[alg] = dis_nb_org
-	dis_to_nb_mean[alg] = dis_nb_mean
+		for nb_i in nb[alg]:
+			dis_nb_org += (nb_i - nb_org[alg]) ** 2
+			dis_nb_mean += (nb_i - mean_nb[alg]) ** 2
+		dis_to_nb_org[alg] = dis_nb_org
+		dis_to_nb_mean[alg] = dis_nb_mean
 
 
 # variance regarding original AUC
 var_auc = defaultdict(lambda: {})
 var_auc_total = 0
-for alg in results:
-	var_auc[alg] = sum((i - auc_org[alg]) ** 2 for i in auc[alg]) / len(auc[alg])
-var_auc_total = sum((i - mean_auc_org_total) ** 2 for i in auc_list) / len(auc_list)
-
 var_a_cal = defaultdict(lambda: {})
 var_a_cal_total = 0
-for alg in results:
-	var_a_cal[alg] = sum((i - a_cal_org[alg]) ** 2 for i in a_cal[alg]) / len(a_cal[alg])
-var_a_cal_total = sum((i - mean_a_cal_org_total) ** 2 for i in a_cal_list) / len(a_cal_list)
-
 var_b_cal = defaultdict(lambda: {})
 var_b_cal_total = 0
-for alg in results:
-	var_b_cal[alg] = sum((i - b_cal_org[alg]) ** 2 for i in b_cal[alg]) / len(b_cal[alg])
-var_b_cal_total = sum((i - mean_b_cal_org_total) ** 2 for i in b_cal_list) / len(b_cal_list)
-
 var_nb = defaultdict(lambda: {})
 var_nb_total = 0
-for alg in results:
-	var_nb[alg] = sum((i - nb_org[alg]) ** 2 for i in nb[alg]) / len(nb[alg])
+
+for results in results_list:
+	for alg in results:
+		var_auc[alg] = sum((i - auc_org[alg]) ** 2 for i in auc[alg]) / len(auc[alg])
+		var_a_cal[alg] = sum((i - a_cal_org[alg]) ** 2 for i in a_cal[alg]) / len(a_cal[alg])
+		var_b_cal[alg] = sum((i - b_cal_org[alg]) ** 2 for i in b_cal[alg]) / len(b_cal[alg])
+		var_nb[alg] = sum((i - nb_org[alg]) ** 2 for i in nb[alg]) / len(nb[alg])
+
+var_auc_total = sum((i - mean_auc_org_total) ** 2 for i in auc_list) / len(auc_list)
+var_a_cal_total = sum((i - mean_a_cal_org_total) ** 2 for i in a_cal_list) / len(a_cal_list)
+var_b_cal_total = sum((i - mean_b_cal_org_total) ** 2 for i in b_cal_list) / len(b_cal_list)
 var_nb_total = sum((i - mean_nb_org_total) ** 2 for i in nb_list) / len(nb_list)
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -299,38 +299,54 @@ var_nb_total = sum((i - mean_nb_org_total) ** 2 for i in nb_list) / len(nb_list)
 # plt.show()
 
 # Transferability metrics for presentation
+# for alg in results:
+# 	print('Transferability Performances Measures for', alg, ':')
+# 	print('')
+# 	print('Mean AUC for', alg, ':', round(mean_auc[alg], 3))
+# 	print('AUC for', alg, 'of original data set:', round(auc_org[alg], 3))
+# 	print('Transferability for', alg, ':', 100 - (int(np.abs(auc_org[alg] - mean_auc[alg]) * 100)), "%")
+# 	print('Variance of', alg, 'AUC in regard to original AUC:', round(var_auc[alg], 5))
+# 	print('Brier Score:', round(brier_score_loss([auc_org[alg]] * len(auc[alg]), auc[alg]), 3))
+# 	print('Mean absolute percentage error:',
+# 		  round(mean_absolute_percentage_error([auc_org[alg]] * len(auc[alg]), auc[alg]), 3), '%', )
+# 	print('\n')
+# 	print('Mean A_cal for', alg, ':', round(mean_a_cal[alg], 3))
+# 	print('A_cal for', alg, 'of original data set:', round(a_cal_org[alg], 3))
+# 	print('Transferability for', alg, ':', 100 - (int(np.abs(a_cal_org[alg] - mean_a_cal[alg]) * 100)), "%")
+# 	print('Variance of', alg, 'A_cal in regard to original A_cal:', round(var_a_cal[alg], 5))
+# 	print('Brier Score:', round(brier_score_loss([a_cal_org[alg]] * len(a_cal[alg]), a_cal[alg]), 3))
+# 	print('Mean absolute percentage error:',
+# 		  round(mean_absolute_percentage_error([a_cal_org[alg]] * len(a_cal[alg]), a_cal[alg]), 3), '%', )
+# 	print('\n')
+# 	print('Mean B_cal for', alg, ':', round(mean_b_cal[alg], 3))
+# 	print('B_cal for', alg, 'of original data set:', round(b_cal_org[alg], 3))
+# 	print('Transferability for', alg, ':', 100 - (int(np.abs(b_cal_org[alg] - mean_b_cal[alg]) * 100)), "%")
+# 	print('Variance of', alg, 'B_cal in regard to original B_cal:', round(var_b_cal[alg], 5))
+# 	if b_cal[alg][0] < 1:
+# 		print('Brier Score:', round(brier_score_loss([b_cal_org[alg]] * len(b_cal[alg]), b_cal[alg]),
+# 									3))  # B_cal can be > 1, therefore Brier Score can not always be applied
+# 	print('Mean absolute percentage error:',
+# 		  round(mean_absolute_percentage_error([b_cal_org[alg]] * len(b_cal[alg]), b_cal[alg]), 3), '%', )
+# 	print('\n')
+# 	print('Mean Net Benefit for', alg, ':', round(mean_nb[alg], 3))
+# 	print('Net Benefit for', alg, 'of original data set:', round(nb_org[alg], 3))
+# 	print('Transferability for', alg, ':', 100 - (int(np.abs(nb_org[alg] - mean_nb[alg]) * 100)), "%")
+# 	print('Variance of', alg, 'Net Benefit in regard to original Net Benefit:', round(var_nb[alg], 5))
+# 	print('Mean absolute percentage error:',
+# 		  round(mean_absolute_percentage_error([nb_org[alg]] * len(nb[alg]), nb[alg]), 3), '%', )
+
+print('B_cal:', b_cal)
+
+# Next Transferability Score Combinations:
 for alg in results:
-	print('Transferability Performances Measures for', alg, ':')
-	print('')
-	print('Mean AUC for', alg, ':', round(mean_auc[alg], 3))
-	print('AUC for', alg, 'of original data set:', round(auc_org[alg], 3))
-	print('Transferability for', alg, ':', 100 - (int(np.abs(auc_org[alg] - mean_auc[alg]) * 100)), "%")
-	print('Variance of', alg, 'AUC in regard to original AUC:', round(var_auc[alg], 5))
-	print('Brier Score:', round(brier_score_loss([auc_org[alg]] * len(auc[alg]), auc[alg]), 3))
-	print('Mean absolute percentage error:',
-		  round(mean_absolute_percentage_error([auc_org[alg]] * len(auc[alg]), auc[alg]), 3), '%', )
-	print('\n')
-	print('Mean A_cal for', alg, ':', round(mean_a_cal[alg], 3))
-	print('A_cal for', alg, 'of original data set:', round(a_cal_org[alg], 3))
-	print('Transferability for', alg, ':', 100 - (int(np.abs(a_cal_org[alg] - mean_a_cal[alg]) * 100)), "%")
-	print('Variance of', alg, 'A_cal in regard to original A_cal:', round(var_a_cal[alg], 5))
-	print('Brier Score:', round(brier_score_loss([a_cal_org[alg]] * len(a_cal[alg]), a_cal[alg]), 3))
-	print('Mean absolute percentage error:',
-		  round(mean_absolute_percentage_error([a_cal_org[alg]] * len(a_cal[alg]), a_cal[alg]), 3), '%', )
-	print('\n')
-	print('Mean B_cal for', alg, ':', round(mean_b_cal[alg], 3))
-	print('B_cal for', alg, 'of original data set:', round(b_cal_org[alg], 3))
-	print('Transferability for', alg, ':', 100 - (int(np.abs(b_cal_org[alg] - mean_b_cal[alg]) * 100)), "%")
-	print('Variance of', alg, 'B_cal in regard to original B_cal:', round(var_b_cal[alg], 5))
-	if b_cal[alg][0] < 1:
-		print('Brier Score:', round(brier_score_loss([b_cal_org[alg]] * len(b_cal[alg]), b_cal[alg]),
-									3))  # B_cal can be > 1, therefore Brier Score can not always be applied
-	print('Mean absolute percentage error:',
-		  round(mean_absolute_percentage_error([b_cal_org[alg]] * len(b_cal[alg]), b_cal[alg]), 3), '%', )
-	print('\n')
-	print('Mean Net Benefit for', alg, ':', round(mean_nb[alg], 3))
-	print('Net Benefit for', alg, 'of original data set:', round(nb_org[alg], 3))
-	print('Transferability for', alg, ':', 100 - (int(np.abs(nb_org[alg] - mean_nb[alg]) * 100)), "%")
-	print('Variance of', alg, 'Net Benefit in regard to original Net Benefit:', round(var_nb[alg], 5))
-	print('Mean absolute percentage error:',
-		  round(mean_absolute_percentage_error([nb_org[alg]] * len(nb[alg]), nb[alg]), 3), '%', )
+		print(alg)
+		print('AUC_Org:', auc_org[alg], '||', 'AUC_Mean:', mean_auc[alg], '||', 'AUC-Score:', 100 - (int(np.abs(auc_org[alg] - mean_auc[alg]) * 100)))
+		print('A-Cal_Org:', a_cal_org[alg], '||', 'A-Cal_Mean:', mean_a_cal[alg], '||', 'A-Cal-Score:', 100 - (int(np.abs(a_cal_org[alg] - mean_a_cal[alg]) * 100)))
+		print('B-Cal_Org:', b_cal_org[alg], '||', 'B-Cal_Mean:', mean_b_cal[alg], '||', 'B-Cal-Score:', 100 - (int(np.abs(b_cal_org[alg] - mean_b_cal[alg]) * 100)))
+		print('NB_Org:', nb_org[alg], '||', 'NB_Mean:', mean_nb[alg], '||', 'NB-Score:', 100 - (int(np.abs(nb_org[alg] - mean_nb[alg]) * 100)))
+		print()
+		print('MAPE ACAL:', round(mean_absolute_percentage_error([a_cal_org[alg]] * len(a_cal[alg]), a_cal[alg]), 3), '%',)
+		print('MAPE BCAL:', round(mean_absolute_percentage_error([b_cal_org[alg]] * len(b_cal[alg]), b_cal[alg]), 3), '%',)
+		print('MAPE NB:', round(mean_absolute_percentage_error([nb_org[alg]] * len(nb[alg]), nb[alg]), 3), '%',)
+		print()
+
