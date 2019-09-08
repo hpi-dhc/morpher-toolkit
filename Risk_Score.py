@@ -16,6 +16,8 @@ def main():
                 or column == 'RENAL_FAILURE' or column == 'STROKE'):
             df[column] = data[column]
 
+    df = df[df['AGE_AT_ADMISSION'] < 99]
+
     # apply risk score calculation and paste into new column
     df['Risk_Score'] = df.apply(lambda row: risk_score(row['GENDER'], row['ADMISSION_TYPE'], row['AGE_AT_ADMISSION'],
                                                        row['LVEF'], row['DIABETES_COMPLICATED'], row['DIABETES_UNCOMPLICATED'],
@@ -27,7 +29,7 @@ def main():
     df['FN'] = df.apply(lambda row: is_fn(row['STROKE'], row['Risk_Score']), axis=1)
     df['TN'] = df.apply(lambda row: is_tn(row['STROKE'], row['Risk_Score']), axis=1)
 
-    print(df.head(5))
+    print(df)
 
     # calculate confusion matrix
     tp = sum(df['TP'])
@@ -46,9 +48,10 @@ def main():
     # save as new csv file
     df.to_csv('Stroke_Calculated_Risk_Score.csv')
 
-
 # risk score calculation
 def risk_score(GENDER, ADMISSION_TYPE, AGE_AT_ADMISSION, LVEF, DIABETES_COMPLICATED, DIABETES_UNCOMPLICATED, PERIPHERAL_VASCULAR, RENAL_FAILURE):
+
+
 
     stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE
 
@@ -81,7 +84,7 @@ def risk_score(GENDER, ADMISSION_TYPE, AGE_AT_ADMISSION, LVEF, DIABETES_COMPLICA
 
 def is_tp(Stroke, Risk_Score):
 
-    if Stroke == 1.0 and Risk_Score > 5.25:
+    if Stroke == 1.0 and Risk_Score > 5.5:
         return 1
     else:
         return 0
@@ -89,7 +92,7 @@ def is_tp(Stroke, Risk_Score):
 
 def is_fn(Stroke, Risk_Score):
 
-    if Stroke == 1.0 and Risk_Score < 5.25:
+    if Stroke == 1.0 and Risk_Score <= 5.5:
         return 1
     else:
         return 0
@@ -97,7 +100,7 @@ def is_fn(Stroke, Risk_Score):
 
 def is_fp(Stroke, Risk_Score):
 
-    if Stroke == 0.0 and Risk_Score > 5.25:
+    if Stroke == 0.0 and Risk_Score > 5.5:
         return 1
     else:
         return 0
@@ -105,7 +108,7 @@ def is_fp(Stroke, Risk_Score):
 
 def is_tn(Stroke, Risk_Score):
 
-    if Stroke == 0.0 and Risk_Score < 5.25:
+    if Stroke == 0.0 and Risk_Score <= 5.5:
         return 1
     else:
         return 0

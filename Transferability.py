@@ -13,8 +13,6 @@ import pickle as pickle
 # ToDo change structure
 # ToDo check scoring
 # ToDo check NB
-# ToDo build a combination of different scores
-
 
 def mean_absolute_percentage_error(y_true, y_pred): 
     y_true, y_pred = np.array(y_true), np.array(y_pred)
@@ -22,6 +20,8 @@ def mean_absolute_percentage_error(y_true, y_pred):
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Getting models
+
+target = 'STROKE'
 
 data = Load().execute(source=config.FILE, filename='stroke_preprocessed_imputed_lvef.csv')
 data = Impute().execute(data, imputation_method=config.DEFAULT)
@@ -207,146 +207,192 @@ var_nb_total = sum((i - mean_nb_org_total) ** 2 for i in nb_list) / len(nb_list)
 # 	print('Variance of', alg, 'AUC in regard to orginal AUC:', round(var[alg], 5))
 # 	print('\n')
 #
-# # Total Scores
-# print('Total Scores:')
-# print('Mean AUC:', mean_auc_total)
-# print('Distance to original dataset:', dis_to_org_total)
-# print('Distance to AUC Mean:', dis_to_mean_total)
-# print('R2:', r2_total)
-# print('R2 (sklearn):', r2_score([mean_auc_org_total] * len(auc_list), auc_list)) # the values are extremly different, often zero
-# print('Brier:', brier_score_loss([mean_auc_org_total] * len(auc_list), auc_list))
-# print('Mean absolute error:', mean_absolute_error([mean_auc_org_total] * len(auc_list), auc_list))
-# print('Mean absolute percentage error:', mean_absolute_percentage_error([mean_auc_org_total] * len(auc_list), auc_list), '%')
-# # Percentage difference between the mean of AUCs and the original AUC
-# print('Transferability_overall:', 100 - (int(np.abs(mean_auc_org_total - mean_auc_total) * 100)), "%")
-# print('Variance of AUC in regard to orginal AUC:', var_total)
-# print('\n')
-#
-# # Calibrations and Clinical Usefulness metrics
-# for alg in results_org:
-# 	print("Printing metrics for %s" % alg)
-# 	print(get_discrimination_metrics(**results_org[alg]))
-# 	print(get_calibration_metrics(results_org[alg]["y_true"], results_org[alg]["y_probs"]))
-# 	print(get_clinical_usefulness_metrics(get_discrimination_metrics(**results_org[alg]), tr=0.03))
-# 	print('\n')
-
-
-# Plot of orginal AUC against all AUCs (maybe we should also use the means here, or its not really comparable)
-# plt.figure(1)
-# plt.xlabel('Datasets')
-# plt.ylabel('Area Under the ROC Curve')
-# plt.title('Total Receiver Operating Curve')
-#
-# plt.plot(auc_list, 'ro')
-# plt.plot(auc_list)
-# plt.plot([mean_auc_org_total] * len(auc_list))
-# plt.show()
-
-# Plotting with categorical variables
-# n = 101  # subplot number must be a three digit number
-# n += len(results) * 10  # second digit shows number of graph in one row
-# subplot_ylabel = n
-# plt.figure(2, figsize=(18.5, 7))
-#
-# for alg in results:
-# 	plt.subplot(n)
-# 	plt.plot(auc[alg], 'ro')
-# 	plt.plot(auc[alg], label='AUC\'s')
-# 	plt.plot([auc_org[alg]] * len(auc[alg]), label='AUC original dataset')
-# 	plt.title('Area Under the ROC Curv')
-#
-#
-# 	plt.xlabel('Datasets')
-# 	if n == subplot_ylabel:  # shows only the label on the left
-# 		plt.ylabel(alg)
-# 	plt.title(alg)
-#
-# 	n += 1
-# #plt.subplots_adjust(left=0.1)
-# plt.legend(bbox_to_anchor=(0.8, 1.05))
-# plt.show()
-
-# seperates plots of each algorithmn
-# i = 3
-#
-# for alg in results:
-# 	plt.figure(i)
-# 	plt.xlabel('Datasets')
-# 	plt.ylabel('Area Under the ROC Curve')
-# 	plt.title('Receiver Operating Curve for ' + str(alg))
-#
-# 	plt.plot(auc[alg], 'ro')
-# 	plt.plot(auc[alg])
-# 	plt.plot([auc_org[alg]] * len(auc[alg]))
-# 	plt.show()
-#
-# 	i += 1
-
-# plt.figure(4)
-# plot_roc(results_org)
-# plt.show()
-
-
-# # plot Decision Curve
-# plt.figure(3)
-# plot_dc(results_org)
-# plt.show()
-#
-# plot Calibration Curve
-# plt.figure(4)
-# plot_cc(models, train, test, target)
-# plt.legend(bbox_to_anchor=(1.3, 1.05))
-# plt.show()
-
-# Transferability metrics for presentation
-# for alg in results:
-# 	print('Transferability Performances Measures for', alg, ':')
-# 	print('')
-# 	print('Mean AUC for', alg, ':', round(mean_auc[alg], 3))
-# 	print('AUC for', alg, 'of original data set:', round(auc_org[alg], 3))
-# 	print('Transferability for', alg, ':', 100 - (int(np.abs(auc_org[alg] - mean_auc[alg]) * 100)), "%")
-# 	print('Variance of', alg, 'AUC in regard to original AUC:', round(var_auc[alg], 5))
-# 	print('Brier Score:', round(brier_score_loss([auc_org[alg]] * len(auc[alg]), auc[alg]), 3))
-# 	print('Mean absolute percentage error:',
-# 		  round(mean_absolute_percentage_error([auc_org[alg]] * len(auc[alg]), auc[alg]), 3), '%', )
-# 	print('\n')
-# 	print('Mean A_cal for', alg, ':', round(mean_a_cal[alg], 3))
-# 	print('A_cal for', alg, 'of original data set:', round(a_cal_org[alg], 3))
-# 	print('Transferability for', alg, ':', 100 - (int(np.abs(a_cal_org[alg] - mean_a_cal[alg]) * 100)), "%")
-# 	print('Variance of', alg, 'A_cal in regard to original A_cal:', round(var_a_cal[alg], 5))
-# 	print('Brier Score:', round(brier_score_loss([a_cal_org[alg]] * len(a_cal[alg]), a_cal[alg]), 3))
-# 	print('Mean absolute percentage error:',
-# 		  round(mean_absolute_percentage_error([a_cal_org[alg]] * len(a_cal[alg]), a_cal[alg]), 3), '%', )
-# 	print('\n')
-# 	print('Mean B_cal for', alg, ':', round(mean_b_cal[alg], 3))
-# 	print('B_cal for', alg, 'of original data set:', round(b_cal_org[alg], 3))
-# 	print('Transferability for', alg, ':', 100 - (int(np.abs(b_cal_org[alg] - mean_b_cal[alg]) * 100)), "%")
-# 	print('Variance of', alg, 'B_cal in regard to original B_cal:', round(var_b_cal[alg], 5))
-# 	if b_cal[alg][0] < 1:
-# 		print('Brier Score:', round(brier_score_loss([b_cal_org[alg]] * len(b_cal[alg]), b_cal[alg]),
-# 									3))  # B_cal can be > 1, therefore Brier Score can not always be applied
-# 	print('Mean absolute percentage error:',
-# 		  round(mean_absolute_percentage_error([b_cal_org[alg]] * len(b_cal[alg]), b_cal[alg]), 3), '%', )
-# 	print('\n')
-# 	print('Mean Net Benefit for', alg, ':', round(mean_nb[alg], 3))
-# 	print('Net Benefit for', alg, 'of original data set:', round(nb_org[alg], 3))
-# 	print('Transferability for', alg, ':', 100 - (int(np.abs(nb_org[alg] - mean_nb[alg]) * 100)), "%")
-# 	print('Variance of', alg, 'Net Benefit in regard to original Net Benefit:', round(var_nb[alg], 5))
-# 	print('Mean absolute percentage error:',
-# 		  round(mean_absolute_percentage_error([nb_org[alg]] * len(nb[alg]), nb[alg]), 3), '%', )
-
-print('B_cal:', b_cal)
 
 # Next Transferability Score Combinations:
+# for alg in results:
+# 		print(alg)
+# 		print('AUC_Org:', auc_org[alg], '||', 'AUC_Mean:', mean_auc[alg], '||', 'AUC-Score:', 100 - (int(np.abs(auc_org[alg] - mean_auc[alg]) * 100)))
+# 		print('A-Cal_Org:', a_cal_org[alg], '||', 'A-Cal_Mean:', mean_a_cal[alg], '||', 'A-Cal-Score:', 100 - (int(np.abs(a_cal_org[alg] - mean_a_cal[alg]) * 100)))
+# 		print('B-Cal_Org:', b_cal_org[alg], '||', 'B-Cal_Mean:', mean_b_cal[alg], '||', 'B-Cal-Score:', 100 - (int(np.abs(b_cal_org[alg] - mean_b_cal[alg]) * 100)))
+# 		print('NB_Org:', nb_org[alg], '||', 'NB_Mean:', mean_nb[alg], '||', 'NB-Score:', 100 - (int(np.abs(nb_org[alg] - mean_nb[alg]) * 100)))
+# 		print()
+# 		print('MAPE ACAL:', round(mean_absolute_percentage_error([a_cal_org[alg]] * len(a_cal[alg]), a_cal[alg]), 3), '%',)
+# 		print('MAPE BCAL:', round(mean_absolute_percentage_error([b_cal_org[alg]] * len(b_cal[alg]), b_cal[alg]), 3), '%',)
+# 		print('MAPE NB:', round(mean_absolute_percentage_error([nb_org[alg]] * len(nb[alg]), nb[alg]), 3), '%',)
+# 		print()
+
+# ------  Final Outputs  -----------------------------------------------------------------------------------------------
+
+# Printing metrics
+for alg in results_org:
+	print("Printing metrics for %s" % alg)
+	print(get_discrimination_metrics(**results_org[alg]))
+	print(get_calibration_metrics(results_org[alg]["y_true"], results_org[alg]["y_probs"]))
+	print(get_clinical_usefulness_metrics(get_discrimination_metrics(**results_org[alg]), tr=0.03))
+	print('\n')
+
+# ------  Transferability Metrics  -------------------------------------------------------------------------------------
+
 for alg in results:
-		print(alg)
-		print('AUC_Org:', auc_org[alg], '||', 'AUC_Mean:', mean_auc[alg], '||', 'AUC-Score:', 100 - (int(np.abs(auc_org[alg] - mean_auc[alg]) * 100)))
-		print('A-Cal_Org:', a_cal_org[alg], '||', 'A-Cal_Mean:', mean_a_cal[alg], '||', 'A-Cal-Score:', 100 - (int(np.abs(a_cal_org[alg] - mean_a_cal[alg]) * 100)))
-		print('B-Cal_Org:', b_cal_org[alg], '||', 'B-Cal_Mean:', mean_b_cal[alg], '||', 'B-Cal-Score:', 100 - (int(np.abs(b_cal_org[alg] - mean_b_cal[alg]) * 100)))
-		print('NB_Org:', nb_org[alg], '||', 'NB_Mean:', mean_nb[alg], '||', 'NB-Score:', 100 - (int(np.abs(nb_org[alg] - mean_nb[alg]) * 100)))
-		print()
-		print('MAPE ACAL:', round(mean_absolute_percentage_error([a_cal_org[alg]] * len(a_cal[alg]), a_cal[alg]), 3), '%',)
-		print('MAPE BCAL:', round(mean_absolute_percentage_error([b_cal_org[alg]] * len(b_cal[alg]), b_cal[alg]), 3), '%',)
-		print('MAPE NB:', round(mean_absolute_percentage_error([nb_org[alg]] * len(nb[alg]), nb[alg]), 3), '%',)
-		print()
+	print('Transferability Performances Measures for', alg, ':')
+	print('')
+	print('Mean AUC for', alg, ':', round(mean_auc[alg], 3))
+	print('AUC for', alg, 'of original data set:', round(auc_org[alg], 3))
+	print('Transferability for', alg, ':', 100 - (int(np.abs(auc_org[alg] - mean_auc[alg]) * 100)), "%")
+	print('Variance of', alg, 'AUC in regard to original AUC:', round(var_auc[alg], 5))
+	print('Brier Score:', round(brier_score_loss([auc_org[alg]] * len(auc[alg]), auc[alg]), 3))
+	print('Mean absolute percentage error:',
+		  round(mean_absolute_percentage_error([auc_org[alg]] * len(auc[alg]), auc[alg]), 3), '%', )
+	print('\n')
+	print('Mean A_cal for', alg, ':', round(mean_a_cal[alg], 3))
+	print('A_cal for', alg, 'of original data set:', round(a_cal_org[alg], 3))
+	print('Transferability for', alg, ':', 100 - (int(np.abs(a_cal_org[alg] - mean_a_cal[alg]) * 100)), "%")
+	print('Variance of', alg, 'A_cal in regard to original A_cal:', round(var_a_cal[alg], 5))
+	print('Mean absolute percentage error:',
+		  round(mean_absolute_percentage_error([a_cal_org[alg]] * len(a_cal[alg]), a_cal[alg]), 3), '%', )
+	print('\n')
+	print('Mean B_cal for', alg, ':', round(mean_b_cal[alg], 3))
+	print('B_cal for', alg, 'of original data set:', round(b_cal_org[alg], 3))
+	print('Transferability for', alg, ':', 100 - (int(np.abs(b_cal_org[alg] - mean_b_cal[alg]) * 100)), "%")
+	print('Variance of', alg, 'B_cal in regard to original B_cal:', round(var_b_cal[alg], 5))
+	print('Mean absolute percentage error:',
+		  round(mean_absolute_percentage_error([b_cal_org[alg]] * len(b_cal[alg]), b_cal[alg]), 3), '%', )
+	print('\n')
+	print('Mean Net Benefit for', alg, ':', round(mean_nb[alg], 3))
+	print('Net Benefit for', alg, 'of original data set:', round(nb_org[alg], 3))
+	print('Transferability for', alg, ':', 100 - (int(np.abs(nb_org[alg] - mean_nb[alg]) * 100)), "%")
+	print('Variance of', alg, 'Net Benefit in regard to original Net Benefit:', round(var_nb[alg], 5))
+	print('Mean absolute percentage error:',
+		  round(mean_absolute_percentage_error([nb_org[alg]] * len(nb[alg]), nb[alg]), 3), '%', )
+	print()
+
+# Total Scores
+print('Total Scores:')
+print('Mean AUC:', mean_auc_total)
+print('Distance to original dataset:', dis_to_auc_org_total)
+print('Distance to AUC Mean:', dis_to_mean_auc_total)
+print('R2:', r2_total)
+print('R2 (sklearn):', r2_score([mean_auc_org_total] * len(auc_list), auc_list)) # the values are extremly different, often zero
+print('Brier:', brier_score_loss([mean_auc_org_total] * len(auc_list), auc_list))
+print('Mean absolute error:', mean_absolute_error([mean_auc_org_total] * len(auc_list), auc_list))
+print('Mean absolute percentage error:', mean_absolute_percentage_error([mean_auc_org_total] * len(auc_list), auc_list), '%')
+# Percentage difference between the mean of AUCs and the original AUC
+print('Transferability_overall:', 100 - (int(np.abs(mean_auc_org_total - mean_auc_total) * 100)), "%")
+print('Variance of AUC in regard to orginal AUC:', var_auc_total)
+print('\n')
+
+# ------  PLOTS  -------------------------------------------------------------------------------------------------------
+
+# plot AUC of original cohort
+plt.figure(1)
+plot_roc(results_org)
+plt.show()
+
+# plot Calibration Curve
+plt.figure(2)
+plot_cc(models, train, test, target)
+plt.legend(loc='upper right', bbox_to_anchor=(1.1, 1))
+plt.show()
+
+# plot Decision Curve
+plt.figure(3)
+plot_dc(results_org)
+plt.show()
+
+# Plot of orginal AUC against all AUCs
+plt.figure(4)
+plt.xlabel('Datasets')
+plt.ylabel('Area Under the ROC Curve')
+plt.title('Total Receiver Operating Curve')
+
+plt.plot(auc_list, 'ro')
+plt.plot(auc_list)
+plt.plot([mean_auc_org_total] * len(auc_list))
+plt.show()
+
+# Plotting AUC  with categorical variables
+n = 101  # subplot number must be a three digit number
+n += len(results) * 10  # second digit shows number of graph in one row
+subplot_ylabel = n
+plt.figure(5, figsize=(18.5, 7))
+
+for alg in results:
+	plt.subplot(n)
+	plt.plot(auc[alg], 'ro')
+	plt.plot(auc[alg], label='AUC\'s')
+	plt.plot([auc_org[alg]] * len(auc[alg]), label='AUC original dataset')
+	plt.title('Area Under the ROC Curv')
+
+	plt.xlabel('Datasets')
+	if n == subplot_ylabel:  # shows only the label on the left
+		plt.ylabel(alg)
+	plt.title(alg)
+
+	n += 1
+#plt.subplots_adjust(left=0.1)
+plt.legend(bbox_to_anchor=(0.8, 1.05))
+plt.show()
+
+# Plotting Calibration with categorical variables
+n = 101  # subplot number must be a three digit number
+n += len(results) * 10  # second digit shows number of graph in one row
+subplot_ylabel = n
+plt.figure(6, figsize=(18.5, 7))
+
+for alg in results:
+	plt.subplot(n)
+	plt.plot(a_cal[alg], 'ro')
+	plt.plot(a_cal[alg], label='Calibrations in the large\'s')
+	plt.plot([a_cal_org[alg]] * len(a_cal[alg]), label='A Calibration orginal dataset')
+	plt.title('Calibration in the large')
+
+	plt.xlabel('Datasets')
+	if n == subplot_ylabel:  # shows only the label on the left
+		plt.ylabel(alg)
+	plt.title(alg)
+
+	n += 1
+#plt.subplots_adjust(left=0.1)
+plt.legend(bbox_to_anchor=(0.8, 1.05))
+plt.show()
+
+# Plotting Net Benefit with categorical variables
+n = 101  # subplot number must be a three digit number
+n += len(results) * 10  # second digit shows number of graph in one row
+subplot_ylabel = n
+plt.figure(6, figsize=(18.5, 7))
+
+for alg in results:
+	plt.subplot(n)
+	plt.plot(nb[alg], 'ro')
+	plt.plot(nb[alg], label='Net Benefits')
+	plt.plot([nb[alg]] * len(nb[alg]), label='Net Benefit orginal dataset')
+	plt.title('Net Benefits')
+
+	plt.xlabel('Datasets')
+	if n == subplot_ylabel:  # shows only the label on the left
+		plt.ylabel(alg)
+	plt.title(alg)
+
+	n += 1
+#plt.subplots_adjust(left=0.1)
+plt.legend(bbox_to_anchor=(0.8, 1.05))
+plt.show()
+
+
+# seperates plots of each algorithmn
+i = 9
+
+for alg in results:
+	plt.figure(i)
+	plt.xlabel('Datasets')
+	plt.ylabel('Area Under the ROC Curve')
+	plt.title('Receiver Operating Curve for ' + str(alg))
+
+	plt.plot(auc[alg], 'ro')
+	plt.plot(auc[alg])
+	plt.plot([auc_org[alg]] * len(auc[alg]))
+	plt.show()
+
+	i += 1
 

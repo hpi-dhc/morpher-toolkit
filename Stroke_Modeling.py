@@ -23,6 +23,8 @@ selected_features2 = pd.DataFrame(data)
 
 data['ELIXHAUSER_SCORE'] = data['ELIXHAUSER_SCORE'].abs()
 
+data = data[data['AGE_AT_ADMISSION'] < 99]
+
 y = data['STROKE']
 X = data.drop(['STROKE', 'OTHER_NEUROLOGICAL', 'PARALYSIS'], axis=1)
 

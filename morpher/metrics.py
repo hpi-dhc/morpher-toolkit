@@ -114,6 +114,7 @@ def get_calibration_metrics(y_true, y_probs, n_bins=10):
     slope, intercept, r_value, p_value, std_err = linregress(fraction_of_positives, mean_predicted_value)
     results['slope'] = slope
     results['intercept'] = intercept
+    results['brier_calibration'] = brier_score_loss(y_true, y_probs, pos_label=y_true.max())
 
     return dict(results)
 
