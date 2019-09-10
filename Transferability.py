@@ -38,6 +38,8 @@ a_cal_org_list = pickle.load(open(r'results_performance\a_cal_org_list.pkl', "rb
 a_cal_org = pickle.load(open(r'results_performance\a_cal_org.pkl', "rb"))
 b_cal_org_list = pickle.load(open(r'results_performance\b_cal_org_list.pkl', "rb"))
 b_cal_org = pickle.load(open(r'results_performance\b_cal_org.pkl', "rb"))
+brier_cal_org_list = pickle.load(open(r'results_performance\brier_cal_org_list.pkl', "rb"))
+brier_cal_org = pickle.load(open(r'results_performance\brier_cal_org.pkl', "rb"))
 nb_org_list = pickle.load(open(r'results_performance\nb_org_list.pkl', "rb"))
 nb_org = pickle.load(open(r'results_performance\nb_org.pkl', "rb"))
 
@@ -48,6 +50,8 @@ a_cal_list = pickle.load(open(r'results_performance\a_cal_list.pkl', "rb"))
 a_cal = pickle.load(open(r'results_performance\a_cal.pkl', "rb"))
 b_cal_list = pickle.load(open(r'results_performance\b_cal_list.pkl', "rb"))
 b_cal = pickle.load(open(r'results_performance\b_cal.pkl', "rb"))
+brier_cal_list = pickle.load(open(r'results_performance\brier_cal_list.pkl', "rb"))
+brier_cal = pickle.load(open(r'results_performance\brier_cal.pkl', "rb"))
 nb_list = pickle.load(open(r'results_performance\nb_list.pkl', "rb"))
 nb = pickle.load(open(r'results_performance\nb.pkl', "rb"))
 
@@ -62,12 +66,16 @@ mean_a_cal_org_total = (sum(a_cal_org_list))/(len(a_cal_org_list))
 mean_b_cal_total = (sum(b_cal_list))/(len(b_cal_list))
 mean_b_cal_org_total = (sum(b_cal_org_list))/(len(b_cal_org_list))
 
+mean_brier_cal_total = (sum(brier_cal_list))/(len(brier_cal_list))
+mean_brier_cal_org_total = (sum(brier_cal_org_list))/(len(brier_cal_org_list))
+
 mean_nb_total = (sum(nb_list))/(len(nb_list))
 mean_nb_org_total = (sum(nb_org_list))/(len(nb_org_list))
 
 mean_auc = defaultdict(lambda: {})
 mean_a_cal = defaultdict(lambda: {})
 mean_b_cal = defaultdict(lambda: {})
+mean_brier_cal = defaultdict(lambda: {})
 mean_nb = defaultdict(lambda: {})
 
 for results in results_list:
@@ -75,6 +83,7 @@ for results in results_list:
 		mean_auc[alg] = (sum(auc[alg]))/(len(auc[alg]))
 		mean_a_cal[alg] = (sum(a_cal[alg]))/(len(a_cal[alg]))
 		mean_b_cal[alg] = (sum(b_cal[alg]))/(len(b_cal[alg]))
+		mean_brier_cal[alg] = (sum(brier_cal[alg]))/(len(brier_cal[alg]))
 		mean_nb[alg] = (sum(nb[alg]))/(len(nb[alg]))
 
 # distance to original and mean AUC and R2
@@ -89,6 +98,9 @@ dis_to_mean_a_cal_total = 0
 
 dis_to_b_cal_org_total = 0
 dis_to_mean_b_cal_total = 0
+
+dis_to_brier_cal_org_total = 0
+dis_to_mean_brier_cal_total = 0
 
 dis_to_nb_org_total = 0
 dis_to_mean_nb_total = 0
@@ -106,6 +118,10 @@ for a_cal_i in a_cal_list:
 for b_cal_i in b_cal_list:
 	dis_to_b_cal_org_total += (b_cal_i - mean_b_cal_org_total)**2
 	dis_to_mean_b_cal_total += (b_cal_i - mean_b_cal_total)**2
+
+for brier_cal_i in brier_cal_list:
+	dis_to_brier_cal_org_total += (brier_cal_i - mean_brier_cal_org_total)**2
+	dis_to_mean_brier_cal_total += (brier_cal_i - mean_brier_cal_total)**2
 
 for nb_i in nb_list:
 	dis_to_nb_org_total += (nb_i - mean_nb_org_total)**2
@@ -128,6 +144,11 @@ dis_b_cal_mean = 0
 dis_b_cal_org = 0
 dis_to_b_cal_org = defaultdict(lambda: {})
 dis_to_b_cal_mean = defaultdict(lambda: {})
+
+dis_brier_cal_mean = 0
+dis_brier_cal_org = 0
+dis_to_brier_cal_org = defaultdict(lambda: {})
+dis_to_brier_cal_mean = defaultdict(lambda: {})
 
 dis_nb_mean = 0
 dis_nb_org = 0
@@ -155,6 +176,13 @@ for results in results_list:
 		dis_to_b_cal_org[alg] = dis_b_cal_org
 		dis_to_b_cal_mean[alg] = dis_b_cal_mean
 
+		for brier_cal_i in brier_cal[alg]:
+			dis_brier_cal_org += (brier_cal_i - brier_cal_org[alg]) ** 2
+			dis_brier_cal_mean += (brier_cal_i - mean_brier_cal[alg]) ** 2
+		dis_to_brier_cal_org[alg] = dis_brier_cal_org
+		dis_to_brier_cal_mean[alg] = dis_brier_cal_mean
+
+
 		for nb_i in nb[alg]:
 			dis_nb_org += (nb_i - nb_org[alg]) ** 2
 			dis_nb_mean += (nb_i - mean_nb[alg]) ** 2
@@ -169,6 +197,8 @@ var_a_cal = defaultdict(lambda: {})
 var_a_cal_total = 0
 var_b_cal = defaultdict(lambda: {})
 var_b_cal_total = 0
+var_brier_cal = defaultdict(lambda: {})
+var_brier_cal_total = 0
 var_nb = defaultdict(lambda: {})
 var_nb_total = 0
 
@@ -177,11 +207,13 @@ for results in results_list:
 		var_auc[alg] = sum((i - auc_org[alg]) ** 2 for i in auc[alg]) / len(auc[alg])
 		var_a_cal[alg] = sum((i - a_cal_org[alg]) ** 2 for i in a_cal[alg]) / len(a_cal[alg])
 		var_b_cal[alg] = sum((i - b_cal_org[alg]) ** 2 for i in b_cal[alg]) / len(b_cal[alg])
+		var_brier_cal[alg] = sum((i - brier_cal_org[alg]) ** 2 for i in brier_cal[alg]) / len(brier_cal[alg])
 		var_nb[alg] = sum((i - nb_org[alg]) ** 2 for i in nb[alg]) / len(nb[alg])
 
 var_auc_total = sum((i - mean_auc_org_total) ** 2 for i in auc_list) / len(auc_list)
 var_a_cal_total = sum((i - mean_a_cal_org_total) ** 2 for i in a_cal_list) / len(a_cal_list)
 var_b_cal_total = sum((i - mean_b_cal_org_total) ** 2 for i in b_cal_list) / len(b_cal_list)
+var_brier_cal_total = sum((i - mean_brier_cal_org_total) ** 2 for i in brier_cal_list) / len(brier_cal_list)
 var_nb_total = sum((i - mean_nb_org_total) ** 2 for i in nb_list) / len(nb_list)
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -240,7 +272,7 @@ for alg in results:
 	print('AUC for', alg, 'of original data set:', round(auc_org[alg], 3))
 	print('Transferability for', alg, ':', 100 - (int(np.abs(auc_org[alg] - mean_auc[alg]) * 100)), "%")
 	print('Variance of', alg, 'AUC in regard to original AUC:', round(var_auc[alg], 5))
-	print('Brier Score:', round(brier_score_loss([auc_org[alg]] * len(auc[alg]), auc[alg]), 3))
+	print('Brier Score of AUC:', round(brier_score_loss([auc_org[alg]] * len(auc[alg]), auc[alg]), 3))
 	print('Mean absolute percentage error:',
 		  round(mean_absolute_percentage_error([auc_org[alg]] * len(auc[alg]), auc[alg]), 3), '%', )
 	print('\n')
@@ -258,6 +290,13 @@ for alg in results:
 	print('Mean absolute percentage error:',
 		  round(mean_absolute_percentage_error([b_cal_org[alg]] * len(b_cal[alg]), b_cal[alg]), 3), '%', )
 	print('\n')
+	print('Mean Brier Calibration for', alg, ':', round(mean_brier_cal[alg], 3))
+	print('Brier Calibration for', alg, 'of original data set:', round(brier_cal_org[alg], 3))
+	print('Transferability for', alg, ':', 100 - (int(np.abs(brier_cal_org[alg] - mean_brier_cal[alg]) * 100)), "%")
+	print('Variance of', alg, 'Brier Calibration in regard to original Brier Calibration:', round(var_brier_cal[alg], 5))
+	print('Mean absolute percentage error:',
+		  round(mean_absolute_percentage_error([brier_cal_org[alg]] * len(brier_cal[alg]), brier_cal[alg]), 3), '%', )
+	print('\n')
 	print('Mean Net Benefit for', alg, ':', round(mean_nb[alg], 3))
 	print('Net Benefit for', alg, 'of original data set:', round(nb_org[alg], 3))
 	print('Transferability for', alg, ':', 100 - (int(np.abs(nb_org[alg] - mean_nb[alg]) * 100)), "%")
@@ -267,13 +306,13 @@ for alg in results:
 	print()
 
 # Total Scores
-print('Total Scores:')
+print('Total Scores in regard of AUC:')
 print('Mean AUC:', mean_auc_total)
 print('Distance to original dataset:', dis_to_auc_org_total)
 print('Distance to AUC Mean:', dis_to_mean_auc_total)
-print('R2:', r2_total)
-print('R2 (sklearn):', r2_score([mean_auc_org_total] * len(auc_list), auc_list)) # the values are extremly different, often zero
-print('Brier:', brier_score_loss([mean_auc_org_total] * len(auc_list), auc_list))
+print('R2 of AUC:', r2_total)
+print('R2 (sklearn) of AUC:', r2_score([mean_auc_org_total] * len(auc_list), auc_list)) # the values are extremly different, often zero
+print('Brier of AUC:', brier_score_loss([mean_auc_org_total] * len(auc_list), auc_list))
 print('Mean absolute error:', mean_absolute_error([mean_auc_org_total] * len(auc_list), auc_list))
 print('Mean absolute percentage error:', mean_absolute_percentage_error([mean_auc_org_total] * len(auc_list), auc_list), '%')
 # Percentage difference between the mean of AUCs and the original AUC
@@ -333,7 +372,7 @@ for alg in results:
 plt.legend(bbox_to_anchor=(0.8, 1.05))
 plt.show()
 
-# Plotting Calibration with categorical variables
+# Plotting A Calibration with categorical variables
 n = 101  # subplot number must be a three digit number
 n += len(results) * 10  # second digit shows number of graph in one row
 subplot_ylabel = n
@@ -345,6 +384,29 @@ for alg in results:
 	plt.plot(a_cal[alg], label='Calibrations in the large\'s')
 	plt.plot([a_cal_org[alg]] * len(a_cal[alg]), label='A Calibration orginal dataset')
 	plt.title('Calibration in the large')
+
+	plt.xlabel('Datasets')
+	if n == subplot_ylabel:  # shows only the label on the left
+		plt.ylabel(alg)
+	plt.title(alg)
+
+	n += 1
+#plt.subplots_adjust(left=0.1)
+plt.legend(bbox_to_anchor=(0.8, 1.05))
+plt.show()
+
+# Plotting Brier Calibration with categorical variables
+n = 101  # subplot number must be a three digit number
+n += len(results) * 10  # second digit shows number of graph in one row
+subplot_ylabel = n
+plt.figure(6, figsize=(18.5, 7))
+
+for alg in results:
+	plt.subplot(n)
+	plt.plot(brier_cal[alg], 'ro')
+	plt.plot(brier_cal[alg], label='Brier Claibration')
+	plt.plot([brier_cal_org[alg]] * len(brier_cal[alg]), label='Brier Calibration orginal dataset')
+	plt.title('Brier Claibration')
 
 	plt.xlabel('Datasets')
 	if n == subplot_ylabel:  # shows only the label on the left

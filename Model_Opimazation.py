@@ -43,6 +43,8 @@ sup = selection.get_support()
 
 selected_features = data[X.columns[sup]]
 
+print(selected_features)
+
 # Features via Tree
 
 # liste = []

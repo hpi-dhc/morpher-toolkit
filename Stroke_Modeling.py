@@ -111,6 +111,8 @@ a_cal_org = defaultdict(lambda: {})
 a_cal_org_list = []
 b_cal_org = defaultdict(lambda: {})
 b_cal_org_list = []
+brier_cal_org = defaultdict(lambda: {})
+brier_cal_org_list = []
 nb_org = defaultdict(lambda: {})
 nb_org_list = []
 
@@ -126,6 +128,8 @@ for alg in results_org:
     a_cal_org_list.append(a_cal_org[alg])
     b_cal_org[alg] = cal_org[alg]['slope']
     b_cal_org_list.append(a_cal_org[alg])
+    brier_cal_org[alg] = cal_org[alg]['brier_calibration']
+    brier_cal_org_list.append(brier_cal_org[alg])
     nb_org[alg] = nb_org[alg]['treated']
     nb_org_list.append(nb_org[alg])
 
@@ -133,6 +137,7 @@ for alg in results_org:
 auc_org = dict(auc_org)  # change default dict to normal dict
 a_cal_org = dict(a_cal_org)
 b_cal_org = dict(b_cal_org)
+brier_cal_org = dict(brier_cal_org)
 nb_org = dict(nb_org)
 
 pickle.dump(train, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\train.pkl', "wb"))
@@ -145,6 +150,8 @@ pickle.dump(a_cal_org_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\res
 pickle.dump(a_cal_org, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\a_cal_org.pkl', "wb"))
 pickle.dump(b_cal_org_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\b_cal_org_list.pkl', "wb"))
 pickle.dump(b_cal_org, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\b_cal_org.pkl', "wb"))
+pickle.dump(brier_cal_org_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\brier_cal_org_list.pkl', "wb"))
+pickle.dump(brier_cal_org, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\brier_cal_org.pkl', "wb"))
 pickle.dump(nb_org_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\nb_org_list.pkl', "wb"))
 pickle.dump(nb_org, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\nb_org.pkl', "wb"))
 
@@ -172,27 +179,31 @@ cu = defaultdict(lambda: {})
 auc_list = []
 a_cal_list = []
 b_cal_list = []
+brier_cal_list = []
 nb_list = []
 auc = {k: [] for k in results}  # init dict with lists
 a_cal = {k: [] for k in results}
 b_cal = {k: [] for k in results}
+brier_cal = {k: [] for k in results}
 nb = {k: [] for k in results}
 
-# get AUC results for each algorithmn
+# get results for each algorithmn
 for result in results_list:
     for alg in result:
         dis[alg] = get_discrimination_metrics(**result[alg])
         cal[alg] = get_calibration_metrics(result[alg]["y_true"], result[alg]["y_probs"])
         cu[alg] = get_clinical_usefulness_metrics(dis[alg])
-        # a list of all AUC values
+        # a list of all metrics values
         auc_list.append(dis[alg]['auc'])
         a_cal_list.append(cal[alg]['intercept'])
         b_cal_list.append(cal[alg]['slope'])
+        brier_cal_list.append(cal[alg]['brier_calibration'])
         nb_list.append(cu[alg]['treated'])
-        # dict categorizing AUC for each algorithmn
+        # dict categorizing for each algorithmn
         auc[alg].append(dis[alg]['auc'])
         a_cal[alg].append(cal[alg]['intercept'])
         b_cal[alg].append(cal[alg]['slope'])
+        brier_cal[alg].append(cal[alg]['brier_calibration'])
         nb[alg].append(cu[alg]['treated'])
 
 pickle.dump(results_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\results.pkl', "wb"))
@@ -202,6 +213,8 @@ pickle.dump(a_cal_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results
 pickle.dump(a_cal, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\a_cal.pkl', "wb"))
 pickle.dump(b_cal_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\b_cal_list.pkl', "wb"))
 pickle.dump(b_cal, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\b_cal.pkl', "wb"))
+pickle.dump(brier_cal_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\brier_cal_list.pkl', "wb"))
+pickle.dump(brier_cal, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\brier_cal.pkl', "wb"))
 pickle.dump(nb_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\nb_list.pkl', "wb"))
 pickle.dump(nb, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\nb.pkl', "wb"))
 
