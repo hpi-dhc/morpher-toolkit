@@ -16,6 +16,7 @@ from sklearn.exceptions import NotFittedError
 import pandas as pd
 import numpy as np
 import morpher.config
+from morpher.metrics import get_discrimination_metrics
 import json
 
 import traceback
@@ -23,7 +24,7 @@ import logging
 
 class Base:
 
-    def __init__(self, clf=None, hyperparams=None, optimize=None, param_grid=None, crossval=None):
+    def __init__(self, clf=None, hyperparams=None, optimize=None, param_grid=None, crossval=None, n_splits=None):
 
         '''
         Base classifier
@@ -40,6 +41,12 @@ class Base:
         '''
         self.crossval = crossval
 
+        '''
+        Indicates how many folds to cross-validate
+        '''
+        self.n_splits = n_splits
+
+
     def fit(self, features, labels):
 
         '''
@@ -53,10 +60,9 @@ class Base:
                 msg = "*** Training of model '{0}' started.".format(self.clf.__class__.__name__)
                 logging.info(msg)
                 print(msg)              
-                print(features, labels)
-                print(type(features))
-                print(type(labels))
-
+#               print(features, labels)
+#               print(type(features))
+#               print(type(labels))
                 self.clf.fit(features, labels)
 
             else:
@@ -77,17 +83,25 @@ class Base:
             if self.crossval:
 
                 ''' performing cross validation '''
-                logging.info("*** Performing cross validation of classifier.")
-
+                msg = "*** Performing cross validation of '{0}' classifier.".format(self.clf.__class__.__name__)
+                logging.info(msg)
+                print(msg)
                 ''' keeps class proportion balanced across folds '''
-                skf = StratifiedKFold(n_splits=10)
+                n_splits = self.n_splits or 10
+                print(f"Number of splits: {n_splits}")
+                skf = StratifiedKFold(n_splits=n_splits)
 
                 ''' performs cross validation and stores the results in the respective variables '''
                 y_true, y_pred, y_probs = labels, cross_val_predict(self.clf, features, labels, cv=skf),\
-                                                cross_val_predict(self.clf, features, labels, cv=skf, method='predict_proba')
+                                                cross_val_predict(self.clf, features, labels, cv=skf, method='predict_proba')                
 
                 ''' performing cross validation '''
                 logging.info("Model cross-validation performed for {0}.".format(self.clf.__class__.__name__))
+
+                ''' if cross validation was required, return the discrimination metrics from crossvalidation '''
+                ''' note slicing of y_probs, we do it to get the prediction for label = 1'''
+                return get_discrimination_metrics(y_true, y_pred, y_probs[:,1])
+                
         
         except Exception as e:
             print(traceback.format_exc())
@@ -141,7 +155,7 @@ class Base:
 
 class DecisionTree(Base):
 
-    def __init__(self, hyperparams=None, optimize=None, param_grid=None, crossval=None):
+    def __init__(self, hyperparams=None, optimize=None, param_grid=None, crossval=None, n_splits=None):
 
         if not hyperparams:
             hyperparams = {'max_depth': 5, 'class_weight': {0:1, 1:10}}
@@ -165,11 +179,11 @@ class DecisionTree(Base):
                 param_grid = param_grid
             )
         
-        super().__init__(clf, hyperparams, optimize, crossval)
+        super().__init__(clf, hyperparams, optimize, param_grid, crossval, n_splits)
 
 class RandomForest(Base):
 
-    def __init__(self, hyperparams=None, optimize=None, param_grid=None, crossval=None):
+    def __init__(self, hyperparams=None, optimize=None, param_grid=None, crossval=None, n_splits=None):
 
         
         if not hyperparams:
@@ -210,11 +224,11 @@ class RandomForest(Base):
                 param_grid = param_grid
             )
         
-        super().__init__(clf, hyperparams, optimize, crossval)
+        super().__init__(clf, hyperparams, optimize, param_grid, crossval, n_splits)
 
 class MultilayerPerceptron(Base):
 
-    def __init__(self, hyperparams=None, optimize=None, param_grid=None, crossval=None):
+    def __init__(self, hyperparams=None, optimize=None, param_grid=None, crossval=None, n_splits=None):
 
 
         if not hyperparams:
@@ -255,11 +269,11 @@ class MultilayerPerceptron(Base):
                 param_grid = param_grid
             )
         
-        super().__init__(clf, hyperparams, optimize, crossval)
+        super().__init__(clf, hyperparams, optimize, param_grid, crossval, n_splits)
 
 class GradientBoostingDecisionTree(Base):
 
-    def __init__(self, hyperparams=None, optimize=None, param_grid=None, crossval=None):
+    def __init__(self, hyperparams=None, optimize=None, param_grid=None, crossval=None, n_splits=None):
 
         if not hyperparams:
             hyperparams = {             
@@ -291,11 +305,11 @@ class GradientBoostingDecisionTree(Base):
                 param_grid = param_grid
             )
         
-        super().__init__(clf, hyperparams, optimize, crossval)
+        super().__init__(clf, hyperparams, optimize, param_grid, crossval, n_splits)
 
 class LogisticRegression(Base):
 
-    def __init__(self, hyperparams=None, optimize=None, param_grid=None, crossval=None):
+    def __init__(self, hyperparams=None, optimize=None, param_grid=None, crossval=None, n_splits=None):
 
         if not hyperparams:
 
@@ -329,7 +343,7 @@ class LogisticRegression(Base):
                 param_grid = param_grid
             )
         
-        super().__init__(clf, hyperparams, optimize, crossval)
+        super().__init__(clf, hyperparams, optimize, param_grid, crossval, n_splits)
 
 
 

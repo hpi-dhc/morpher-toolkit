@@ -36,6 +36,20 @@ def get_discrimination_metrics(y_true, y_pred, y_probs, label="1.0"):
 
     return dict(results)
 
+def get_calibration_metrics(y_true, y_pred, y_probs, n_bins=10):
+
+    '''
+     Returns calibration metrics of the prediction results in a dictionary:
+    '''
+
+    results = defaultdict(lambda: {})
+    fraction_of_positives, mean_predicted_value = calibration_curve(y_true, y_probs, n_bins=n_bins)
+    slope, intercept, r_value, p_value, std_err = linregress(fraction_of_positives, mean_predicted_value)
+    results['calibration_slope'] = slope
+    results['calibration_intercept'] = intercept
+
+    return dict(results)
+
 def get_clinical_usefulness_metrics(discrimination_metrics, tr=0.7):
     '''
     Returns clinical usefulness of the prediction results in a dictionary

@@ -4,6 +4,7 @@ import logging
 import pandas as pd
 import morpher.config as config
 #from morpher.imputers import *
+from morpher.config import imputers
 from morpher.jobs import MorpherJob
 from morpher.exceptions import kwarg_not_empty
 from sklearn.impute import SimpleImputer
@@ -22,19 +23,12 @@ class Impute(MorpherJob):
         self.add_output("user_id", self.get_input("user_id"))
         self.logger.info("Data imputed successfully.")
 
-    def execute(self, data, **kwargs):
+    def execute(self, data, imputation_method=imputers.DEFAULT,**kwargs):
         try:
           
           if not data.empty:
 
-            imputation_method = kwargs.get("imputation_method")
-            kwarg_not_empty(imputation_method,"imputation_method")
-
-            if (imputation_method == config.DEFAULT):
-              imputer = SimpleImputer()
-
-#            elif (imputation_method == config.KNN):      
-#              imputer = KNNImputer()
+            imputer = globals()[imputation_method](**kwargs)
 
             ''' columns where all values are NaN get assigned 0, otherwise imputer will throw them away '''
             data.loc[:, data.isna().all()] = 0.0

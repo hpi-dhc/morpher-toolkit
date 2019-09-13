@@ -89,19 +89,31 @@ class Train(MorpherJob):
             hyperparams = kwargs.get("hyperparams")
             optimize = kwargs.get("optimize")
             param_grid = kwargs.get("param_grid")
+            crossval = kwargs.get("crossval")
+            n_splits = kwargs.get("n_splits")
 
             trained_models = {}
+            crossval_metrics = {}
 
             for algorithm in algorithms:
                 
-                clf = globals()[algorithm](hyperparams=hyperparams, optimize=optimize, param_grid=param_grid) #instantiate the algorithm in runtime
-                clf.fit(features, labels)
+                clf = globals()[algorithm](hyperparams=hyperparams, optimize=optimize, param_grid=param_grid, crossval=crossval, n_splits=n_splits) #instantiate the algorithm in runtime
+                
+                ''' if fit returns anything, it will be the cross_validated metrics '''
+                if crossval:                    
+                    crossval_metrics[algorithm] = clf.fit(features, labels)
+                else:
+                    clf.fit(features, labels)
+                    
                 trained_models[algorithm] = clf
 
             if kwargs.get("persist") is True:
                 params["target"] = target
                 params["features"] = features.columns
                 self.persist(trained_models, params)
+
+            if crossval:
+                return trained_models, crossval_metrics
 
             return trained_models
 
