@@ -2,6 +2,7 @@ from .job import Job
 from .morpher_job import MorpherJob
 from .Load import Load
 from .Impute import Impute
+from .Scale import Scale
 from .Split import Split
 from .Train import Train
 from .Retrieve import Retrieve
@@ -12,6 +13,7 @@ __all__ = [
     'MorpherJob',
     'Load',
     'Impute',
+    'Scale',
     'Split',
     'Train',
     'Retrieve',

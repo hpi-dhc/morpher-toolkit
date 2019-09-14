@@ -14,21 +14,25 @@ LOGISTIC_REGRESSION = "LogisticRegression"
 MULTILAYER_PERCEPTRON = "MultilayerPerceptron"
 GRADIENT_BOOSTING_DECISION_TREE = "GradientBoostingDecisionTree"
 
-# supported algorithms
-algorithms = {
-  'DT' : 'DecisionTree',
-  'RF' : 'RandomForest',
-  'LR' : 'LogisticRegression',
-  'MLP': 'MultilayerPerceptron',
-  'GBDT': 'GradientBoostingDecisionTree'}
-  
-# supported imputers
-imputers = {
-  'DEFAULT' : 'SimpleImputer',
-  'KNN' : 'KNNImputer',
-  'SOFT' : 'SoftImputer'}
+options = [
+	# supported algorithms
+	{'DT' : 'DecisionTree',
+	 'RF' : 'RandomForest',
+	 'LR' : 'LogisticRegression',
+	 'MLP': 'MultilayerPerceptron',
+	 'GBDT': 'GradientBoostingDecisionTree'},	  
+	# supported imputers
+	{'DEFAULT' : 'SimpleImputer',
+	 'KNN' : 'KNNImputer',
+	 'SOFT' : 'SoftImputer'},
+	# supported scalers
+	{'DEFAULT' : 'StandardScaler',
+	 'ROBUST' : 'RobustScaler',
+	 'NORMALIZER' : 'Normalizer'}]
 
-algorithms, imputers = [ namedtuple('options', attr.keys())(**attr) for attr in [algorithms, imputers] ]
+# create the named tuples
+algorithms, imputers, scalers = \
+	[ namedtuple('options', attr.keys())(**attr) \
+		for attr in options ]
 
-#algorithms = namedtuple('algorithms', algorithms.keys())(**algorithms)
-#imputers = namedtuple('imputers', imputers.keys())(**imputers)
+
