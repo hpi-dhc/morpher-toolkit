@@ -1,4 +1,8 @@
 import pandas as pd
+from sklearn.calibration import calibration_curve
+from collections import defaultdict
+from scipy.stats import linregress
+from sklearn.metrics import roc_auc_score
 
 
 def main():
@@ -28,6 +32,7 @@ def main():
     df['FP'] = df.apply(lambda row: is_fp(row['STROKE'], row['Risk_Score']), axis=1)
     df['FN'] = df.apply(lambda row: is_fn(row['STROKE'], row['Risk_Score']), axis=1)
     df['TN'] = df.apply(lambda row: is_tn(row['STROKE'], row['Risk_Score']), axis=1)
+    df['RS_Prediction'] = df.apply(lambda row: rs_prediction(row['Risk_Score']), axis=1)
 
     print(df)
 
@@ -40,18 +45,41 @@ def main():
     print('True Positive:', tp, 'False Positive:', fp)
     print('False Negative:', fn, 'True Negative:', tn)
 
+    print('Confusion matrix as ratio to all entries:')
+
+    n = len(df)
+
+    print('Rate of True Positive:', round(tp/n*100), '% | Rate  of False Positive:', round(fp/n*100), '%')
+    print('Rate of False Negative:', round(fn/n*100), '% | Rate  of True Negative:', round(tn/n*100), '%')
+
+
     # calculate accuracy
     acc = ((tp + tn) / (tp + fp + fn + tn)) * 100
 
     print('Accuracy:', int(acc), '%')
 
+    # calculate AUC
+    y_true = df['STROKE']
+    y_score = df['RS_Prediction']
+
+    auc = roc_auc_score(y_true, y_score)
+
+    print('AUC:', round(auc*100), '%')
+
+    # calculate Net Benefit
+    tr = 0.7
+
+    net_benefit_treated = (tp/n) - (fp/n) * (tr/(1-tr))
+    net_benefit_untreated = (tn/n) - (fn/n) * ((1-tr)/tr)
+
+    print('Net Benefit:', int(net_benefit_treated))
+
     # save as new csv file
     df.to_csv('Stroke_Calculated_Risk_Score.csv')
 
+
 # risk score calculation
 def risk_score(GENDER, ADMISSION_TYPE, AGE_AT_ADMISSION, LVEF, DIABETES_COMPLICATED, DIABETES_UNCOMPLICATED, PERIPHERAL_VASCULAR, RENAL_FAILURE):
-
-
 
     stroke_score = 1.5 * DIABETES_COMPLICATED + 1.5 * DIABETES_UNCOMPLICATED + 2 * PERIPHERAL_VASCULAR + 2 * RENAL_FAILURE
 
@@ -84,7 +112,7 @@ def risk_score(GENDER, ADMISSION_TYPE, AGE_AT_ADMISSION, LVEF, DIABETES_COMPLICA
 
 def is_tp(Stroke, Risk_Score):
 
-    if Stroke == 1.0 and Risk_Score > 5.5:
+    if Stroke == 1.0 and Risk_Score >= 5.5:
         return 1
     else:
         return 0
@@ -92,7 +120,7 @@ def is_tp(Stroke, Risk_Score):
 
 def is_fn(Stroke, Risk_Score):
 
-    if Stroke == 1.0 and Risk_Score <= 5.5:
+    if Stroke == 1.0 and Risk_Score < 5.5:
         return 1
     else:
         return 0
@@ -100,7 +128,7 @@ def is_fn(Stroke, Risk_Score):
 
 def is_fp(Stroke, Risk_Score):
 
-    if Stroke == 0.0 and Risk_Score > 5.5:
+    if Stroke == 0.0 and Risk_Score >= 5.5:
         return 1
     else:
         return 0
@@ -108,7 +136,14 @@ def is_fp(Stroke, Risk_Score):
 
 def is_tn(Stroke, Risk_Score):
 
-    if Stroke == 0.0 and Risk_Score <= 5.5:
+    if Stroke == 0.0 and Risk_Score < 5.5:
+        return 1
+    else:
+        return 0
+
+def rs_prediction(Risk_Score):
+
+    if Risk_Score >= 5.5:
         return 1
     else:
         return 0

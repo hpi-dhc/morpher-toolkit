@@ -38,6 +38,8 @@ sup = selection.get_support()
 
 selected_features = data[X.columns[sup]]
 
+print(selected_features.columns)
+
 # Feature selecetion
 
 data = selected_features
@@ -59,29 +61,29 @@ hyperparams_lr = {
 }
 
 hyperparams_rf = {
-    'n_estimators': 200,
-    'max_depth': 8,
-    'max_features': 8,
-    'min_samples_leaf': 10,
-    'min_samples_split': 12
+    'n_estimators': 100,
+    'max_depth': 16,
+    'max_features': 2,
+    'min_samples_leaf': 5,
+    'min_samples_split': 16
 }
 
 hyperparams_dt = {
     'max_depth': 9,
-    "min_samples_split": 6,
-    "min_samples_leaf": 67
+    "min_samples_split": 2,
+    "min_samples_leaf": 51
 }
 
 hyperparams_gb = {
-    'n_estimators': 93,
-    'max_depth': 2
+    'n_estimators': 54,
+    'max_depth': 3
 }
 
 hyperparams_mp = {
     'activation': 'relu',
     'solver': 'adam',
-    'hidden_layer_sizes': (21, ),
-    'max_iter': 2000
+    'hidden_layer_sizes': (14, ),
+    'max_iter': 3000
 }
 
 models = {}
@@ -102,7 +104,7 @@ models.update(Train().execute(train, target=target, hyperparams=hyperparams_mp,
 
 
 # model evaluation on original dataset
-results_org = Evaluate().execute(test, target=target, models=models)
+results_org = Evaluate().execute(test, target=target, models=models, print_performance=True)
 
 auc_org = defaultdict(lambda: {})
 auc_org_list = []
@@ -218,4 +220,12 @@ pickle.dump(brier_cal, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_
 pickle.dump(nb_list, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\nb_list.pkl', "wb"))
 pickle.dump(nb, open(r'C:\Users\Margaux\Documents\GitHub\morpher\results_performance\nb.pkl', "wb"))
 
+
+for alg in results_org:
+    print(cal[alg])
+
+plt.figure(1)
+plot_cc(models, train, test, target='STROKE')
+plt.legend(loc='upper right', bbox_to_anchor=(1.1, 1))
+plt.show()
 

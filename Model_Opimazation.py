@@ -8,7 +8,7 @@ import numpy as np
 import pickle as pickle
 from sklearn.ensemble import ExtraTreesClassifier
 from collections import Counter
-from sklearn.feature_selection import SelectPercentile, chi2
+from sklearn.feature_selection import SelectPercentile
 import pandas as pd
 
 
@@ -42,8 +42,6 @@ selection = selector.fit(X, y)
 sup = selection.get_support()
 
 selected_features = data[X.columns[sup]]
-
-print(selected_features)
 
 # Features via Tree
 
@@ -138,10 +136,10 @@ models = {}
 #							  algorithms=[config.DECISION_TREE]))
 #models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_rf,
 #							  algorithms=[config.RANDOM_FOREST]))
-#models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_mp,
-#							  algorithms=[config.MULTILAYER_PERCEPTRON]))
-models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_gb,
-							  algorithms=[config.GRADIENT_BOOSTING_DECISION_TREE]))
+models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_mp,
+							  algorithms=[config.MULTILAYER_PERCEPTRON]))
+#models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_gb,
+#							  algorithms=[config.GRADIENT_BOOSTING_DECISION_TREE]))
 #models.update(Train().execute(train, target=target, optimize='yes', param_grid=param_grid_lr,
 #							  algorithms=[config.LOGISTIC_REGRESSION]))
 

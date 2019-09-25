@@ -10,50 +10,50 @@ from sklearn.metrics import r2_score, brier_score_loss, mean_absolute_error
 from collections import defaultdict
 import pickle as pickle
 
-# ToDo change structure
-# ToDo check scoring
-# ToDo check NB
 
-def mean_absolute_percentage_error(y_true, y_pred): 
-    y_true, y_pred = np.array(y_true), np.array(y_pred)
-    return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
+def mean_absolute_percentage_error(y_org, y_art):
+    y_org, y_art = np.array(y_org), np.array(y_art)
+    return np.mean(np.abs((y_org - y_art) / y_org)) * 100
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Getting models
 
 target = 'STROKE'
 
-data = Load().execute(source=config.FILE, filename='stroke_preprocessed_imputed_lvef.csv')
-data = Impute().execute(data, imputation_method=config.DEFAULT)
+#data = Load().execute(source=config.FILE, filename='stroke_preprocessed_imputed_lvef.csv')
+#data = Impute().execute(data, imputation_method=config.DEFAULT)
 
 #train, test, models, results_org, auc_org_list, auc_org = train_model(data)
 
-train = pickle.load(open(r'results_performance\train.pkl', "rb"))
-test = pickle.load(open(r'results_performance\test.pkl', "rb"))
-models = pickle.load(open(r'results_performance\models.pkl', "rb"))
-results_org = pickle.load(open(r'results_performance\results_org.pkl', "rb"))
-auc_org_list = pickle.load(open(r'results_performance\auc_list.pkl', "rb"))
-auc_org = pickle.load(open(r'results_performance\auc_org.pkl', "rb"))
-a_cal_org_list = pickle.load(open(r'results_performance\a_cal_org_list.pkl', "rb"))
-a_cal_org = pickle.load(open(r'results_performance\a_cal_org.pkl', "rb"))
-b_cal_org_list = pickle.load(open(r'results_performance\b_cal_org_list.pkl', "rb"))
-b_cal_org = pickle.load(open(r'results_performance\b_cal_org.pkl', "rb"))
-brier_cal_org_list = pickle.load(open(r'results_performance\brier_cal_org_list.pkl', "rb"))
-brier_cal_org = pickle.load(open(r'results_performance\brier_cal_org.pkl', "rb"))
-nb_org_list = pickle.load(open(r'results_performance\nb_org_list.pkl', "rb"))
-nb_org = pickle.load(open(r'results_performance\nb_org.pkl', "rb"))
+train = pickle.load(open(r'final_results_performance\train.pkl', "rb"))
+test = pickle.load(open(r'final_results_performance\test.pkl', "rb"))
+models = pickle.load(open(r'final_results_performance\models.pkl', "rb"))
+results_org = pickle.load(open(r'final_results_performance\results_org.pkl', "rb"))
+auc_org_list = pickle.load(open(r'final_results_performance\auc_list.pkl', "rb"))
+auc_org = pickle.load(open(r'final_results_performance\auc_org.pkl', "rb"))
+a_cal_org_list = pickle.load(open(r'final_results_performance\a_cal_org_list.pkl', "rb"))
+a_cal_org = pickle.load(open(r'final_results_performance\a_cal_org.pkl', "rb"))
+b_cal_org_list = pickle.load(open(r'final_results_performance\b_cal_org_list.pkl', "rb"))
+b_cal_org = pickle.load(open(r'final_results_performance\b_cal_org.pkl', "rb"))
+brier_cal_org_list = pickle.load(open(r'final_results_performance\brier_cal_org_list.pkl', "rb"))
+brier_cal_org = pickle.load(open(r'final_results_performance\brier_cal_org.pkl', "rb"))
+nb_org_list = pickle.load(open(r'final_results_performance\nb_org_list.pkl', "rb"))
+nb_org = pickle.load(open(r'final_results_performance\nb_org.pkl', "rb"))
 
-results_list = pickle.load(open(r'results_performance\results.pkl', "rb"))
-auc_list = pickle.load(open(r'results_performance\auc_list.pkl', "rb"))
-auc = pickle.load(open(r'results_performance\auc.pkl', "rb"))
-a_cal_list = pickle.load(open(r'results_performance\a_cal_list.pkl', "rb"))
-a_cal = pickle.load(open(r'results_performance\a_cal.pkl', "rb"))
-b_cal_list = pickle.load(open(r'results_performance\b_cal_list.pkl', "rb"))
-b_cal = pickle.load(open(r'results_performance\b_cal.pkl', "rb"))
-brier_cal_list = pickle.load(open(r'results_performance\brier_cal_list.pkl', "rb"))
-brier_cal = pickle.load(open(r'results_performance\brier_cal.pkl', "rb"))
-nb_list = pickle.load(open(r'results_performance\nb_list.pkl', "rb"))
-nb = pickle.load(open(r'results_performance\nb.pkl', "rb"))
+results_list = pickle.load(open(r'final_results_performance\results.pkl', "rb"))
+auc_list = pickle.load(open(r'final_results_performance\auc_list.pkl', "rb"))
+auc = pickle.load(open(r'final_results_performance\auc.pkl', "rb"))
+a_cal_list = pickle.load(open(r'final_results_performance\a_cal_list.pkl', "rb"))
+a_cal = pickle.load(open(r'final_results_performance\a_cal.pkl', "rb"))
+b_cal_list = pickle.load(open(r'final_results_performance\b_cal_list.pkl', "rb"))
+b_cal = pickle.load(open(r'final_results_performance\b_cal.pkl', "rb"))
+brier_cal_list = pickle.load(open(r'final_results_performance\brier_cal_list.pkl', "rb"))
+brier_cal = pickle.load(open(r'final_results_performance\brier_cal.pkl', "rb"))
+nb_list = pickle.load(open(r'final_results_performance\nb_list.pkl', "rb"))
+nb = pickle.load(open(r'final_results_performance\nb.pkl', "rb"))
+
+#for col in test.columns:
+#    print(col)
 
 # ----------------------------------------------------------------------------------------------------------------------
 # mean calculations
@@ -257,10 +257,18 @@ var_nb_total = sum((i - mean_nb_org_total) ** 2 for i in nb_list) / len(nb_list)
 
 # Printing metrics
 for alg in results_org:
-	print("Printing metrics for %s" % alg)
-	print(get_discrimination_metrics(**results_org[alg]))
-	print(get_calibration_metrics(results_org[alg]["y_true"], results_org[alg]["y_probs"]))
-	print(get_clinical_usefulness_metrics(get_discrimination_metrics(**results_org[alg]), tr=0.03))
+	cm = get_discrimination_metrics(**results_org[alg])['confusion_matrix']
+	n = cm[0][0] + cm[0][1] + cm[1][0] + cm[1][1]
+	print('Printing metrics for %s' % alg)
+	print('Confusion Matrix:', get_discrimination_metrics(**results_org[alg])['confusion_matrix'])
+	print('Ration TP to all:', round((cm[0][0] / n)*100, 2), '%')
+	print('Ration FP to all:', round((cm[1][0] / n)*100, 2), '%')
+	print('Ration FN to all:', round((cm[0][1] / n)*100, 2), '%')
+	print('Ration TN to all:', round((cm[1][1] / n)*100, 2), '%')
+	print('AUC:', round(get_discrimination_metrics(**results_org[alg])['auc']*100), '%')
+	print('A-Calibration:', round(a_cal_org[alg], 3))
+	print('B-Calibration:', round(b_cal_org[alg], 3))
+	print('Net Benefit:', round(nb_org[alg], 3))
 	print('\n')
 
 # ------  Transferability Metrics  -------------------------------------------------------------------------------------
@@ -273,35 +281,35 @@ for alg in results:
 	print('Transferability for', alg, ':', 100 - (int(np.abs(auc_org[alg] - mean_auc[alg]) * 100)), "%")
 	print('Variance of', alg, 'AUC in regard to original AUC:', round(var_auc[alg], 5))
 	print('Brier Score of AUC:', round(brier_score_loss([auc_org[alg]] * len(auc[alg]), auc[alg]), 3))
-	print('Mean absolute percentage error:',
+	print('MAPE AUC:',
 		  round(mean_absolute_percentage_error([auc_org[alg]] * len(auc[alg]), auc[alg]), 3), '%', )
 	print('\n')
 	print('Mean A_cal for', alg, ':', round(mean_a_cal[alg], 3))
 	print('A_cal for', alg, 'of original data set:', round(a_cal_org[alg], 3))
 	print('Transferability for', alg, ':', 100 - (int(np.abs(a_cal_org[alg] - mean_a_cal[alg]) * 100)), "%")
 	print('Variance of', alg, 'A_cal in regard to original A_cal:', round(var_a_cal[alg], 5))
-	print('Mean absolute percentage error:',
+	print('MAPE A_Cal:',
 		  round(mean_absolute_percentage_error([a_cal_org[alg]] * len(a_cal[alg]), a_cal[alg]), 3), '%', )
 	print('\n')
 	print('Mean B_cal for', alg, ':', round(mean_b_cal[alg], 3))
 	print('B_cal for', alg, 'of original data set:', round(b_cal_org[alg], 3))
 	print('Transferability for', alg, ':', 100 - (int(np.abs(b_cal_org[alg] - mean_b_cal[alg]) * 100)), "%")
 	print('Variance of', alg, 'B_cal in regard to original B_cal:', round(var_b_cal[alg], 5))
-	print('Mean absolute percentage error:',
+	print('MAPE B_Cal:',
 		  round(mean_absolute_percentage_error([b_cal_org[alg]] * len(b_cal[alg]), b_cal[alg]), 3), '%', )
 	print('\n')
 	print('Mean Brier Calibration for', alg, ':', round(mean_brier_cal[alg], 3))
 	print('Brier Calibration for', alg, 'of original data set:', round(brier_cal_org[alg], 3))
 	print('Transferability for', alg, ':', 100 - (int(np.abs(brier_cal_org[alg] - mean_brier_cal[alg]) * 100)), "%")
 	print('Variance of', alg, 'Brier Calibration in regard to original Brier Calibration:', round(var_brier_cal[alg], 5))
-	print('Mean absolute percentage error:',
+	print('MAPE Brier Calibration:',
 		  round(mean_absolute_percentage_error([brier_cal_org[alg]] * len(brier_cal[alg]), brier_cal[alg]), 3), '%', )
 	print('\n')
 	print('Mean Net Benefit for', alg, ':', round(mean_nb[alg], 3))
 	print('Net Benefit for', alg, 'of original data set:', round(nb_org[alg], 3))
 	print('Transferability for', alg, ':', 100 - (int(np.abs(nb_org[alg] - mean_nb[alg]) * 100)), "%")
 	print('Variance of', alg, 'Net Benefit in regard to original Net Benefit:', round(var_nb[alg], 5))
-	print('Mean absolute percentage error:',
+	print('MAPE NB:',
 		  round(mean_absolute_percentage_error([nb_org[alg]] * len(nb[alg]), nb[alg]), 3), '%', )
 	print()
 
@@ -314,7 +322,7 @@ print('R2 of AUC:', r2_total)
 print('R2 (sklearn) of AUC:', r2_score([mean_auc_org_total] * len(auc_list), auc_list)) # the values are extremly different, often zero
 print('Brier of AUC:', brier_score_loss([mean_auc_org_total] * len(auc_list), auc_list))
 print('Mean absolute error:', mean_absolute_error([mean_auc_org_total] * len(auc_list), auc_list))
-print('Mean absolute percentage error:', mean_absolute_percentage_error([mean_auc_org_total] * len(auc_list), auc_list), '%')
+print('MAPE AUC:', mean_absolute_percentage_error([mean_auc_org_total] * len(auc_list), auc_list), '%')
 # Percentage difference between the mean of AUCs and the original AUC
 print('Transferability_overall:', 100 - (int(np.abs(mean_auc_org_total - mean_auc_total) * 100)), "%")
 print('Variance of AUC in regard to orginal AUC:', var_auc_total)
