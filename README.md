@@ -8,8 +8,9 @@ Among other functions, it provides encapsulated functionalities for the followin
 
 *   Imputation
 *   Transformation
-*   Training and
-*   Evaluation
+*   Training
+*   Evaluation and
+*   Interpretation 
 
 ## Developing and Evaluating a Model 
 
@@ -19,7 +20,7 @@ The toolkit functionalities are exposed by means of MORPHER Jobs to impute, trai
 
 ```python
 import morpher
-import morpher.config as config
+from morpher.config import algorithms, imputers
 from morpher.jobs import *
 from morpher.metrics import *
 ```
@@ -32,11 +33,11 @@ target = "AKI"
 
 ''' First we load, impute and split the dataset in train and test '''
 data = Load().execute(source=config.FILE, filename="cohort.csv")
-data = Impute().execute(data, imputation_method=config.DEFAULT)
+data = Impute().execute(data, imputation_method=imputers.DEFAULT)
 train, test = Split().execute(data, test_size=0.2)
 
 ''' The we train the given algorithms on the training set '''
-models = Train().execute(train, target=target, algorithms=[config.LOGISTIC_REGRESSION, config.DECISION_TREE, config.RANDOM_FOREST, config.GRADIENT_BOOSTING_DECISION_TREE, config.MULTILAYER_PERCEPTRON])
+models = Train().execute(train, target=target, algorithms=[algorithms.LR, algorithms.DT, algorithms.RF, algorithms.GBDT, algorithms.MLP])
 
 ''' And evaluate them on the test set '''
 results = Evaluate().execute(test, target=target, models=models)
@@ -72,3 +73,4 @@ plt.show()
 *   jsonpickle
 *   jinja2
 *   mpld3
+*   shap
