@@ -339,7 +339,7 @@ class GradientBoostingDecisionTree(Base):
         super().__init__(clf, hyperparams, optimize, param_grid, crossval, n_splits)
 
     @property
-    def feature_importances_(self):        
+    def feature_importances_(self):
         if hasattr(self.clf, 'feature_importances_'):
             return self.clf.feature_importances_
         else:

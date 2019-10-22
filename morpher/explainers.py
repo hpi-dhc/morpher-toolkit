@@ -100,16 +100,17 @@ class LimeExplainer(Base):
         num_exps_desired = kwargs.get("num_exps_desired") or 10
 
         features = self.data.drop([self.target], axis=1)
+        pos_label = np.asarray(self.data[self.target]).max()
 
         if index is None:
             print("*** Generating explanations using Submodular Pick...")            
             print("Sample size chosen: {}".format(round(sample_size)))
-
+            
             sp_obj = submodular_pick.SubmodularPick(self.explainer, np.asarray(features), self.model.predict_proba, \
                                                     sample_size=sample_size, num_features=num_features, num_exps_desired=num_exps_desired)
-                       
+           
             for sp_exp in sp_obj.sp_explanations:
-                exp = sp_exp.as_list(label=1)
+                exp = sp_exp.as_list(label=pos_label)
                 self._append_explanation(exp)
 
             #create averaged contribution for all features across all explanations
@@ -127,14 +128,14 @@ class LimeExplainer(Base):
             return avg_explanation
 
         else:
-            try:
+            try:               
                 print(f"Explaining prediction for case #{index}")
                 row_feat = np.asarray(features)[int(index),:].reshape(1, -1)
                 y_true, y_pred, y_prob = self.data[self.target][int(index)], self.model.predict(row_feat), self.model.predict_proba(row_feat)
                 print("Model predicted class {0} with class score {1:.3f}".format(y_pred, y_prob[0,int(y_pred)]))
                 print("Actual class is {0}".format(y_true))
-                exp = self.explainer.explain_instance(row_feat[0], self.model.predict_proba)
-                self._append_explanation(exp.as_list(label=1))
+                exp = self.explainer.explain_instance(row_feat[0], self.model.predict_proba)                
+                self._append_explanation(exp.as_list(label=pos_label))
             except Exception as e:
                 print("Error occurred: {}".format(str(e)))
                 print(traceback.format_exc())
@@ -263,8 +264,9 @@ class ShapExplainer(Base):
 
         if not self.model.is_tree_:            
             shap_values = shap_values[0]
-
-        shap_values = np.abs(shap_values).mean(axis=0)
+        
+        shap_values = np.abs(shap_values).mean(axis=0).ravel()
+        
         exp = sorted(zip(columns, shap_values), key=lambda x: x[1], reverse=True)[:num_features]
         for column,value in exp:
             print("{0} = {1}".format(column, value))
