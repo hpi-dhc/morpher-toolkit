@@ -28,10 +28,15 @@ options = [
 	# supported scalers
 	{'DEFAULT' : 'StandardScaler',
 	 'ROBUST' : 'RobustScaler',
-	 'NORMALIZER' : 'Normalizer'}]
+	 'NORMALIZER' : 'Normalizer'},
+	 # supported interpreters
+	{'LIME' : 'LimeExplainer',
+	 'MIMIC' : 'MimicExplainer',
+	 'SHAP' : 'ShapExplainer',
+	 'FEAT_CONTRIB' : 'FeatContribExplainer'}]
 
 # create the named tuples
-algorithms, imputers, scalers = \
+algorithms, imputers, scalers, explainers = \
 	[ namedtuple('options', attr.keys())(**attr) \
 		for attr in options ]
 

@@ -2,16 +2,15 @@ import pandas as pd
 import numpy as np
 from cycler import cycler
 import matplotlib.pyplot as plt, mpld3
-
+import matplotlib
 from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve, brier_score_loss, explained_variance_score, mean_squared_error, mean_absolute_error, precision_recall_curve, average_precision_score, auc
-
 from sklearn.calibration import CalibratedClassifierCV, calibration_curve
+from sklearn.preprocessing import scale, MinMaxScaler, StandardScaler
 
 prop_cycle = (cycler('color', [u'#1f77b4', u'#ff7f0e', u'#2ca02c', u'#d62728', u'#9467bd', u'#8c564b', u'#e377c2']) + \
                                 cycler('linestyle', [(0, ()),(0, (1, 5)),(0, (1, 1)),(0, (5, 5)),(0, (5, 1)),(0, (3, 5, 1, 5)),(0, (3, 1, 1, 1))]))
 
 from morpher.algorithms import *
-
 from morpher.metrics import *
 
 def plot_roc(results, title="Receiver Operating Curve", ax=None, figsize=None, legend_loc=None):
@@ -190,11 +189,217 @@ def plot_dc(results, tr_start=0.01, tr_end=0.99, tr_step=0.01, metric_type="trea
     ax.set_ylim([ymin,ymax])
     ax.set_xlim([0,1])
 
-
+def plot_feat_importances(feat_importances, ax=None, friendly_names=None,title='Feature Importance', figsize=None, legend_loc=None):
+    '''
+    Plots feat importances based on given explanations
     
+    Params:
     
+    feat_importances      outputs of an explainer, consisting of features and their importance
+    ax                    figure axis to draw on
+    
+    '''
+    if not feat_importances:
+        raise AttributeError("No feature importances available")
 
+    if figsize:
+        plt.clf()
+        fig = plt.figure(figsize=figsize)
 
+    if not ax:
+        ax = plt.gca()
+    
+    plt.rc('axes', prop_cycle=prop_cycle)
+
+    names, vals = list(feat_importances.keys()), list(feat_importances.values())
+    names.reverse()
+    vals.reverse()
+
+    if friendly_names:
+       names = [ friendly_names.get(feat_name) or feat_name for feat_name in names]
+
+    colors = [u'#1f77b4' if x > 0 else '#ff7f0e' for x in vals]
+    pos = np.arange(len(feat_importances)) + .5
+    ax.barh(names, vals, align='center', color=colors)    
+    ax.set_yticklabels(names)    
+    ax.set_title(title)
+
+def plot_explanation_heatmap(explanations, ax=None, friendly_names=None, top_features = 15, title='Feature Importances by Method', figsize=None, legend_loc=None):
+    '''
+    Plots a heatmap based on an array with different feature importances
+    
+    Params:
+    
+    feat_importances      dict of dicts with outputs of an explainer, where the keys are the explainer method used
+    ax                    figure axis to draw on
+    friendly_names        if features have a friendly names, use them
+    
+    '''
+    if not explanations:
+        raise AttributeError("No explanations available")
+
+    if figsize:
+        plt.clf()
+        fig = plt.figure(figsize=figsize)
+
+    if not ax:
+        ax = plt.gca()
+    
+    plt.rc('axes', prop_cycle=prop_cycle)
+
+    #list of available interpretability methods
+    methods = list(explanations.keys())
+
+    #list of all features mentioned across all methods
+    features = []
+
+    # first normalize all feature importance values between 0,1    
+    for method in methods:
+        scaler = MinMaxScaler(feature_range=(0.1, 1))
+        #scaler = StandardScaler()
+        importances =  np.array(list(explanations[method].values())).reshape(-1,1)
+        scaler.fit(importances)
+        n_importances = list(scaler.fit_transform(importances).ravel())
+        explanations[method].update({ key : value  for key,value in zip(list(explanations[method].keys()), n_importances)})
+    
+    # now, create a list with all the features needed
+    for method in methods:
+        for feature in explanations[method]:
+            if feature not in features:
+                features.append(feature)
+
+    # then, go ahead and np.nan out the same features for the other methods
+    for feature in features:
+        for method in methods:
+            if not feature in explanations[method]:
+                explanations[method][feature] = 0.0
+
+    # then, go ahead and np.nan out the same features for the other methods
+    feature_means = []
+    for feature in features:
+        feature_means.append((feature ,np.mean([explanations[method][feature] for method in methods])))
+    feature_means = sorted(feature_means, key=lambda x: x[1], reverse=True)
+    display_features = [ key for key,value in feature_means[:top_features]]
+
+    # build / shape the data array in the order it should appear
+    data = [[ explanations[method][feature] for method in methods] for feature in features if feature in display_features]
+
+    data = np.array(sorted( data, key=lambda x: np.mean(x), reverse=True )) # build / shape the data array in the order it should appear
+
+    im, cbar = heatmap(data, features, methods, ax=ax, cmap="YlGn", cbarlabel="Feature Importance (Outcome=yes)")
+
+    ax.set_aspect('auto')
+    texts = annotate_heatmap(im, valfmt="{x:.2f}")
+  
+'''
+    Credit: Copyright 2002 - 2012 John Hunter, Darren Dale, Eric Firing, Michael Droettboom and the Matplotlib development team; 2012 - 2018 The Matplotlib development team
+    https://matplotlib.org/gallery/images_contours_and_fields/image_annotated_heatmap.html
+'''
+
+def heatmap(data, row_labels, col_labels, ax=None, cbar_kw={}, cbarlabel="", **kwargs):
+    """
+    Create a heatmap from a numpy array and two lists of labels.
+
+    Arguments:
+        data       : A 2D numpy array of shape (N,M)
+        row_labels : A list or array of length N with the labels
+                     for the rows
+        col_labels : A list or array of length M with the labels
+                     for the columns
+    Optional arguments:
+        ax         : A matplotlib.axes.Axes instance to which the heatmap
+                     is plotted. If not provided, use current axes or
+                     create a new one.
+        cbar_kw    : A dictionary with arguments to
+                     :meth:`matplotlib.Figure.colorbar`.
+        cbarlabel  : The label for the colorbar
+    All other arguments are directly passed on to the imshow call.
+    """
+
+    if not ax:
+        ax = plt.gca()
+
+    # Plot the heatmap
+    im = ax.imshow(data, **kwargs)
+
+    # We want to show all ticks...
+    ax.set_xticks(np.arange(data.shape[1]))
+    ax.set_yticks(np.arange(data.shape[0]))
+    # ... and label them with the respective list entries.
+    ax.set_xticklabels(col_labels)
+    ax.set_yticklabels(row_labels)
+
+    # Let the horizontal axes labeling appear on top.
+    ax.tick_params(top=True, bottom=False,
+                   labeltop=True, labelbottom=False)
+
+    # Rotate the tick labels and set their alignment.
+    plt.setp(ax.get_xticklabels(), rotation=-30, ha="right", rotation_mode="anchor")
+
+    # Turn spines off and create white grid.
+    for edge, spine in ax.spines.items():
+        spine.set_visible(False)
+
+    ax.set_xticks(np.arange(data.shape[1]+1)-.5, minor=True)
+    ax.set_yticks(np.arange(data.shape[0]+1)-.5, minor=True)
+    ax.grid(which="minor", color="w", linestyle='-', linewidth=3)
+    ax.tick_params(which="minor", bottom=False, left=False)
+
+    # Create colorbar
+    cbar = ax.figure.colorbar(im, ax=ax, **cbar_kw)
+    cbar.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom")
+
+    return im, cbar
+
+def annotate_heatmap(im, data=None, valfmt="{x:.2f}", textcolors=["black", "white"], threshold=None, **textkw):
+    """
+    A function to annotate a heatmap.
+
+    Arguments:
+        im         : The AxesImage to be labeled.
+    Optional arguments:
+        data       : Data used to annotate. If None, the image's data is used.
+        valfmt     : The format of the annotations inside the heatmap.
+                     This should either use the string format method, e.g.
+                     "$ {x:.2f}", or be a :class:`matplotlib.ticker.Formatter`.
+        textcolors : A list or array of two color specifications. The first is
+                     used for values below a threshold, the second for those
+                     above.
+        threshold  : Value in data units according to which the colors from
+                     textcolors are applied. If None (the default) uses the
+                     middle of the colormap as separation.
+
+    Further arguments are passed on to the created text labels.
+    """
+
+    if not isinstance(data, (list, np.ndarray)):
+        data = im.get_array()
+
+    # Normalize the threshold to the images color range.
+    if threshold is not None:
+        threshold = im.norm(threshold)
+    else:
+        threshold = im.norm(data.max())/2.
+
+    # Set default alignment to center, but allow it to be
+    # overwritten by textkw.
+    kw = dict(horizontalalignment="center", verticalalignment="center")
+    kw.update(textkw)
+
+    # Get the formatter in case a string is supplied
+    if isinstance(valfmt, str):
+        valfmt = matplotlib.ticker.StrMethodFormatter(valfmt)
+
+    # Loop over the data and create a `Text` for each "pixel".
+    # Change the text's color depending on the data.
+    texts = []
+    for i in range(data.shape[0]):
+        for j in range(data.shape[1]):
+            kw.update(color=textcolors[im.norm(data[i, j]) > threshold])
+            text = im.axes.text(j, i, valfmt(data[i, j], None), **kw)
+            texts.append(text)
+
+    return texts
 
 
 

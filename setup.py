@@ -14,7 +14,7 @@ setup(name='morpher',
         'Programming Language :: Python :: 3.6',
         'Topic :: Scientific/Engineering :: Bio-Informatics',
       ],
-      url='https://github.com/hpi-dhc/morpher',
+      url='https://github.com/hpi-dhc/morpher-toolkit',
       author='Harry Freitas da Cruz',
       author_email='harrycruz@gmail.com',
       license='MIT',
@@ -36,7 +36,8 @@ setup(name='morpher',
           'jsonpickle==1.2',
           'jinja2',
           'pyhdb',
-          'mpld3'
+          'mpld3',
+          'shap'
       ],
       #specifying a given version: 'chardet==3.0.4',
       zip_safe=False)

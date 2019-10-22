@@ -153,6 +153,13 @@ class Base:
         y_pred = estimator.predict_proba(X)
         return roc_auc_score(y, y_pred[:,1])
 
+    @property
+    def is_tree_(self):
+        '''
+        Property used to define, for example, if we should use SHAP Tree Explainer instead of KernelExplainer.
+        '''  
+        return False
+
 class DecisionTree(Base):
 
     def __init__(self, hyperparams=None, optimize=None, param_grid=None, crossval=None, n_splits=None):
@@ -180,6 +187,16 @@ class DecisionTree(Base):
             )
         
         super().__init__(clf, hyperparams, optimize, param_grid, crossval, n_splits)
+
+    '''
+    Stores model-based feature importance, for models such as trees
+    '''
+    @property
+    def feature_importances_(self):        
+        if hasattr(self.clf, 'feature_importances_'):
+            return self.clf.feature_importances_
+        else:
+            return False
 
 class RandomForest(Base):
 
@@ -225,6 +242,20 @@ class RandomForest(Base):
             )
         
         super().__init__(clf, hyperparams, optimize, param_grid, crossval, n_splits)
+
+    '''
+    Stores model-based feature importance, for models such as trees
+    '''
+    @property
+    def feature_importances_(self):        
+        if hasattr(self.clf, 'feature_importances_'):
+            return self.clf.feature_importances_
+        else:
+            return False
+
+    @property
+    def is_tree_(self):        
+        return True
 
 class MultilayerPerceptron(Base):
 
@@ -307,6 +338,17 @@ class GradientBoostingDecisionTree(Base):
         
         super().__init__(clf, hyperparams, optimize, param_grid, crossval, n_splits)
 
+    @property
+    def feature_importances_(self):        
+        if hasattr(self.clf, 'feature_importances_'):
+            return self.clf.feature_importances_
+        else:
+            return False
+
+    @property
+    def is_tree_(self):        
+        return True
+
 class LogisticRegression(Base):
 
     def __init__(self, hyperparams=None, optimize=None, param_grid=None, crossval=None, n_splits=None):
@@ -345,6 +387,12 @@ class LogisticRegression(Base):
         
         super().__init__(clf, hyperparams, optimize, param_grid, crossval, n_splits)
 
+    @property
+    def feature_importances_(self):        
+        if hasattr(self.clf, 'coef_'):
+            return self.clf.coef_[0]
+        else:
+            return False
 
 
 
