@@ -20,10 +20,10 @@ class Evaluate(MorpherJob):
         #if we have a list of filenames coming from 'Split', we pass over the 'test' set for evaluation (pos. 1); otherwise we pass over the file we got
         if type(self.get_input("filenames")) == list:
             filename = self.get_input("filenames")[1]
-            validation_mode = 0            
+            experiment_mode = 0            
         else:
             filename = self.get_input("filename")
-            validation_mode = 1
+            experiment_mode = 1
 
         df = pd.read_csv(filepath_or_buffer= filename)
 
@@ -47,7 +47,7 @@ class Evaluate(MorpherJob):
             disc_metrics = get_discrimination_metrics(results[clf_name]["y_true"], results[clf_name]["y_pred"], results[clf_name]["y_probs"])
             cal_metrics = get_calibration_metrics(results[clf_name]["y_true"], results[clf_name]["y_probs"])
             cu_metrics = get_clinical_usefulness_metrics(disc_metrics)
-            experiment_id = self.add_experiment(cohort_id=cohort_id, model_id=model_id,user_id=user_id,description=description,target=target,validation_mode=validation_mode,parameters={"discrimination": disc_metrics, "calibration": cal_metrics, "clinical_usefulness": cu_metrics})
+            experiment_id = self.add_experiment(cohort_id=cohort_id, model_id=model_id,user_id=user_id,description=description,target=target,experiment_mode=experiment_mode,parameters={"discrimination": disc_metrics, "calibration": cal_metrics, "clinical_usefulness": cu_metrics})
             self.add_batch(experiment_id, predictions)
 
         self.logger.info("Algorithms evaluated successfully.")

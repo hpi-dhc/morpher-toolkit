@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import traceback
 import json
+import os
 import uuid
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
@@ -40,14 +41,21 @@ class MorpherJob(Job):
             self.logger.debug("Endpoint: " + endpoint)            
             return {"status":"error", "msg":str(e)}
 
-    def save_to_file(self, data):
+    def save_to_file(self, data, filename=None):
         '''
         Stores currently loaded data frame and saves it to a file using a uuid.
         '''
         file_path = self.working_dir() + str(uuid.uuid1())
         try:
+            # if filename is provided, we also save a persistent copy in the user's directory for ulterior use
+            if filename:                
+                users_path = os.path.abspath(self.config.get('paths', 'user_files'))
+                persistent_file_path = os.path.join(users_path, filename)
+                data.to_csv(path_or_buf = persistent_file_path, index=False)
+                self.logger.info("Data stored persistently to file {0}".format(persistent_file_path))
+
             data.to_csv(path_or_buf = file_path, index=False)
-            self.logger.info("Data stored to file {0}".format(file_path))
+            self.logger.info("Data stored to file {0}".format(file_path))      
             return file_path
         
         except Exception as e:

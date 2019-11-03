@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import traceback
 import logging
+import os
 import pandas as pd
 import numpy as np
 from morpher.jobs import MorpherJob
@@ -24,18 +25,18 @@ class Split(MorpherJob):
 
         train_data, test_data = self.execute(df, test_size=test_size)
 
-        self.add_output("filenames", [self.save_to_file(train_data), self.save_to_file(test_data)])
+        self.add_output("filenames", [self.save_to_file(train_data, filename=f"{os.path.basename(filename)}_train"), self.save_to_file(test_data, filename=f"{os.path.basename(filename)}_test")])
         self.add_output("cohort_id", self.get_input("cohort_id"))
         self.add_output("user_id", self.get_input("user_id"))
         self.logger.info("Data split successfully, reserving {0:.0%} for test.".format(test_size))
 
-    def execute(self, data, random_state=42, **kwargs):
+    def execute(self, data, **kwargs):
 
         try:          
           if not data.empty:
             test_size = kwargs.get("test_size")
             kwarg_not_empty(test_size,"test_size")
-            return train_test_split(data, test_size=test_size, random_state=random_state)
+            return train_test_split(data, test_size=test_size)
           else:
             raise AttributeError("No data provided")        
         except Exception as e:

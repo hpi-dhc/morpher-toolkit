@@ -18,15 +18,19 @@ class Explain(MorpherJob):
 
     def do_execute(self):
         
-        #if we have a list of filenames coming from 'Split', we pass over the 'test' set for evaluation (pos. 1); otherwise we pass over the file we got
-        if type(self.get_input("filenames")) == list:
-            filename = self.get_input("filenames")[1]
-            validation_mode = 0            
-        else:
-            filename = self.get_input("filename")
-            validation_mode = 1
+        #experiment_mode 2 is an interpretation experiment, running different interpretation algorithm
+        experiment_mode = 2
 
-        df = pd.read_csv(filepath_or_buffer= filename)
+        #if we have a list of filenames coming from 'Split', we pass over 'train' and 'test' respectively;
+        #otherwise we pass over the file we got, which by default is the one file attached to the cohort which generated the model
+
+        if type(self.get_input("filenames")) == list:
+            train, test = self.get_input("filenames")
+        else:
+            train, test = f'{self.get_input("filename")}_train', f'{self.get_input("filename")}_test'
+
+        train = pd.read_csv(filepath_or_buffer=train)
+        test = pd.read_csv(filepath_or_buffer=test)
 
         model_ids = self.get_input("model_ids")  
         models = [jp.decode(json.dumps(model["content"])) for model in Retrieve(self.session).get_models(model_ids)]
@@ -37,21 +41,19 @@ class Explain(MorpherJob):
         cohort_id = self.get_input("cohort_id")
         user_id = self.get_input("user_id")
         target = self.get_input("target")
+        explainers = self.get_input("explainers")
+        
+        #make it become a list if not already
+        assert explainers != ""
+        if type(explainers) is str:
+            explainers = [explainers]
 
-        results = self.execute(df, target=target, models={model.__class__.__name__: model for model in models})
+        description = "Explanations for {clf_name} for target '{target}' based on {methods}".format(clf_name=clf_name, target=target, methods=", ".join(explainers))
+        explanations = self.execute(train, target=target, models={model.__class__.__name__: model for model in models}, explainers=explainers, exp_kwargs={'test':test})
 
-        for model in models:
-            clf_name = model.__class__.__name__
-            model_id = model_id_mapping[clf_name]
-            description = "Model based on {clf_name} for target '{target}'".format(clf_name=clf_name, target=target)
-            predictions = [ { "target_label": float(results[clf_name]["y_true"].iloc[i]),"predicted_label": float(results[clf_name]["y_pred"][i]),"predicted_proba": float(results[clf_name]["y_probs"][i]) } for i in range(len(results[clf_name]["y_true"])) ]
-            disc_metrics = get_discrimination_metrics(results[clf_name]["y_true"], results[clf_name]["y_pred"], results[clf_name]["y_probs"])
-            cal_metrics = get_calibration_metrics(results[clf_name]["y_true"], results[clf_name]["y_probs"])
-            cu_metrics = get_clinical_usefulness_metrics(disc_metrics)
-            experiment_id = self.add_experiment(cohort_id=cohort_id, model_id=model_id,user_id=user_id,description=description,target=target,validation_mode=validation_mode,parameters={"discrimination": disc_metrics, "calibration": cal_metrics, "clinical_usefulness": cu_metrics})
-            self.add_batch(experiment_id, predictions)
+        self.add_experiment(cohort_id=cohort_id, model_id=model_id,user_id=user_id,description=description,target=target,experiment_mode=experiment_mode,parameters=explanations)
 
-        self.logger.info("Algorithms evaluated successfully.")
+        self.logger.info("Models explained successfully.")
 
     def execute(self, data, **kwargs):
 
