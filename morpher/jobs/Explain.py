@@ -27,8 +27,10 @@ class Explain(MorpherJob):
         if type(self.get_input("filenames")) == list:
             train, test = self.get_input("filenames")
         else:
-            task = self.get_task()        
-            filename = task["parameters"]["file"]["name"]
+            task = self.get_task()
+            users_path = os.path.abspath(self.config.get('paths', 'user_files'))            
+            filename = task["parameters"]["file"]["name"]            
+            filename = os.path.join(users_path, filename)
             train, test = f'{filename}_train', f'{filename}_test'
 
         train = pd.read_csv(filepath_or_buffer=train)
