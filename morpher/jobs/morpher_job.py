@@ -71,6 +71,10 @@ class MorpherJob(Job):
         try:
             #return rowproxy as a dict
             task = {column: value for column, value in self.execute_select_stmt(stmt, {"task_id" : self.task_id}).fetchone().items()}
+            
+            if type(task["parameters"]) == str:
+                task["parameters"] = json.loads(task["parameters"])
+
             return task
         
         except Exception as e:

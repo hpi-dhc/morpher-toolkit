@@ -27,7 +27,9 @@ class Explain(MorpherJob):
         if type(self.get_input("filenames")) == list:
             train, test = self.get_input("filenames")
         else:
-            train, test = f'{self.get_input("filename")}_train', f'{self.get_input("filename")}_test'
+            task = self.get_task()        
+            filename = task["parameters"]["file"]["name"]
+            train, test = f'{filename}_train', f'{filename}_test'
 
         train = pd.read_csv(filepath_or_buffer=train)
         test = pd.read_csv(filepath_or_buffer=test)

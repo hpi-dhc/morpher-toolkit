@@ -16,10 +16,7 @@ class Load(MorpherJob):
     def do_execute(self):
 
         filename = self.get_input("filename")
-        task = self.get_task()        
-        
-        if type(task["parameters"]) == str:
-            task["parameters"] = json.loads(task["parameters"])
+        task = self.get_task()
 
         data = self.execute(filename=filename)
         self.add_output("filename", filename)

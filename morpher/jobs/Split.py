@@ -25,7 +25,9 @@ class Split(MorpherJob):
 
         train_data, test_data = self.execute(df, test_size=test_size)
 
-        self.add_output("filenames", [self.save_to_file(train_data, filename=f"{os.path.basename(filename)}_train"), self.save_to_file(test_data, filename=f"{os.path.basename(filename)}_test")])
+        task = self.get_task()
+
+        self.add_output("filenames", [self.save_to_file(train_data, filename=f"{task["parameters"]["file"]["name"]}_train"), self.save_to_file(test_data, filename=f"{task["parameters"]["file"]["name"]}_test")])
         self.add_output("cohort_id", self.get_input("cohort_id"))
         self.add_output("user_id", self.get_input("user_id"))
         self.logger.info("Data split successfully, reserving {0:.0%} for test.".format(test_size))
