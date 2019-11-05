@@ -45,7 +45,7 @@ class Explain(MorpherJob):
         cohort_id = self.get_input("cohort_id")
         user_id = self.get_input("user_id")
         target = self.get_input("target")
-        explainers = self.get_input("explainers")
+        explainers = self.get_input_variables("explainers")
         
         #make it become a list if not already
         assert explainers != ""
