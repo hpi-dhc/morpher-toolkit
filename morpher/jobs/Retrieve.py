@@ -19,6 +19,8 @@ class Retrieve(MorpherJob):
         filename = self.get_input("filename")
         df = pd.read_csv(filepath_or_buffer= filename)
         model_ids = self.get_input_variables("models")
+
+        task = self.get_task()
         
         assert model_ids != ""
         if type(model_ids) is str: #make it become a list if not already
@@ -29,8 +31,8 @@ class Retrieve(MorpherJob):
         models = self.get_models(model_ids, details=True)
 
         params = {}
-        params["cohort_id"] = self.get_input("cohort_id")
-        params["user_id"] = self.get_input("user_id")
+        params["cohort_id"] = self.get_input("cohort_id") or task["parameters"]["cohort_id"]
+        params["user_id"] = self.get_input("user_id") or task["parameters"]["user_id"]
         params["target"] = target        
         params["features"] = list(df.drop(target, axis=1).columns)
         

@@ -48,16 +48,30 @@ class Explain(MorpherJob):
         explainers = self.get_input_variables("explainers")
         
         #make it become a list if not already
+        print(explainers)
         assert explainers != ""
         if type(explainers) is str:
             explainers = [explainers]
 
-        description = "Explanations for {clf_name} for target '{target}' based on {methods}".format(clf_name=clf_name, target=target, methods=", ".join(explainers))
         explanations = self.execute(train, target=target, models={model.__class__.__name__: model for model in models}, explainers=explainers, exp_kwargs={'test':test})
 
-        self.add_experiment(cohort_id=cohort_id, model_id=model_id,user_id=user_id,description=description,target=target,experiment_mode=experiment_mode,parameters=explanations)
+        for model in models:
+            clf_name = model.__class__.__name__
+            model_id = model_id_mapping[clf_name]
+            description = "Explanations for target '{target}' based on {methods}".format(target=target, methods=", ".join(explainers))
+            self.add_experiment(cohort_id=cohort_id, model_id=model_id,user_id=user_id,description=description,target=target,experiment_mode=experiment_mode,parameters=explanations[clf_name])
+        
 
         self.logger.info("Models explained successfully.")
+
+    def add_experiment(self, **kwargs):
+     
+        response = self.api("experiments", "new", data=kwargs)
+
+        if response.get("status") == "success":
+            return response.get("experiment_id")
+        else:
+            raise Exception("There was an error creating an Experiment. Server returned: %s" % response.get("msg"))
 
     def execute(self, data, **kwargs):
 
