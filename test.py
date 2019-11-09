@@ -45,7 +45,7 @@ models = Train().execute(train, target=target, algorithms=[algorithms.GBDT])
 #explanations = Explain().execute(train, models=models, target=target, explainers=[explainers.MIMIC, explainers.FEAT_CONTRIB, explainers.SHAP], exp_kwargs={'test':test})
 #explanations = Explain().execute(train, models=models, target=target, explainers=[explainers.SHAP, explainers.MIMIC, explainers.FEAT_CONTRIB, explainers.LIME], exp_kwargs={'test':test})
 #explanations = Explain().execute(train, models=models, target=target, explainers=[explainers.SHAP, explainers.MIMIC, explainers.FEAT_CONTRIB], exp_kwargs={'test':test})
-explanations = Explain().execute(train, models=models, target=target, explainers=[explainers.SHAP, explainers.MIMIC, explainers.FEAT_CONTRIB, explainers.LIME], exp_kwargs={'test':test})
+explanations = Explain().execute(train, models=models, target=target, explainers=[explainers.SHAP, explainers.MIMIC, explainers.FEAT_CONTRIB], exp_kwargs={'test':test})
 #pickle.dump(explanations, open("explanations.pkl", "wb"))
 
 #results = Evaluate().execute(test, target=target, models=models)
@@ -63,6 +63,7 @@ plot_explanation_heatmap(explanations[algorithms.GBDT], top_features=50)
 
 plt.tight_layout()
 plt.show()
+#mpld3.show()
 
 
 

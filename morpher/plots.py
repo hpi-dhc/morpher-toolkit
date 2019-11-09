@@ -218,11 +218,12 @@ def plot_feat_importances(feat_importances, ax=None, friendly_names=None,title='
     if friendly_names:
        names = [ friendly_names.get(feat_name) or feat_name for feat_name in names]
 
-    colors = [u'#1f77b4' if x > 0 else '#ff7f0e' for x in vals]
-    pos = np.arange(len(feat_importances)) + .5
+    colors = [u'#1f77b4' if x > 0 else '#ff7f0e' for x in vals]    
+    pos = list(range(len(feat_importances)))
     ax.barh(names, vals, align='center', color=colors)    
+    ax.set_yticks(pos)
     ax.set_yticklabels(names)    
-    ax.set_title(title)
+    ax.set_title(title)    
 
 def plot_explanation_heatmap(explanations, ax=None, friendly_names=None, top_features = 15, title='Feature Importances by Method', figsize=None, legend_loc=None):
     '''
@@ -323,8 +324,8 @@ def heatmap(data, row_labels, col_labels, ax=None, cbar_kw={}, cbarlabel="", **k
     im = ax.imshow(data, **kwargs)
 
     # We want to show all ticks...
-    ax.set_xticks(np.arange(data.shape[1]))
-    ax.set_yticks(np.arange(data.shape[0]))
+    ax.set_xticks(np.arange(data.shape[1]).tolist())
+    ax.set_yticks(np.arange(data.shape[0]).tolist())
     # ... and label them with the respective list entries.
     ax.set_xticklabels(col_labels)
     ax.set_yticklabels(row_labels)
@@ -340,8 +341,8 @@ def heatmap(data, row_labels, col_labels, ax=None, cbar_kw={}, cbarlabel="", **k
     for edge, spine in ax.spines.items():
         spine.set_visible(False)
 
-    ax.set_xticks(np.arange(data.shape[1]+1)-.5, minor=True)
-    ax.set_yticks(np.arange(data.shape[0]+1)-.5, minor=True)
+    ax.set_xticks((np.arange(data.shape[1]+1)-.5).tolist(), minor=True)
+    ax.set_yticks((np.arange(data.shape[0]+1)-.5).tolist(), minor=True)
     ax.grid(which="minor", color="w", linestyle='-', linewidth=3)
     ax.tick_params(which="minor", bottom=False, left=False)
 
