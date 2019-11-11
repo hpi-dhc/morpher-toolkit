@@ -59,7 +59,7 @@ explanations = Explain().execute(train, models=models, target=target, explainers
 #print(crossval_metrics)
 #plot_feat_importances(explanations[algorithms.GBDT][explainers.SHAP][0], friendly_names={"ALCOHOL_ABUSE" : "AA Member?"})
 
-plot_explanation_heatmap(explanations[algorithms.GBDT], top_features=50)
+plot_weighted_explanation(explanations[algorithms.GBDT], top_features=50)
 
 plt.tight_layout()
 plt.show()

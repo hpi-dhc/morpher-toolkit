@@ -3,15 +3,18 @@ import numpy as np
 from cycler import cycler
 import matplotlib.pyplot as plt, mpld3
 import matplotlib
+from matplotlib import cm
 from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve, brier_score_loss, explained_variance_score, mean_squared_error, mean_absolute_error, precision_recall_curve, average_precision_score, auc
 from sklearn.calibration import CalibratedClassifierCV, calibration_curve
 from sklearn.preprocessing import scale, MinMaxScaler, StandardScaler
+import matplotlib.patches as mpatches
 
 prop_cycle = (cycler('color', [u'#1f77b4', u'#ff7f0e', u'#2ca02c', u'#d62728', u'#9467bd', u'#8c564b', u'#e377c2']) + \
                                 cycler('linestyle', [(0, ()),(0, (1, 5)),(0, (1, 1)),(0, (5, 5)),(0, (5, 1)),(0, (3, 5, 1, 5)),(0, (3, 1, 1, 1))]))
 
 from morpher.algorithms import *
 from morpher.metrics import *
+from collections import defaultdict
 
 def plot_roc(results, title="Receiver Operating Curve", ax=None, figsize=None, legend_loc=None):
     '''
@@ -223,7 +226,83 @@ def plot_feat_importances(feat_importances, ax=None, friendly_names=None,title='
     ax.barh(names, vals, align='center', color=colors)    
     ax.set_yticks(pos)
     ax.set_yticklabels(names)    
-    ax.set_title(title)    
+    ax.set_title(title)
+
+def plot_weighted_explanation(explanations, ax=None, friendly_names=None, top_features = 15, title='Weighted Feature Importances', figsize=None, legend_loc=None):
+    '''
+    Plots a heatmap based on an array with different feature importances
+    
+    Params:
+    
+    feat_importances      dict of dicts with outputs of an explainer, where the keys are the explainer method used
+    ax                    figure axis to draw on
+    friendly_names        if features have a friendly names, use them
+    
+    '''
+    if not explanations:
+        raise AttributeError("No explanations available")
+
+    if figsize:
+        plt.clf()
+        fig = plt.figure(figsize=figsize)
+
+    if not ax:
+        ax = plt.gca()
+    
+    plt.rc('axes', prop_cycle=prop_cycle)
+
+    #list of available interpretability methods
+    methods = list(explanations.keys())
+
+    #list of all features mentioned across all methods
+    features = defaultdict(lambda: [])
+
+    weights = {}
+
+    # first normalize all feature importance values between 0.1 and 1
+    for method in methods:
+        scaler = MinMaxScaler(feature_range=(0.1, 1))
+        #scaler = StandardScaler()
+        importances =  np.array(list(explanations[method].values())).reshape(-1,1)
+        scaler.fit(importances)
+        n_importances = list(scaler.fit_transform(importances).ravel())
+        explanations[method].update({ key : value  for key,value in zip(list(explanations[method].keys()), n_importances)})
+
+        for feat in explanations[method]:
+            features[feat].append(explanations[method][feat])
+
+    # calculate mean while retaining the weights
+    for feat in features:
+        weights[feat] = len(features[feat])
+        features[feat] = float(np.mean(features[feat]))
+
+    pos = list(range(len(features)))    
+
+    names, vals = list(features.keys()), list(features.values())
+    if friendly_names:
+        names = [friendly_names.get(feat_name) or feat_name for feat_name in names]
+
+    exps = list(sorted(zip(names, vals), key=lambda x: x[1]))
+    print(exps)
+    #normalize weights
+    scaler = MinMaxScaler(feature_range=(0.3, 1))
+    scaler.fit(np.array(list(weights.values())).reshape(-1,1))
+    weights = {k:scaler.transform([[v]])[0][0] for k, v in weights.items()} 
+    
+    color = (31,119,180)
+    colors = [tuple(((c+(255-c)*(1 - weights[feat]))/255) for c in color) for feat in [exp[0] for exp in exps]]
+
+    ax.barh([exp[0] for exp in exps], [exp[1] for exp in exps], align='center', color=colors)    
+    ax.set_yticks(pos)
+    ax.set_yticklabels([exp[0] for exp in exps])
+
+    #needed to manually set the legend
+    color_patch = sorted(list(set(colors)), key=lambda x: x)
+    weights = sorted(list(set(weights.values())), key=lambda x: x, reverse=True)
+    label_patch = ["Support: {0}".format(int(round(scaler.inverse_transform([[w]])[0][0]))) for w in weights]
+    patches = zip(color_patch, label_patch)  
+    ax.legend(handles=[ mpatches.Patch(color=color, label=label) for color, label in patches ])
+    ax.set_title(title)
 
 def plot_explanation_heatmap(explanations, ax=None, friendly_names=None, top_features = 15, title='Feature Importances by Method', figsize=None, legend_loc=None):
     '''
