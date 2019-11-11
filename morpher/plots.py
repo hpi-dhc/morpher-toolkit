@@ -283,7 +283,7 @@ def plot_weighted_explanation(explanations, ax=None, friendly_names=None, top_fe
         names = [friendly_names.get(feat_name) or feat_name for feat_name in names]
 
     exps = list(sorted(zip(names, vals), key=lambda x: x[1]))
-    print(exps)
+    
     #normalize weights
     scaler = MinMaxScaler(feature_range=(0.3, 1))
     scaler.fit(np.array(list(weights.values())).reshape(-1,1))
