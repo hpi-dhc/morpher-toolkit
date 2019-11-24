@@ -28,7 +28,14 @@ options = [
 	# supported scalers
 	{'DEFAULT' : 'StandardScaler',
 	 'ROBUST' : 'RobustScaler',
-	 'NORMALIZER' : 'Normalizer'},
+	 'NORMALIZER' : 'Normalizer',
+	 'QUANTILE_TRANSFORMER' : 'QuantileTransformer'},
+	# supported encoders
+	{'DEFAULT' : None,
+	 'BINARIZER' : 'LabelBinarizer',
+	 'LABEL' : 'LabelEncoder', 
+	 'ONEHOT':'OneHotEncoder',
+	 'ORDINAL':'OrdinalEncoder'},	
 	 # supported interpreters
 	{'LIME' : 'LimeExplainer',
 	 'MIMIC' : 'MimicExplainer',
@@ -36,7 +43,7 @@ options = [
 	 'FEAT_CONTRIB' : 'FeatContribExplainer'}]
 
 # create the named tuples
-algorithms, imputers, scalers, explainers = \
+algorithms, imputers, scalers, encoders ,explainers = \
 	[ namedtuple('options', attr.keys())(**attr) \
 		for attr in options ]
 

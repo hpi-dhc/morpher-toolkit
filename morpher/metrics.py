@@ -4,6 +4,7 @@ import logging
 import pandas as pd
 import numpy as np
 from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve, brier_score_loss, explained_variance_score, mean_squared_error, mean_absolute_error
+from sklearn.preprocessing import scale, MinMaxScaler, StandardScaler
 from sklearn.calibration import calibration_curve
 from collections import defaultdict
 from scipy.stats import linregress
@@ -110,6 +111,51 @@ def get_calibration_metrics(y_true, y_probs, n_bins=10):
     results['intercept'] = intercept
 
     return dict(results)
+
+def get_weighted_explanations(explanations, friendly_names=None):
+
+    '''
+     Returns a triple of all the important features from a list of explanations
+    '''
+
+    #list of available interpretability methods
+    methods = list(explanations.keys())
+
+    #list of all features mentioned across all methods
+    features = defaultdict(lambda: [])
+
+    weights = {}
+
+    # first normalize all feature importance values between 0.1 and 1
+    for method in methods:
+        scaler = MinMaxScaler(feature_range=(0.1, 1))
+        #scaler = StandardScaler()
+        importances =  np.array(list(explanations[method].values())).reshape(-1,1)
+        scaler.fit(importances)
+        n_importances = list(scaler.fit_transform(importances).ravel())
+        explanations[method].update({ key : value  for key,value in zip(list(explanations[method].keys()), n_importances)})
+
+        for feat in explanations[method]:
+            features[feat].append(explanations[method][feat])
+
+    # calculate mean while retaining the weights
+    for feat in features:
+        weights[feat] = len(features[feat])
+        features[feat] = float(np.mean(features[feat]))    
+
+    names, vals, weights = list(features.keys()), list(features.values()), list(weights.values())
+    if friendly_names:
+        names = [friendly_names.get(feat_name) or feat_name for feat_name in names]
+
+    exps = list(sorted(zip(names, vals, weights), key=lambda x: x[1]))
+
+    return exps
+    
+
+    
+
+
+
 
 
 

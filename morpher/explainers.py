@@ -98,6 +98,7 @@ class LimeExplainer(Base):
         sample_size = kwargs.get("sample_size") or round(self.data.shape[0]*0.25)
         num_features = kwargs.get("num_features") or 10
         num_exps_desired = kwargs.get("num_exps_desired") or 10
+        print_exps = kwargs.get("print_exps") or False
 
         features = self.data.drop([self.target], axis=1)
         pos_label = np.asarray(self.data[self.target]).max()
@@ -124,7 +125,8 @@ class LimeExplainer(Base):
             avg_explanation = OrderedDict(sorted(avg_explanation.items(), key=lambda x: x[1], reverse=True))
             
             for column,value in avg_explanation.items():
-                print("{0} = {1}".format(column, value))
+                if print_exps:
+                    print("{0} = {1}".format(column, value))
             return avg_explanation
 
         else:
@@ -166,13 +168,15 @@ class FeatContribExplainer(Base):
         '''
 
         num_features = kwargs.get("num_features") or 10
+        print_exps = kwargs.get("print_exps") or False
 
         if hasattr(self.model, 'feature_importances_'):
             print("*** Obtaining feature importances via classifier:")
             columns = self.data.drop(self.target, axis=1).columns            
             exp = sorted(zip(columns, self.model.feature_importances_), key=lambda x: x[1], reverse=True)[:num_features]
             for column,value in exp:
-                print("{0} = {1}".format(column, value))
+                if print_exps:
+                    print("{0} = {1}".format(column, value))
             self._append_explanation(exp)
         else:
             raise AttributeError("Model does not support feature contribution, please train a different model.")
@@ -211,14 +215,16 @@ class MimicExplainer(Base):
         Displays feature importances of the mimic model
         '''
 
-        num_features = kwargs.get("num_features") or 10        
+        num_features = kwargs.get("num_features") or 10
+        print_exps = kwargs.get("print_exps") or False   
 
         if hasattr(self.mimic, 'coef_'):
             print("*** Obtaining feature importances via mimic classifier:")
             columns = self.data.drop(self.target, axis=1).columns            
             exp = sorted(zip(columns, self.mimic.coef_), key=lambda x: x[1], reverse=True)[:num_features]
             for column,value in exp:
-                print("{0} = {1}".format(column, value))
+                if print_exps:
+                    print("{0} = {1}".format(column, value))
             self._append_explanation(exp)
         else:
             raise AttributeError("Model does not support feature contribution, please train a different model.")
@@ -258,6 +264,7 @@ class ShapExplainer(Base):
         test = kwargs.get("test")
         test = test.drop([self.target], axis=1)
         num_features = kwargs.get("num_features") or 10
+        print_exps = kwargs.get("print_exps") or False
         columns = self.data.drop(self.target, axis=1).columns
         
         shap_values = self.explainer.shap_values(np.asarray(test))
@@ -269,7 +276,8 @@ class ShapExplainer(Base):
         
         exp = sorted(zip(columns, shap_values), key=lambda x: x[1], reverse=True)[:num_features]
         for column,value in exp:
-            print("{0} = {1}".format(column, value))
+            if print_exps:
+                print("{0} = {1}".format(column, value))
         self._append_explanation(exp)
 
         return self.explanation
