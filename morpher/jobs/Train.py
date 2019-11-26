@@ -91,9 +91,13 @@ class Train(MorpherJob):
             param_grid = kwargs.get("param_grid")
             crossval = kwargs.get("crossval")
             n_splits = kwargs.get("n_splits")
+            drop = kwargs.get("drop") # list of features to drop
 
             trained_models = {}
             crossval_metrics = {}
+
+            if drop:
+                features = data.drop(drop, axis=1)
 
             for algorithm in algorithms:
                 

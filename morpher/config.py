@@ -36,6 +36,12 @@ options = [
 	 'LABEL' : 'LabelEncoder', 
 	 'ONEHOT':'OneHotEncoder',
 	 'ORDINAL':'OrdinalEncoder'},	
+	 # supported samplers
+	{'SMOTE' : 'SMOTE',
+	 'SMOTENC' : 'SMOTENC', 
+	 'BORDERLINE' : 'BorderlineSMOTE',
+	 'ADASYN' : 'ADASYN',
+	 'RANDOM' : 'RandomOverSampler'},
 	 # supported interpreters
 	{'LIME' : 'LimeExplainer',
 	 'MIMIC' : 'MimicExplainer',
@@ -43,8 +49,12 @@ options = [
 	 'FEAT_CONTRIB' : 'FeatContribExplainer'}]
 
 # create the named tuples
-algorithms, imputers, scalers, encoders ,explainers = \
+algorithms, imputers, scalers, encoders, samplers, explainers = \
 	[ namedtuple('options', attr.keys())(**attr) \
 		for attr in options ]
 
 
+    #X, y = SMOTE().fit_resample(features,labels)
+    
+    #X, y = BorderlineSMOTE().fit_resample(features,labels)
+    #X, y = ADASYN().fit_resample(features,labels)

@@ -7,7 +7,7 @@ class KNNImputer:
     """
     Perform KNN imputation.
     """
-    def __init__(self, k=3):
+    def __init__(self, k=10):
         """
         Params:
 

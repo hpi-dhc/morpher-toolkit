@@ -4,6 +4,7 @@ from .Load import Load
 from .Impute import Impute
 from .Scale import Scale
 from .Transform import Transform
+from .Sample import Sample
 from .Split import Split
 from .Train import Train
 from .Retrieve import Retrieve
@@ -16,6 +17,7 @@ __all__ = [
     'Load',
     'Impute',
     'Scale',
+    'Sample',    
     'Transform',    
     'Split',
     'Train',
