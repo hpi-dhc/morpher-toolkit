@@ -26,7 +26,7 @@ class KNNImputer:
         df               input data to run the imputation on
         """  
 
-        return pd.DataFrame(data=self._imputer.complete(df.as_matrix()), columns=df.columns, index=df.index)
+        return pd.DataFrame(data=self._imputer.fit_transform(df.as_matrix()), columns=df.columns, index=df.index)
 
     def fit(self, df):
         
