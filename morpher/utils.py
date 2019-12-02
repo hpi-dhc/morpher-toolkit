@@ -1,5 +1,8 @@
 import jsonpickle as jp
 import inspect
+import jsonpickle.ext.numpy as jsonpickle_numpy
+
+jsonpickle_numpy.register_handlers()
 
 def pickle(obj, path=None):
 	
