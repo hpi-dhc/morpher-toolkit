@@ -1,6 +1,7 @@
 import jsonpickle as jp
 import inspect
 import jsonpickle.ext.numpy as jsonpickle_numpy
+import time
 
 jsonpickle_numpy.register_handlers()
 
@@ -40,3 +41,13 @@ def retrieve_name(var):
         names = [var_name for var_name, var_val in fi.frame.f_locals.items() if var_val is var]
         if len(names) > 0:
             return names[0]
+
+class Timer:    
+    def __enter__(self):
+        self.start = time.clock()
+        return self
+
+    def __exit__(self, *args):
+        self.end = time.clock()
+        self.interval = self.end - self.start     
+
