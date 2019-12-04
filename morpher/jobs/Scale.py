@@ -31,13 +31,16 @@ class Scale(MorpherJob):
 
             transform = globals()[transform_method](**kwargs)
             labels = data[target]
-            features = data.drop(target, axis=1)
+            features = data.drop(target, axis=1)            
             
-            ''' We refrain from transforming the label, that's why we need to concat both frames '''            
-            transformed_df = pd.concat([labels.to_frame(), pd.DataFrame(transform.fit_transform(features))], axis=1)
+            ''' We refrain from transforming the label, that's why we need to concat both frames '''
+            df_labels = labels.to_frame()
+            df_features = pd.DataFrame(transform.fit_transform(features))
+            df_labels.reset_index(drop=True, inplace=True)
+            df_features.reset_index(drop=True, inplace=True)
+            transformed_df = pd.concat([df_labels,df_features], axis=1)
             transformed_df.columns = [target] + list(features.columns)
             transformed_df.index = data.index
-
             data = transformed_df
 
           else:
