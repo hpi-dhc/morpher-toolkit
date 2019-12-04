@@ -9,7 +9,7 @@ from morpher.exceptions import kwarg_not_empty
 from sklearn.preprocessing import StandardScaler, RobustScaler, Normalizer, QuantileTransformer 
 from sklearn.preprocessing import LabelBinarizer, LabelEncoder, OrdinalEncoder
 from sklearn_pandas import DataFrameMapper
-from imblearn.over_sampling import SMOTE, SMOTENC, RandomOverSampler, BorderlineSMOTE, ADASYN
+from imblearn.over_sampling import SMOTE, RandomOverSampler, BorderlineSMOTE, ADASYN
 from imblearn.combine import SMOTEENN
 from collections import Counter
 

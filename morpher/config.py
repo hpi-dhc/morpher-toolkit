@@ -20,7 +20,10 @@ options = [
 	 'RF' : 'RandomForest',
 	 'LR' : 'LogisticRegression',
 	 'MLP': 'MultilayerPerceptron',
-	 'GBDT': 'GradientBoostingDecisionTree'},	  
+	 'GBDT': 'GradientBoostingDecisionTree',
+	 'ENLR': 'ElasticNetLR',
+	 'SVM': 'SupportVectorMachine',
+	 'ADABOOST': 'AdaBoost'},	  
 	# supported imputers
 	{'DEFAULT' : 'SimpleImputer',
 	 'KNN' : 'KNNImputer',
@@ -37,8 +40,7 @@ options = [
 	 'ONEHOT':'OneHotEncoder',
 	 'ORDINAL':'OrdinalEncoder'},	
 	 # supported samplers
-	{'SMOTE' : 'SMOTE',
-	 'SMOTENC' : 'SMOTENC', 
+	{'SMOTE' : 'SMOTE',	 
 	 'BORDERLINE' : 'BorderlineSMOTE',
 	 'ADASYN' : 'ADASYN',
 	 'RANDOM' : 'RandomOverSampler'},
