@@ -14,17 +14,17 @@ class Scale(MorpherJob):
 
         filename = self.get_input("filename")
         target = self.get_input_variables("target")
-        scale_method = self.get_input_variables("scale_method")
+        scaling_method = self.get_input_variables("scaling_method")
 
         df = pd.read_csv(filepath_or_buffer= filename)
-        df, scaler = self.execute(df, target, scale_method=scale_method)
+        df, scaler = self.execute(df, target, scaling_method=scaling_method)
         self.add_output("filename", self.save_to_file(df))
         self.add_output("cohort_id", self.get_input("cohort_id"))
         self.add_output("user_id", self.get_input("user_id"))
         self.add_output("target", target)
         self.logger.info("Data scaled successfully.")
 
-    def execute(self, data, target, scale_method=scalers.DEFAULT, scaler=None,**kwargs):
+    def execute(self, data, target, scaling_method=scalers.DEFAULT, scaler=None,**kwargs):
         try:
           
           if not data.empty:
@@ -33,7 +33,7 @@ class Scale(MorpherJob):
             features = data.drop(target, axis=1)
             
             if not scaler:
-                scaler = globals()[scale_method](**kwargs)
+                scaler = globals()[scaling_method](**kwargs)
                 scaler.fit(features)      
                      
             ''' We refrain from transforming the label, that's why we need to concat both frames '''
