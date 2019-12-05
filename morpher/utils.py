@@ -43,7 +43,10 @@ def retrieve_name(var):
             return names[0]
 
 class Timer:
-	interval = 0    
+
+	def __init__():
+		self.interval = 0
+		
     def __enter__(self):
         self.start = time.clock()
         return self
