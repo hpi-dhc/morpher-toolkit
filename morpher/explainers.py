@@ -101,7 +101,7 @@ class LimeExplainer(Base):
         print_exps = kwargs.get("print_exps") or False
 
         features = self.data.drop([self.target], axis=1)
-        pos_label = np.asarray(self.data[self.target]).max()
+        pos_label = str(np.asarray(self.data[self.target]).max())
 
         if index is None:
             print("*** Generating explanations using Submodular Pick...")            
