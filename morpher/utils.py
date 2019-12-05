@@ -12,7 +12,7 @@ def pickle(obj, path=None):
 		if not path:
 			path = retrieve_name(obj)
 		with open(path,'w') as file:
-			print(f"Pickling {path}...")
+			print("Pickling object...")
 			file.write(frozen)
 		return True
 	except Exception as e:
@@ -24,7 +24,7 @@ def unpickle(path):
 		with open(path, 'r') as file:
 		    frozen = file.read()
 		
-		print(f"Unpickling {path}...")
+		print("Unpickling object...")
 		return jp.decode(frozen)
 
 	except Exception as e:
@@ -42,11 +42,7 @@ def retrieve_name(var):
         if len(names) > 0:
             return names[0]
 
-class Timer:
-
-	def __init__():
-		self.interval = 0
-		
+class Timer:    
     def __enter__(self):
         self.start = time.clock()
         return self
