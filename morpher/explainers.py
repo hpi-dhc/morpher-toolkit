@@ -101,8 +101,7 @@ class LimeExplainer(Base):
         print_exps = kwargs.get("print_exps") or False
 
         features = self.data.drop([self.target], axis=1)
-        pos_label = str(np.asarray(self.data[self.target]).max())
-
+        
         if index is None:
             print("*** Generating explanations using Submodular Pick...")            
             print("Sample size chosen: {}".format(round(sample_size)))
@@ -111,7 +110,7 @@ class LimeExplainer(Base):
                                                     sample_size=sample_size, num_features=num_features, num_exps_desired=num_exps_desired)
            
             for sp_exp in sp_obj.sp_explanations:
-                exp = sp_exp.as_list(label=pos_label)
+                exp = sp_exp.as_list(label=sp_exp.available_labels()[0])
                 self._append_explanation(exp)
 
             #create averaged contribution for all features across all explanations
@@ -137,7 +136,7 @@ class LimeExplainer(Base):
                 print("Model predicted class {0} with class score {1:.3f}".format(y_pred, y_prob[0,int(y_pred)]))
                 print("Actual class is {0}".format(y_true))
                 exp = self.explainer.explain_instance(row_feat[0], self.model.predict_proba)                
-                self._append_explanation(exp.as_list(label=pos_label))
+                self._append_explanation(exp.as_list(label=exp.available_labels()[0]))
             except Exception as e:
                 print("Error occurred: {}".format(str(e)))
                 print(traceback.format_exc())
