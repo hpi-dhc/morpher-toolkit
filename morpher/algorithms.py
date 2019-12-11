@@ -211,7 +211,8 @@ class RandomForest(Base):
                 'max_features': 8,
                 'min_samples_leaf': 4,
                 'min_samples_split': 8,
-                'n_estimators': 300
+                'n_estimators': 300,
+                'class_weight':'balanced'
             }
 
         if not optimize:
@@ -231,7 +232,8 @@ class RandomForest(Base):
                     'max_features': [2, 4, 8],
                     'min_samples_leaf': [3, 4, 5],
                     'min_samples_split': [8, 10, 12],
-                    'n_estimators': [100, 200, 300]
+                    'n_estimators': [100, 200, 300],
+                    'class_weight':'balanced'
                 }
             clf = GridSearchCV(
                 estimator = RandomForestClassifier(),
@@ -392,7 +394,7 @@ class AdaBoost(Base):
 
     @property
     def is_tree_(self):        
-        return True
+        return False
 
 
 class LogisticRegression(Base):
@@ -404,7 +406,8 @@ class LogisticRegression(Base):
             hyperparams = {             
                 'penalty' : 'l2',
                 'C' : 1.0,
-                'solver': 'lbfgs'
+                'solver': 'lbfgs',
+                'class_weight':'balanced'
             }
 
         if not optimize:
@@ -420,7 +423,8 @@ class LogisticRegression(Base):
                 param_grid = {
                     "penalty": ['l2'],
                     "C": np.logspace(0, 4, 10),
-                    "solver": ['lbfgs']
+                    "solver": ['lbfgs'],
+                    "class_weight":["balanced"]
 
                 }
             clf = GridSearchCV(
@@ -449,7 +453,8 @@ class SupportVectorMachine(Base):
             hyperparams = {
                 'probability': True,
                 'C' : 1.0,
-                'kernel': 'linear'
+                'kernel': 'linear',
+                'class_weight':'balanced', # penalize
             }
 
         if not optimize:
@@ -465,7 +470,8 @@ class SupportVectorMachine(Base):
                 param_grid = {
                     "probability": [True],
                     "C": np.logspace(0, 4, 10),
-                    "kernel": ['linear', 'poly', 'rbf', 'sigmoid']
+                    "kernel": ['linear', 'poly', 'rbf', 'sigmoid'],
+                    "class_weight":['balanced'], # penalize
 
                 }
             clf = GridSearchCV(
