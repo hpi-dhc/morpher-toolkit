@@ -10,6 +10,7 @@ from sklearn.preprocessing import StandardScaler, RobustScaler, Normalizer, Quan
 from sklearn.preprocessing import LabelBinarizer, LabelEncoder, OrdinalEncoder
 from sklearn_pandas import DataFrameMapper
 from imblearn.over_sampling import SMOTE, RandomOverSampler, BorderlineSMOTE, ADASYN
+from imblearn.under_sampling import RandomUnderSampler
 from imblearn.combine import SMOTEENN
 from collections import Counter
 

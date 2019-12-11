@@ -43,7 +43,8 @@ options = [
 	{'SMOTE' : 'SMOTE',	 
 	 'BORDERLINE' : 'BorderlineSMOTE',
 	 'ADASYN' : 'ADASYN',
-	 'RANDOM' : 'RandomOverSampler'},
+	 'RANDOM' : 'RandomOverSampler',
+	 'URANDOM' : 'RandomUnderSampler'},
 	 # supported interpreters
 	{'LIME' : 'LimeExplainer',
 	 'MIMIC' : 'MimicExplainer',
