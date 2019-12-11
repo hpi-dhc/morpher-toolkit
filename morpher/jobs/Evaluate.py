@@ -71,7 +71,7 @@ class Evaluate(MorpherJob):
             if not data.empty and models and target:
                 results = {}
                 labels = data[target] #true labels
-                features = data.drop(target, axis=1)
+                features = data.drop(target, axis=1)                
                 for clf_name in models:
                     clf = models[clf_name]
                     y_true, y_pred, y_probs = labels, clf.predict(features), clf.predict_proba(features)[:,1]
@@ -82,6 +82,7 @@ class Evaluate(MorpherJob):
             else:
                 raise AttributeError("No data provided, algorithms or target not available")
         except Exception as e:
+            print(traceback.format_exc())
             self.logger.error(traceback.format_exc())
         return None
 
