@@ -89,7 +89,7 @@ class Calibrate(MorpherJob):
                 for clf_name in models:
                     clf = models[clf_name].clf
                     print(f"Performing calibration for {clf_name}")
-                    calibrated_clf = CalibratedClassifierCV(clf, cv='prefit', method=method, cv=10)
+                    calibrated_clf = CalibratedClassifierCV(clf, cv='prefit', method=method)
                     calibrated_clf.fit(X_train, y_train)
                     calibrated_models[clf_name] = calibrated_clf
                 return calibrated_models
