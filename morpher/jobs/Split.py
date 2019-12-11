@@ -37,12 +37,16 @@ class Split(MorpherJob):
 
         try:          
           if not data.empty:
+            target = kwargs.get("target")
+            stratify = kwargs.get("stratify")
+
             test_size = kwargs.get("test_size")
             kwarg_not_empty(test_size,"test_size")
-            return train_test_split(data, test_size=test_size)
+            return train_test_split(data, test_size=test_size, stratify=stratify)
           else:
             raise AttributeError("No data provided")        
         except Exception as e:
+          print(e)
           self.logger.error(traceback.format_exc())
 
         return None
