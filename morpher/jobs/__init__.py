@@ -10,6 +10,7 @@ from .Train import Train
 from .Retrieve import Retrieve
 from .Evaluate import Evaluate
 from .Explain import Explain
+from .Calibrate import Calibrate
 
 __all__ = [
     'Job',
@@ -23,5 +24,6 @@ __all__ = [
     'Train',
     'Retrieve',
     'Evaluate',
-    'Explain',    
+    'Explain',
+    'Calibrate'
 ]
