@@ -46,7 +46,8 @@ options = [
 	 'BORDERLINE' : 'BorderlineSMOTE',
 	 'ADASYN' : 'ADASYN',
 	 'RANDOM' : 'RandomOverSampler',
-	 'URANDOM' : 'RandomUnderSampler'},
+	 'URANDOM' : 'RandomUnderSampler',
+	 'CLUSTER' : 'ClusterCentroids'},
 	 # supported interpreters
 	{'LIME' : 'LimeExplainer',
 	 'MIMIC' : 'MimicExplainer',
