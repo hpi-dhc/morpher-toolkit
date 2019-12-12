@@ -12,6 +12,7 @@ import sklearn.linear_model
 from sklearn.neural_network import MLPClassifier
 from sklearn.feature_selection import SelectPercentile, mutual_info_classif, f_classif
 from sklearn.exceptions import NotFittedError
+from sklearn.naive_bayes import ComplementNB, GaussianNB
 import sklearn
 import pandas as pd
 import numpy as np
@@ -536,10 +537,71 @@ class ElasticNetLR(Base):
         else:
             return False
 
+class ComplementNaiveBayes(Base):
+
+    def __init__(self, hyperparams=None, optimize=None, param_grid=None, crossval=None, n_splits=None):
+
+        if not hyperparams:
+
+            hyperparams = {
+                'alpha' : 1.0,
+                'fit_prior': True                
+            }
+
+        if not optimize:
+            '''
+            Trains and stores a logistic regression classifier using elastic net on the
+            current data using the current pipeline.
+            '''
+            clf = ComplementNB(**hyperparams)
         
+        else:
+            ''' gridsearch '''
+            if not param_grid:
+                param_grid = {
+                    "alpha": [0.001, 0.01, 0.1, 1, 10, 100],
+                    "fit_prior": [True]
+
+                }
+            clf = GridSearchCV(
+                estimator = ComplementNB(),
+                cv = 5,
+                n_jobs = -1,
+                scoring = self.score_auroc,
+                param_grid = param_grid
+            )
+        
+        super().__init__(clf, hyperparams, optimize, param_grid, crossval, n_splits)      
 
 
 
+class GaussianNaiveBayes(Base):
+
+    def __init__(self, hyperparams=None, optimize=None, param_grid=None, crossval=None, n_splits=None):
+
+        if not hyperparams:
+            hyperparams = {}
+
+        if not optimize:
+            '''
+            Trains and stores a logistic regression classifier using elastic net on the
+            current data using the current pipeline.
+            '''
+            clf = GaussianNB(**hyperparams)
+        
+        else:
+            ''' gridsearch '''
+            if not param_grid:
+                param_grid = {}
+            clf = GridSearchCV(
+                estimator = GaussianNB(),
+                cv = 5,
+                n_jobs = -1,
+                scoring = self.score_auroc,
+                param_grid = param_grid
+            )
+        
+        super().__init__(clf, hyperparams, optimize, param_grid, crossval, n_splits)      
 
 
 
