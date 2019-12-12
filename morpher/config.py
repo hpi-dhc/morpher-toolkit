@@ -23,7 +23,9 @@ options = [
 	 'GBDT': 'GradientBoostingDecisionTree',
 	 'ENLR': 'ElasticNetLR',
 	 'SVM': 'SupportVectorMachine',
-	 'ADABOOST': 'AdaBoost'},	  
+	 'ADABOOST': 'AdaBoost',
+	 'CNBAYES': 'ComplementNaiveBayes',
+	 'GNBAYES': 'GaussianNaiveBayes'},	
 	# supported imputers
 	{'DEFAULT' : 'SimpleImputer',
 	 'KNN' : 'KNNImputer',
