@@ -166,7 +166,7 @@ class DecisionTree(Base):
     def __init__(self, hyperparams=None, optimize=None, param_grid=None, crossval=None, n_splits=None):
 
         if not hyperparams:
-            hyperparams = {'max_depth': 5, 'class_weight': {0:1, 1:10}}
+            hyperparams = {'max_depth': 5, 'class_weight': 'balanced'}
 
         if not optimize:
             clf = DecisionTreeClassifier(**hyperparams)
@@ -176,8 +176,8 @@ class DecisionTree(Base):
                 param_grid = {
                     "max_depth": range(4,7),
                     "min_samples_split": range(3,7),
-                    "min_samples_leaf": range(1, 16)
-                    #"min_impurity_decrease": np.arange(0.0, 0.3, 0.025)
+                    "min_samples_leaf": range(1, 16),
+                    "min_impurity_decrease": np.arange(0.0, 0.3, 0.025)
                 }
             clf = GridSearchCV(
                 estimator = DecisionTreeClassifier(),
@@ -234,7 +234,7 @@ class RandomForest(Base):
                     'min_samples_leaf': [3, 4, 5],
                     'min_samples_split': [8, 10, 12],
                     'n_estimators': [100, 200, 300],
-                    'class_weight':'balanced'
+                    'class_weight':['balanced']
                 }
             clf = GridSearchCV(
                 estimator = RandomForestClassifier(),
@@ -272,7 +272,7 @@ class MultilayerPerceptron(Base):
                 'activation':'tanh',
                 'solver':'sgd',
                 'alpha' : 1e-5,
-                'hidden_layer_sizes' : (21, 2),
+                'hidden_layer_sizes':(21, 2),
                 'max_iter':500
             }
 
