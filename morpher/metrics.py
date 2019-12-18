@@ -112,7 +112,7 @@ def get_calibration_metrics(y_true, y_probs, n_bins=10):
 
     return dict(results)
 
-def get_weighted_explanations(explanations, friendly_names=None):
+def get_weighted_explanations(explanations, friendly_names=None, weighting={'importance': 1,'support': 1}):
 
     '''
      Returns a triple of all the important features from a list of explanations
@@ -126,10 +126,13 @@ def get_weighted_explanations(explanations, friendly_names=None):
 
     weights = {}
 
+    n_weights = {}
+    
+    scaler = MinMaxScaler(feature_range=(0.1, 1))
+
     # first normalize all feature importance values between 0.1 and 1
     for method in methods:
-        scaler = MinMaxScaler(feature_range=(0.1, 1))
-        #scaler = StandardScaler()
+        
         importances =  np.array(list(explanations[method].values())).reshape(-1,1)
         scaler.fit(importances)
         n_importances = list(scaler.fit_transform(importances).ravel())
@@ -143,11 +146,17 @@ def get_weighted_explanations(explanations, friendly_names=None):
         weights[feat] = len(features[feat])
         features[feat] = float(np.mean(features[feat]))    
 
-    names, vals, weights = list(features.keys()), list(features.values()), list(weights.values())
+    # normalize weight values also between 0.1 and 1
+    scaler.fit(np.array(list(weights.values())).reshape(-1,1))
+    for feat in features:
+        n_weights[feat] = np.asscalar(scaler.transform([[weights[feat]]]))
+        features[feat] = (features[feat]*weighting['importance'] + n_weights[feat]*weighting['support']) / (weighting['importance'] + weighting['support'])
+
+    names, vals, weights, n_weights = list(features.keys()), list(features.values()), list(weights.values()), list(n_weights.values())
     if friendly_names:
         names = [friendly_names.get(feat_name) or feat_name for feat_name in names]
 
-    exps = list(sorted(zip(names, vals, weights), key=lambda x: x[1]))
+    exps = list(sorted(zip(names, vals, weights, n_weights), key=lambda x: x[1]))
 
     return exps
     
