@@ -304,7 +304,7 @@ def plot_weighted_explanation(explanations, ax=None, friendly_names=None, top_fe
     ax.legend(handles=[ mpatches.Patch(color=color, label=label) for color, label in patches ])
     ax.set_title(title)
 
-def plot_explanation_heatmap(explanations, ax=None, friendly_names=None, top_features = 15, title='Feature Importances by Method', figsize=None, legend_loc=None):
+def plot_explanation_heatmap(explanations, ax=None, friendly_names=None, top_features = 15, title='Feature Importances by Method', figsize=None, legend_loc=None, valfmt="{x:.2f}", cbarlabel="Feature Importance (Outcome=yes)"):
     '''
     Plots a heatmap based on an array with different feature importances
     
@@ -366,10 +366,14 @@ def plot_explanation_heatmap(explanations, ax=None, friendly_names=None, top_fea
 
     data = np.array(sorted( data, key=lambda x: np.mean(x), reverse=True )) # build / shape the data array in the order it should appear
 
-    im, cbar = heatmap(data, features, methods, ax=ax, cmap="YlGn", cbarlabel="Feature Importance (Outcome=yes)")
+    # if we got friendly names, we substitute it here
+    if friendly_names:
+       features = [ friendly_names.get(feat_name) or feat_name for feat_name in features]
+
+    im, cbar = heatmap(data, features, methods, ax=ax, cmap="YlGn", cbarlabel=cbarlabel)
 
     ax.set_aspect('auto')
-    texts = annotate_heatmap(im, valfmt="{x:.2f}")
+    texts = annotate_heatmap(im, valfmt=valfmt)
   
 '''
     Credit: Copyright 2002 - 2012 John Hunter, Darren Dale, Eric Firing, Michael Droettboom and the Matplotlib development team; 2012 - 2018 The Matplotlib development team
