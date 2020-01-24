@@ -47,8 +47,8 @@ def plot_roc(results, title="Receiver Operating Curve", ax=None, figsize=None, l
         y_true = results[clf_name]["y_true"]
         y_probs = results[clf_name]["y_probs"]
         fpr, tpr, thresh = roc_curve(y_true, y_probs)
-
-        ax.plot(fpr, tpr, label='{0} (AUC={1:.2f})'.format(clf_name, roc_auc_score(y_true, y_probs)))
+        clf_label = clf_name().__class__.__name__
+        ax.plot(fpr, tpr, label='{0} (AUC={1:.2f})'.format(clf_label, roc_auc_score(y_true, y_probs)))
 
     ax.legend(loc=legend_loc, fancybox=True, shadow=True)
 
@@ -76,7 +76,8 @@ def plot_prc(results, title="Precision-Recall Curve", ax=None, figsize=None, leg
         y_true = results[clf_name]["y_true"]
         y_probs = results[clf_name]["y_probs"]
         precision, recall, _ = precision_recall_curve(y_true, y_probs)
-        ax.step(recall, precision, label='{0} (AP={1:.2f})'.format(clf_name, average_precision_score(y_true, y_probs)), where='post')
+        clf_label = clf_name().__class__.__name__
+        ax.step(recall, precision, label='{0} (AP={1:.2f})'.format(clf_label, average_precision_score(y_true, y_probs)), where='post')
 
     ax.plot([0, 1], [0.5, 0.5], label='No skill', color='lightgray', linestyle='--')
 
@@ -181,8 +182,8 @@ def plot_dc(results, tr_start=0.01, tr_end=0.99, tr_step=0.01, metric_type="trea
         discrimination_metrics = get_discrimination_metrics(y_true, y_pred, y_probs)
         net_benefit = [get_clinical_usefulness_metrics(discrimination_metrics, tr)[metric_type] for tr in tr_probs]
         net_benefit_treated_all = [get_clinical_usefulness_metrics(discrimination_metrics, tr)["treated_all"] for tr in tr_probs]
-
-        ax.plot(tr_probs, net_benefit, label='{0} (ANBC={1:.2f})'.format(clf_name, auc(tr_probs, net_benefit)))
+        clf_label = clf_name().__class__.__name__
+        ax.plot(tr_probs, net_benefit, label='{0} (ANBC={1:.2f})'.format(clf_label, auc(tr_probs, net_benefit)))
 
         '''
         Necessary to decide where to fix ymax
