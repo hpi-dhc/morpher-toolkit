@@ -1,29 +1,23 @@
-#!/usr/bin/env python
-import traceback
 import logging
-from morpher.exceptions import kwargs_not_empty
-from morpher.algorithms import *
-import morpher.config as config
+import traceback
+
+import pandas as pd
+
 from morpher.jobs import MorpherJob
-import pandas as pd
-import numpy as np
-import os.path
-import pandas as pd
-import json
-import jsonpickle as jp
+
 
 class Retrieve(MorpherJob):
 
     def do_execute(self):
 
         filename = self.get_input("filename")
-        df = pd.read_csv(filepath_or_buffer= filename)
+        df = pd.read_csv(filepath_or_buffer=filename)
         model_ids = self.get_input_variables("models")
 
         task = self.get_task()
 
         assert model_ids != ""
-        if type(model_ids) is str: #make it become a list if not already
+        if type(model_ids) is str:  # make it become a list if not already
             model_ids = [model_ids]
 
         target = self.get_input_variables("target")
@@ -36,9 +30,9 @@ class Retrieve(MorpherJob):
         params["target"] = target
         params["features"] = list(df.drop(target, axis=1).columns)
 
-        #validate now if the models at hand match the information provided via the arguments/parameters
+        # validate now if the models at hand match the information provided via the arguments/parameters
         error_summary = ""
-        model_ids = [] # if the models are validated, we pass over its ID
+        model_ids = []  # if the models are validated, we pass over its ID
 
         try:
 
@@ -59,11 +53,11 @@ class Retrieve(MorpherJob):
             if error_summary != "":
                 raise AttributeError("Error while validating models and inputs. Error summary: {0}".format(error_summary))
 
-        except Exception as e:
+        except Exception:
             print(traceback.format_exc())
             logging.error(traceback.format_exc())
 
-        #if we have a list of filenames coming from previous job, we pass it over
+        # if we have a list of filenames coming from previous job, we pass it over
         if type(self.get_input("filenames")) == list:
             self.add_output("filenames", self.get_input("filenames"))
         else:

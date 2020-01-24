@@ -1,14 +1,10 @@
-#!/usr/bin/env python
-import traceback
 import logging
+import traceback
+
 import pandas as pd
-import morpher.config as config
-from morpher.config import scalers
-from morpher.jobs import MorpherJob
-from morpher.exceptions import kwargs_not_empty
-from sklearn.preprocessing import StandardScaler, RobustScaler, Normalizer, QuantileTransformer
-from sklearn.preprocessing import LabelBinarizer, LabelEncoder, OrdinalEncoder
 from sklearn_pandas import DataFrameMapper
+
+from morpher.jobs import MorpherJob
 
 
 class Transform(MorpherJob):
@@ -31,21 +27,21 @@ class Transform(MorpherJob):
     def execute(self, data, transforms=None, drop=None, **kwargs):
         try:
 
-          if not data.empty:
+            if not data.empty:
 
-            if transforms:
-                mapping = [(feature, transform_method(**kwargs) ) for feature, transform_method in transforms]
-                mapper = DataFrameMapper(mapping, df_out=True, default=None)
-                data = mapper.fit_transform(data.copy())
+                if transforms:
+                    mapping = [(feature, transform_method(**kwargs)) for feature, transform_method in transforms]
+                    mapper = DataFrameMapper(mapping, df_out=True, default=None)
+                    data = mapper.fit_transform(data.copy())
 
-            if drop:
-                data.drop(drop, axis=1, inplace=True)
+                if drop:
+                    data.drop(drop, axis=1, inplace=True)
 
-          else:
-            raise AttributeError("No data provided")
+            else:
+                raise AttributeError("No data provided")
 
-        except Exception as e:
-          print(traceback.format_exc())
-          logging.error(traceback.format_exc())
+        except Exception:
+            print(traceback.format_exc())
+            logging.error(traceback.format_exc())
 
         return data

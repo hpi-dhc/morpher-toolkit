@@ -1,29 +1,25 @@
-#!/usr/bin/env python
 import traceback
-import logging
+import json
+
+import jsonpickle as jp
+import pandas as pd
+from sklearn.calibration import CalibratedClassifierCV
+
 from morpher.jobs import MorpherJob
 from morpher.jobs import Retrieve
-from morpher.exceptions import kwargs_not_empty
-from morpher.algorithms import *
-from morpher.metrics import *
-import os.path
-import pandas as pd
-import json
-import jsonpickle as jp
-from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve, brier_score_loss, explained_variance_score, mean_squared_error, mean_absolute_error
 
 
 class Calibrate(MorpherJob):
 
     def do_execute(self):
 
-        #if we have a list of filenames coming from 'Split', we pass over the 'test' set for evaluation (pos. 1); otherwise we pass over the file we got
+        # if we have a list of filenames coming from 'Split', we pass over the 'test' set for evaluation (pos. 1); otherwise we pass over the file we got
         if type(self.get_input("filenames")) == list:
             filename = self.get_input("filenames")[1]
         else:
             filename = self.get_input("filename")
 
-        df = pd.read_csv(filepath_or_buffer= filename)
+        df = pd.read_csv(filepath_or_buffer=filename)
 
         cohort_id = self.get_input("cohort_id")
         user_id = self.get_input("user_id")
@@ -41,7 +37,7 @@ class Calibrate(MorpherJob):
         models = [jp.decode(json.dumps(model["content"])) for model in Retrieve(self.session).get_models(model_ids)]
         calibrated_models = self.execute(df, target=target, models={model.__class__.__name__: model for model in models}, method=calibration_method)
 
-        #store each model in the database and generate a dict in the form {"DecisionTree":999}
+        # store each model in the database and generate a dict in the form {"DecisionTree":999}
         calibrated_model_ids = self.persist(calibrated_models, params)
 
         self.add_output("target", target)
@@ -65,7 +61,7 @@ class Calibrate(MorpherJob):
         data["cohort_id"] = params["cohort_id"]
         data["user_id"] = params["user_id"]
         data["name"] = model.__class__.__name__ + " for " + params["target"] + " with Calibration (" + params['calibration_method'] + ")"
-        data["fqn"] =  model.__class__.__module__ + '.' + model.__class__.__qualname__
+        data["fqn"] = model.__class__.__module__ + '.' + model.__class__.__qualname__
         data["content"] = json.loads(jp.encode(model))
         data["parameters"] = params
 
@@ -82,7 +78,6 @@ class Calibrate(MorpherJob):
 
         try:
             if not data.empty and models and target:
-                results = {}
                 y_train = data[target]
                 X_train = data.drop(target, axis=1)
 

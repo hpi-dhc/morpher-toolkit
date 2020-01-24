@@ -1,12 +1,11 @@
-#!/usr/bin/env python
 import traceback
-import logging
-import os
+
 import pandas as pd
-import numpy as np
-from morpher.jobs import MorpherJob
 from sklearn.model_selection import train_test_split
+
 from morpher.exceptions import kwargs_not_empty
+from morpher.jobs import MorpherJob
+
 
 class Split(MorpherJob):
 
@@ -36,17 +35,15 @@ class Split(MorpherJob):
     def execute(self, data, **kwargs):
 
         try:
-          if not data.empty:
-            target = kwargs.get("target")
-            stratify = kwargs.get("stratify")
-
-            test_size = kwargs.get("test_size")
-            kwargs_not_empty(test_size,"test_size")
-            return train_test_split(data, test_size=test_size, stratify=stratify)
-          else:
-            raise AttributeError("No data provided")
+            if not data.empty:
+                stratify = kwargs.get("stratify")
+                test_size = kwargs.get("test_size")
+                kwargs_not_empty(test_size, "test_size")
+                return train_test_split(data, test_size=test_size, stratify=stratify)
+            else:
+                raise AttributeError("No data provided")
         except Exception as e:
-          print(e)
-          self.logger.error(traceback.format_exc())
+            print(e)
+            self.logger.error(traceback.format_exc())
 
         return None

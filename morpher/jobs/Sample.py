@@ -1,17 +1,10 @@
-#!/usr/bin/env python
-import traceback
 import logging
-import pandas as pd
-import morpher.config as config
-from morpher.config import scalers
-from morpher.jobs import MorpherJob
-from morpher.exceptions import kwargs_not_empty
-from sklearn.preprocessing import StandardScaler, RobustScaler, Normalizer, QuantileTransformer
-from sklearn_pandas import DataFrameMapper
-from imblearn.over_sampling import SMOTE, RandomOverSampler, BorderlineSMOTE, ADASYN
-from imblearn.under_sampling import RandomUnderSampler, ClusterCentroids
-from imblearn.combine import SMOTEENN
+import traceback
 from collections import Counter
+
+import pandas as pd
+
+from morpher.jobs import MorpherJob
 
 
 class Sample(MorpherJob):
@@ -32,27 +25,27 @@ class Sample(MorpherJob):
 
     def execute(self, data, target, sampling_method=None, **kwargs):
         try:
-          if not data.empty:
-            if sampling_method:
-                print(f"Performing sampling with {sampling_method}...")
+            if not data.empty:
+                if sampling_method:
+                    print(f"Performing sampling with {sampling_method}...")
 
-                sampler = sampling_method(**kwargs)
-                features, labels = data.drop(target, axis=1), data[target]
-                print("Prior label distribution: ")
-                [print(f"Class:{k}/N={v}") for k, v in dict(Counter(data[target])).items()]
+                    sampler = sampling_method(**kwargs)
+                    features, labels = data.drop(target, axis=1), data[target]
+                    print("Prior label distribution: ")
+                    [print(f"Class:{k}/N={v}") for k, v in dict(Counter(data[target])).items()]
 
-                X, y = sampler.fit_resample(features, labels)
-                data = pd.concat([pd.DataFrame(X), pd.DataFrame(y)], axis=1)
-                data.columns = list(features.columns) + [target]
+                    X, y = sampler.fit_resample(features, labels)
+                    data = pd.concat([pd.DataFrame(X), pd.DataFrame(y)], axis=1)
+                    data.columns = list(features.columns) + [target]
 
-                print("Label distribution after sampling: ")
-                [print(f"Class:{k}/N={v}") for k, v in dict(Counter(data[target])).items()]
+                    print("Label distribution after sampling: ")
+                    [print(f"Class:{k}/N={v}") for k, v in dict(Counter(data[target])).items()]
 
-          else:
-            raise AttributeError("No data provided")
+            else:
+                raise AttributeError("No data provided")
 
-        except Exception as e:
-          print(traceback.format_exc())
-          logging.error(traceback.format_exc())
+        except Exception:
+            print(traceback.format_exc())
+            logging.error(traceback.format_exc())
 
         return data
