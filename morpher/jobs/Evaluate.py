@@ -3,7 +3,7 @@ import traceback
 import logging
 from morpher.jobs import MorpherJob
 from morpher.jobs import Retrieve
-from morpher.exceptions import kwarg_not_empty
+from morpher.exceptions import kwargs_not_empty
 from morpher.algorithms import *
 from morpher.metrics import *
 import os.path

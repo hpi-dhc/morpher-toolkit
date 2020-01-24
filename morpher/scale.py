@@ -1,7 +1,7 @@
 import traceback
 import logging
 from collections import namedtuple
-from morpher.exceptions import kwarg_not_empty
+from morpher.exceptions import kwargs_not_empty
 import pandas as pd
 
 from sklearn.preprocessing import (
@@ -18,7 +18,7 @@ def scale(data, **kwargs):
         if not data.empty:
 
             scaling_class = kwargs.get("method")
-            kwarg_not_empty(scaling_class, "method")
+            kwargs_not_empty(scaling_class, "method")
             scaler = scaling_class()
 
             # TODO: think about how to solve the issue of fit x fit_transform()

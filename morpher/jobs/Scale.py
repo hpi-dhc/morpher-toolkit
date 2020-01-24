@@ -5,7 +5,7 @@ import pandas as pd
 import morpher.config as config
 from morpher.config import scalers
 from morpher.jobs import MorpherJob
-from morpher.exceptions import kwarg_not_empty
+from morpher.exceptions import kwargs_not_empty
 from sklearn.preprocessing import StandardScaler, RobustScaler, Normalizer, QuantileTransformer
 
 class Scale(MorpherJob):

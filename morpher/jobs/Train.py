@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import traceback
 import logging
-from morpher.exceptions import kwarg_not_empty
+from morpher.exceptions import kwargs_not_empty
 from morpher.algorithms import *
 import morpher.config as config
 from morpher.jobs import MorpherJob
@@ -85,7 +85,7 @@ class Train(MorpherJob):
             features = data.drop(target, axis=1)
             params = {}
             algorithms = kwargs.get("algorithms")
-            kwarg_not_empty(algorithms,"algorithms")
+            kwargs_not_empty(algorithms,"algorithms")
             hyperparams = kwargs.get("hyperparams")
             optimize = kwargs.get("optimize")
             param_grid = kwargs.get("param_grid")
@@ -129,5 +129,3 @@ class Train(MorpherJob):
             logging.error(traceback.format_exc())
 
         return data
-
-

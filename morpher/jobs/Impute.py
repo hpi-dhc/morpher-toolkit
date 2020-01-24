@@ -6,7 +6,7 @@ import morpher.config as config
 from morpher.imputers import *
 from morpher.config import imputers
 from morpher.jobs import MorpherJob
-from morpher.exceptions import kwarg_not_empty
+from morpher.exceptions import kwargs_not_empty
 from sklearn.impute import SimpleImputer
 
 class Impute(MorpherJob):

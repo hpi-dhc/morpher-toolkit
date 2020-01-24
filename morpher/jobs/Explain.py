@@ -3,7 +3,7 @@ import traceback
 import logging
 from morpher.jobs import MorpherJob
 from morpher.jobs import Retrieve
-from morpher.exceptions import kwarg_not_empty
+from morpher.exceptions import kwargs_not_empty
 from morpher.algorithms import *
 from morpher.explainers import *
 from morpher.metrics import *
@@ -78,9 +78,9 @@ class Explain(MorpherJob):
         models = kwargs.get("models")
         explainers = kwargs.get("explainers")
         target = kwargs.get("target")
-        kwarg_not_empty(models,"models")
-        kwarg_not_empty(explainers,"explainers")
-        kwarg_not_empty(target,"target")
+        kwargs_not_empty(models,"models")
+        kwargs_not_empty(explainers,"explainers")
+        kwargs_not_empty(target,"target")
         exp_kwargs = kwargs.get("exp_kwargs") or {}
 
         try:
