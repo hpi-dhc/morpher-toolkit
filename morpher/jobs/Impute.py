@@ -25,27 +25,27 @@ class Impute(MorpherJob):
 
     def execute(self, data, imputation_method=imputers.DEFAULT, imputer=None,**kwargs):
         try:
-          
+
           if not data.empty:
 
             ''' columns where all values are NaN get assigned 0, otherwise imputer will throw them away '''
             data.loc[:, data.isna().all()] = 0.0
 
             if not imputer:
-                imputer = globals()[imputation_method](**kwargs)            
+                imputer = imputation_method(**kwargs)
                 imputer.fit(data)
 
-            imputed_df = pd.DataFrame(imputer.transform(data))            
+            imputed_df = pd.DataFrame(imputer.transform(data))
             imputed_df.columns = data.columns
             imputed_df.index = data.index
 
             data = imputed_df
 
           else:
-            raise AttributeError("No data provided")        
+            raise AttributeError("No data provided")
 
         except Exception as e:
-          print(traceback.format_exc())  
+          print(traceback.format_exc())
           logging.error(traceback.format_exc())
 
         return data, imputer

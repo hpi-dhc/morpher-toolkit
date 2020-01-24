@@ -26,16 +26,16 @@ class Scale(MorpherJob):
 
     def execute(self, data, target, scaling_method=scalers.DEFAULT, scaler=None,**kwargs):
         try:
-          
+
           if not data.empty:
 
             labels = data[target]
             features = data.drop(target, axis=1)
-            
+
             if not scaler:
-                scaler = globals()[scaling_method](**kwargs)
-                scaler.fit(features)      
-                     
+                scaler = scaling_method(**kwargs)
+                scaler.fit(features)
+
             ''' We refrain from transforming the label, that's why we need to concat both frames '''
             df_labels = labels.to_frame()
             df_features = pd.DataFrame(scaler.transform(features))
@@ -47,10 +47,10 @@ class Scale(MorpherJob):
             data = transformed_df
 
           else:
-            raise AttributeError("No data provided")        
+            raise AttributeError("No data provided")
 
         except Exception as e:
-          print(traceback.format_exc())  
+          print(traceback.format_exc())
           logging.error(traceback.format_exc())
 
-        return data,scaler
+        return data, scaler

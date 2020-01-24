@@ -17,7 +17,7 @@ from sklearn.metrics import confusion_matrix, classification_report, roc_auc_sco
 class Explain(MorpherJob):
 
     def do_execute(self):
-        
+
         #experiment_mode 2 is an interpretation experiment, running different interpretation algorithm
         experiment_mode = 2
 
@@ -28,15 +28,15 @@ class Explain(MorpherJob):
             train, test = self.get_input("filenames")
         else:
             task = self.get_task()
-            users_path = os.path.abspath(self.config.get('paths', 'user_files'))            
-            filename = task["parameters"]["file"]["name"]            
+            users_path = os.path.abspath(self.config.get('paths', 'user_files'))
+            filename = task["parameters"]["file"]["name"]
             filename = os.path.join(users_path, filename)
             train, test = f'{filename}_train', f'{filename}_test'
 
         train = pd.read_csv(filepath_or_buffer=train)
         test = pd.read_csv(filepath_or_buffer=test)
 
-        model_ids = self.get_input("model_ids")  
+        model_ids = self.get_input("model_ids")
         models = [jp.decode(json.dumps(model["content"])) for model in Retrieve(self.session).get_models(model_ids)]
 
         #go for zip here, model_id_mapping
@@ -46,7 +46,7 @@ class Explain(MorpherJob):
         user_id = self.get_input("user_id")
         target = self.get_input("target")
         explainers = self.get_input_variables("explainers")
-        
+
         #make it become a list if not already
         print(explainers)
         assert explainers != ""
@@ -60,12 +60,12 @@ class Explain(MorpherJob):
             model_id = model_id_mapping[clf_name]
             description = "Explanations for target '{target}' based on {methods}".format(target=target, methods=", ".join(explainers))
             self.add_experiment(cohort_id=cohort_id, model_id=model_id,user_id=user_id,description=description,target=target,experiment_mode=experiment_mode,parameters=explanations[clf_name])
-        
+
 
         self.logger.info("Models explained successfully.")
 
     def add_experiment(self, **kwargs):
-     
+
         response = self.api("experiments", "new", data=kwargs)
 
         if response.get("status") == "success":
@@ -85,12 +85,12 @@ class Explain(MorpherJob):
 
         try:
             if not data.empty and models and target and explainers:
-                
-                explanations = defaultdict(lambda: {})                
+
+                explanations = defaultdict(lambda: {})
                 for model_name in models:
                     model = models[model_name]
-                    for exp_name in explainers:                     
-                        explainer = globals()[exp_name](data, model, target, **exp_kwargs) #instantiate the algorithm in runtime
+                    for exp_name in explainers:
+                        explainer = exp_name(data, model, target, **exp_kwargs) #instantiate the algorithm in runtime
                         explanations[model_name][exp_name] = explainer.explain(**exp_kwargs)
 
                 return explanations
@@ -119,7 +119,3 @@ class Explain(MorpherJob):
         dor = (tp/fp)/(fn/tn)
         print(dor)
         print("***\n")
-
-
-
-

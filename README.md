@@ -2,7 +2,7 @@
 
 This library provides ready-to-use capabilities to automate common tasks necessary for clinical predictive modeling. It provides a common interface to enable extension of existing machine learning algorithms.
 
-## Model Protyping 
+## Model Protyping
 
 Among other functions, it provides encapsulated functionalities for the following routine tasks in clinical modeling:
 
@@ -10,11 +10,12 @@ Among other functions, it provides encapsulated functionalities for the followin
 *   Transformation
 *   Training
 *   Evaluation and
-*   Interpretation 
+*   Interpretation
 
-## Developing and Evaluating a Model 
+## Developing and Evaluating a Model
 
 To start, clone the repository and run `pip install -e .`. This command will install MORPHER Toolkit and its dependencies to your current environment. We recommended setting up a dedicated environment using [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/download.html "Conda") or your favorite environment manager. The option `-e` makes sure that any local changes you make to the library, e.g., adding now jobs, are directly visible enviroment-wide.
+Some dependencies may require compilation. For this, install `gcc` and `g++` with your distribution's package manager.
 
 The toolkit functionalities are exposed by means of MORPHER Jobs to impute, train, and evaluate models. Import the specific modules and classes in your code:
 
@@ -59,7 +60,7 @@ plt.show()
      style="float: left; margin-right: 10px;" width="512" />
 
 
-## Library Dependencies 
+## Library Dependencies
 
 *   Python 3.6+
 *   scikit-learn

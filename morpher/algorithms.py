@@ -1,27 +1,31 @@
-from datetime import datetime
-
-from sklearn.preprocessing import Imputer, StandardScaler, RobustScaler, Normalizer
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve, brier_score_loss, explained_variance_score, mean_squared_error, mean_absolute_error
-from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier
-from sklearn.model_selection import GridSearchCV, cross_val_predict, train_test_split, StratifiedKFold
-from sklearn import linear_model
-from sklearn.calibration import CalibratedClassifierCV, calibration_curve
-from sklearn.linear_model import BayesianRidge, SGDClassifier
-import sklearn.linear_model
-from sklearn.neural_network import MLPClassifier
-from sklearn.feature_selection import SelectPercentile, mutual_info_classif, f_classif
-from sklearn.exceptions import NotFittedError
-from sklearn.naive_bayes import ComplementNB, GaussianNB
-import sklearn
-import pandas as pd
-import numpy as np
-import morpher.config
-from morpher.metrics import get_discrimination_metrics
-import json
-
 import traceback
 import logging
+from collections import namedtuple
+from datetime import datetime
+
+import numpy as np
+from sklearn.ensemble import (
+    AdaBoostClassifier,
+    GradientBoostingClassifier,
+    RandomForestClassifier
+)
+from sklearn.linear_model import (
+    LogisticRegression as sklearnLogisticRegression,
+    SGDClassifier
+)
+from sklearn.metrics import roc_auc_score
+from sklearn.model_selection import (
+    GridSearchCV,
+    cross_val_predict,
+    StratifiedKFold
+)
+from sklearn.naive_bayes import ComplementNB, GaussianNB
+from sklearn.neural_network import MLPClassifier
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
+
+from morpher.metrics import get_discrimination_metrics
+
 
 class Base:
 
@@ -47,20 +51,19 @@ class Base:
         '''
         self.n_splits = n_splits
 
-
     def fit(self, features, labels):
 
         '''
         Fits a given algorithm, optionally performing hyperparameter tuning.
         '''
-        
+
         try:
             start = datetime.now()
 
             if not self.optimize:
                 msg = "*** Training of model '{0}' started.".format(self.clf.__class__.__name__)
                 logging.info(msg)
-                print(msg)              
+                print(msg)
 #               print(features, labels)
 #               print(type(features))
 #               print(type(labels))
@@ -77,7 +80,7 @@ class Base:
                 self.clf = self.clf.best_estimator_
 
             end = datetime.now()
-            msg = "*** Training of classifier ready. Time elapsed: {}ms\n".format((end - start).microseconds/1000)            
+            msg = "*** Training of classifier ready. Time elapsed: {}ms\n".format((end - start).microseconds / 1000)
             logging.info(msg)
             print(msg)
 
@@ -93,18 +96,20 @@ class Base:
                 skf = StratifiedKFold(n_splits=n_splits)
 
                 ''' performs cross validation and stores the results in the respective variables '''
-                y_true, y_pred, y_probs = labels, cross_val_predict(self.clf, features, labels, cv=skf),\
-                                                cross_val_predict(self.clf, features, labels, cv=skf, method='predict_proba')                
+                y_true, y_pred, y_probs = labels, cross_val_predict(
+                    self.clf, features, labels, cv=skf
+                ), cross_val_predict(
+                    self.clf, features, labels, cv=skf, method='predict_proba'
+                )
 
                 ''' performing cross validation '''
                 logging.info("Model cross-validation performed for {0}.".format(self.clf.__class__.__name__))
 
                 ''' if cross validation was required, return the discrimination metrics from crossvalidation '''
                 ''' note slicing of y_probs, we do it to get the prediction for label = 1'''
-                return get_discrimination_metrics(y_true, y_pred, y_probs[:,1])
-                
-        
-        except Exception as e:
+                return get_discrimination_metrics(y_true, y_pred, y_probs[:, 1])
+
+        except Exception:
             print(traceback.format_exc())
             logging.error(traceback.format_exc())
 
@@ -112,11 +117,11 @@ class Base:
 
     def predict(self, features):
         '''
-        Provides the algorithm predictions for a given set of features and labels 
+        Provides the algorithm predictions for a given set of features and labels
         '''
         try:
             return self.clf.predict(features)
-        except Exception as e:
+        except Exception:
             print(traceback.format_exc())
             logging.error(traceback.format_exc())
 
@@ -124,24 +129,24 @@ class Base:
 
     def predict_proba(self, features):
         '''
-        Provides the algorithm probability predictions for a given set of features 
+        Provides the algorithm probability predictions for a given set of features
         '''
         try:
             return self.clf.predict_proba(features)
 
-        except Exception as e:
+        except Exception:
             logging.error(traceback.format_exc())
 
         return None
 
     def get_params(self):
         '''
-        Provides the algorithm's hyperparameter list 
+        Provides the algorithm's hyperparameter list
         '''
         try:
             return self.clf.get_params()
 
-        except Exception as e:
+        except Exception:
             logging.error(traceback.format_exc())
 
         return None
@@ -152,14 +157,15 @@ class Base:
         for model evaluation during hyperparam optimization using GridSearch.
         '''
         y_pred = estimator.predict_proba(X)
-        return roc_auc_score(y, y_pred[:,1])
+        return roc_auc_score(y, y_pred[:, 1])
 
     @property
     def is_tree_(self):
         '''
         Property used to define, for example, if we should use SHAP Tree Explainer instead of KernelExplainer.
-        '''  
+        '''
         return False
+
 
 class DecisionTree(Base):
 
@@ -174,36 +180,35 @@ class DecisionTree(Base):
             ''' gridsearch '''
             if not param_grid:
                 param_grid = {
-                    "max_depth": range(4,7),
-                    "min_samples_split": range(3,7),
+                    "max_depth": range(4, 7),
+                    "min_samples_split": range(3, 7),
                     "min_samples_leaf": range(1, 16),
                     "min_impurity_decrease": np.arange(0.0, 0.3, 0.025)
                 }
             clf = GridSearchCV(
-                estimator = DecisionTreeClassifier(),
-                cv = 5,
-                n_jobs = -1,
-                scoring = self.score_auroc,
-                param_grid = param_grid
+                estimator=DecisionTreeClassifier(),
+                cv=5,
+                n_jobs=-1,
+                scoring=self.score_auroc,
+                param_grid=param_grid
             )
-        
+
         super().__init__(clf, hyperparams, optimize, param_grid, crossval, n_splits)
 
     '''
     Stores model-based feature importance, for models such as trees
     '''
     @property
-    def feature_importances_(self):        
+    def feature_importances_(self):
         if hasattr(self.clf, 'feature_importances_'):
             return self.clf.feature_importances_
         else:
             return False
 
+
 class RandomForest(Base):
 
     def __init__(self, hyperparams=None, optimize=None, param_grid=None, crossval=None, n_splits=None):
-
-        
         if not hyperparams:
 
             hyperparams = {
@@ -213,7 +218,7 @@ class RandomForest(Base):
                 'min_samples_leaf': 4,
                 'min_samples_split': 8,
                 'n_estimators': 300,
-                'class_weight':'balanced'
+                'class_weight': 'balanced'
             }
 
         if not optimize:
@@ -222,7 +227,7 @@ class RandomForest(Base):
             current data using the current pipeline.
             '''
             clf = RandomForestClassifier(**hyperparams)
-        
+
         else:
             ''' gridsearch '''
             if not param_grid:
@@ -234,52 +239,51 @@ class RandomForest(Base):
                     'min_samples_leaf': [3, 4, 5],
                     'min_samples_split': [8, 10, 12],
                     'n_estimators': [100, 200, 300],
-                    'class_weight':['balanced']
+                    'class_weight': ['balanced']
                 }
             clf = GridSearchCV(
-                estimator = RandomForestClassifier(),
-                cv = 5,
-                n_jobs = -1,
-                scoring = self.score_auroc,
-                param_grid = param_grid
+                estimator=RandomForestClassifier(),
+                cv=5,
+                n_jobs=-1,
+                scoring=self.score_auroc,
+                param_grid=param_grid
             )
-        
+
         super().__init__(clf, hyperparams, optimize, param_grid, crossval, n_splits)
 
     '''
     Stores model-based feature importance, for models such as trees
     '''
     @property
-    def feature_importances_(self):        
+    def feature_importances_(self):
         if hasattr(self.clf, 'feature_importances_'):
             return self.clf.feature_importances_
         else:
             return False
 
     @property
-    def is_tree_(self):        
+    def is_tree_(self):
         return True
+
 
 class MultilayerPerceptron(Base):
 
     def __init__(self, hyperparams=None, optimize=None, param_grid=None, crossval=None, n_splits=None):
-
-
         if not hyperparams:
 
             hyperparams = {
 
-                'activation':'tanh',
-                'solver':'sgd',
-                'alpha' : 1e-5,
-                'hidden_layer_sizes':(21, 2),
-                'max_iter':500
+                'activation': 'tanh',
+                'solver': 'sgd',
+                'alpha': 1e-5,
+                'hidden_layer_sizes': (21, 2),
+                'max_iter': 500
             }
 
         if not optimize:
             '''
             Trains and stores a multilayer perceptron classifier on the
-            current data using the current pipeline.            
+            current data using the current pipeline.
             '''
             clf = MLPClassifier(**hyperparams)
         else:
@@ -296,23 +300,24 @@ class MultilayerPerceptron(Base):
                     }
                 ]
             clf = GridSearchCV(
-                estimator = MLPClassifier(),
-                cv = 5,
-                n_jobs = -1,
-                scoring = self.score_auroc,
-                param_grid = param_grid
+                estimator=MLPClassifier(),
+                cv=5,
+                n_jobs=-1,
+                scoring=self.score_auroc,
+                param_grid=param_grid
             )
-        
+
         super().__init__(clf, hyperparams, optimize, param_grid, crossval, n_splits)
+
 
 class GradientBoostingDecisionTree(Base):
 
     def __init__(self, hyperparams=None, optimize=None, param_grid=None, crossval=None, n_splits=None):
 
         if not hyperparams:
-            hyperparams = {             
-                'learning_rate' : 0.1,
-                'n_estimators' : 150,
+            hyperparams = {
+                'learning_rate': 0.1,
+                'n_estimators': 150,
                 'max_depth': 3
             }
 
@@ -328,17 +333,17 @@ class GradientBoostingDecisionTree(Base):
             if not param_grid:
                 param_grid = {
                     "learning_rate": [0.001, 0.005, 0.01, 0.05, 0.1, 0.2, 0.5, 1],
-                    "max_depth": range(2,4),
+                    "max_depth": range(2, 4),
                     "n_estimators": range(100, 200, 25)
                 }
             clf = GridSearchCV(
-                estimator = GradientBoostingClassifier(),
-                cv = 5,
-                n_jobs = -1,
-                scoring = self.score_auroc,
-                param_grid = param_grid
+                estimator=GradientBoostingClassifier(),
+                cv=5,
+                n_jobs=-1,
+                scoring=self.score_auroc,
+                param_grid=param_grid
             )
-        
+
         super().__init__(clf, hyperparams, optimize, param_grid, crossval, n_splits)
 
     @property
@@ -349,17 +354,18 @@ class GradientBoostingDecisionTree(Base):
             return False
 
     @property
-    def is_tree_(self):        
+    def is_tree_(self):
         return True
+
 
 class AdaBoost(Base):
 
     def __init__(self, hyperparams=None, optimize=None, param_grid=None, crossval=None, n_splits=None):
 
         if not hyperparams:
-            hyperparams = {             
+            hyperparams = {
                 'learning_rate': 1,
-                'n_estimators' : 150
+                'n_estimators': 150
             }
 
         if not optimize:
@@ -377,13 +383,13 @@ class AdaBoost(Base):
                     "n_estimators": range(100, 200, 25)
                 }
             clf = GridSearchCV(
-                estimator = AdaBoostClassifier(),
-                cv = 5,
-                n_jobs = -1,
-                scoring = self.score_auroc,
-                param_grid = param_grid
+                estimator=AdaBoostClassifier(),
+                cv=5,
+                n_jobs=-1,
+                scoring=self.score_auroc,
+                param_grid=param_grid
             )
-        
+
         super().__init__(clf, hyperparams, optimize, param_grid, crossval, n_splits)
 
     @property
@@ -394,7 +400,7 @@ class AdaBoost(Base):
             return False
 
     @property
-    def is_tree_(self):        
+    def is_tree_(self):
         return False
 
 
@@ -404,11 +410,11 @@ class LogisticRegression(Base):
 
         if not hyperparams:
 
-            hyperparams = {             
-                'penalty' : 'l2',
-                'C' : 1.0,
+            hyperparams = {
+                'penalty': 'l2',
+                'C': 1.0,
                 'solver': 'lbfgs',
-                'class_weight':'balanced'
+                'class_weight': 'balanced'
             }
 
         if not optimize:
@@ -416,8 +422,8 @@ class LogisticRegression(Base):
             Trains and stores a random forest classifier on the
             current data using the current pipeline.
             '''
-            clf = linear_model.LogisticRegression(**hyperparams)
-        
+            clf = sklearnLogisticRegression(**hyperparams)
+
         else:
             ''' gridsearch '''
             if not param_grid:
@@ -425,25 +431,26 @@ class LogisticRegression(Base):
                     "penalty": ['l2'],
                     "C": np.logspace(0, 4, 10),
                     "solver": ['lbfgs'],
-                    "class_weight":["balanced"]
+                    "class_weight": ["balanced"]
 
                 }
             clf = GridSearchCV(
-                estimator = linear_model.LogisticRegression(),
-                cv = 5,
-                n_jobs = -1,
-                scoring = self.score_auroc,
-                param_grid = param_grid
+                estimator=sklearnLogisticRegression(),
+                cv=5,
+                n_jobs=-1,
+                scoring=self.score_auroc,
+                param_grid=param_grid
             )
-        
+
         super().__init__(clf, hyperparams, optimize, param_grid, crossval, n_splits)
 
     @property
-    def feature_importances_(self):        
+    def feature_importances_(self):
         if hasattr(self.clf, 'coef_'):
             return self.clf.coef_[0]
         else:
             return False
+
 
 class SupportVectorMachine(Base):
 
@@ -453,9 +460,9 @@ class SupportVectorMachine(Base):
 
             hyperparams = {
                 'probability': True,
-                'C' : 1.0,
+                'C': 1.0,
                 'kernel': 'linear',
-                'class_weight':'balanced', # penalize
+                'class_weight': 'balanced',  # penalize
             }
 
         if not optimize:
@@ -463,8 +470,8 @@ class SupportVectorMachine(Base):
             Trains and stores a support vector machine on the
             current data using the current pipeline.
             '''
-            clf = sklearn.svm.SVC(**hyperparams)
-        
+            clf = SVC(**hyperparams)
+
         else:
             ''' gridsearch '''
             if not param_grid:
@@ -472,25 +479,26 @@ class SupportVectorMachine(Base):
                     "probability": [True],
                     "C": np.logspace(0, 4, 10),
                     "kernel": ['linear', 'poly', 'rbf', 'sigmoid'],
-                    "class_weight":['balanced'], # penalize
+                    "class_weight": ['balanced'],  # penalize
 
                 }
             clf = GridSearchCV(
-                estimator = sklearn.svm.SVC(),
-                cv = 5,
-                n_jobs = -1,
-                scoring = self.score_auroc,
-                param_grid = param_grid
+                estimator=SVC(),
+                cv=5,
+                n_jobs=-1,
+                scoring=self.score_auroc,
+                param_grid=param_grid
             )
-        
+
         super().__init__(clf, hyperparams, optimize, param_grid, crossval, n_splits)
 
     @property
-    def feature_importances_(self):        
+    def feature_importances_(self):
         if hasattr(self.clf, 'coef_'):
             return self.clf.coef_[0]
         else:
             return False
+
 
 class ElasticNetLR(Base):
 
@@ -499,8 +507,8 @@ class ElasticNetLR(Base):
         if not hyperparams:
 
             hyperparams = {
-                'loss' : "log",
-                'penalty': "elasticnet"                
+                'loss': "log",
+                'penalty': "elasticnet"
             }
 
         if not optimize:
@@ -508,34 +516,35 @@ class ElasticNetLR(Base):
             Trains and stores a logistic regression classifier using elastic net on the
             current data using the current pipeline.
             '''
-            clf = linear_model.SGDClassifier(**hyperparams)
-        
+            clf = SGDClassifier(**hyperparams)
+
         else:
             ''' gridsearch '''
             if not param_grid:
                 param_grid = {
-                    'loss' : ["log"],
+                    'loss': ["log"],
                     'penalty': ["elasticnet"],
                     "alpha": [0.00001, 0.0001, 0.001, 0.01, 0.1],
-                    "l1_ratio":[0, 0.2, 0.4, 0.6, 0.8, 1.0]
+                    "l1_ratio": [0, 0.2, 0.4, 0.6, 0.8, 1.0]
 
                 }
             clf = GridSearchCV(
-                estimator = linear_model.SGDClassifier(),
-                cv = 5,
-                n_jobs = -1,
-                scoring = self.score_auroc,
-                param_grid = param_grid
+                estimator=SGDClassifier(),
+                cv=5,
+                n_jobs=-1,
+                scoring=self.score_auroc,
+                param_grid=param_grid
             )
-        
+
         super().__init__(clf, hyperparams, optimize, param_grid, crossval, n_splits)
 
     @property
-    def feature_importances_(self):        
+    def feature_importances_(self):
         if hasattr(self.clf, 'coef_'):
             return self.clf.coef_[0]
         else:
             return False
+
 
 class ComplementNaiveBayes(Base):
 
@@ -544,8 +553,8 @@ class ComplementNaiveBayes(Base):
         if not hyperparams:
 
             hyperparams = {
-                'alpha' : 1.0,
-                'fit_prior': True                
+                'alpha': 1.0,
+                'fit_prior': True
             }
 
         if not optimize:
@@ -554,7 +563,7 @@ class ComplementNaiveBayes(Base):
             current data using the current pipeline.
             '''
             clf = ComplementNB(**hyperparams)
-        
+
         else:
             ''' gridsearch '''
             if not param_grid:
@@ -564,15 +573,14 @@ class ComplementNaiveBayes(Base):
 
                 }
             clf = GridSearchCV(
-                estimator = ComplementNB(),
-                cv = 5,
-                n_jobs = -1,
-                scoring = self.score_auroc,
-                param_grid = param_grid
+                estimator=ComplementNB(),
+                cv=5,
+                n_jobs=-1,
+                scoring=self.score_auroc,
+                param_grid=param_grid
             )
-        
-        super().__init__(clf, hyperparams, optimize, param_grid, crossval, n_splits)      
 
+        super().__init__(clf, hyperparams, optimize, param_grid, crossval, n_splits)
 
 
 class GaussianNaiveBayes(Base):
@@ -588,23 +596,33 @@ class GaussianNaiveBayes(Base):
             current data using the current pipeline.
             '''
             clf = GaussianNB(**hyperparams)
-        
+
         else:
             ''' gridsearch '''
             if not param_grid:
                 param_grid = {}
             clf = GridSearchCV(
-                estimator = GaussianNB(),
-                cv = 5,
-                n_jobs = -1,
-                scoring = self.score_auroc,
-                param_grid = param_grid
+                estimator=GaussianNB(),
+                cv=5,
+                n_jobs=-1,
+                scoring=self.score_auroc,
+                param_grid=param_grid
             )
-        
-        super().__init__(clf, hyperparams, optimize, param_grid, crossval, n_splits)      
+
+        super().__init__(clf, hyperparams, optimize, param_grid, crossval, n_splits)
 
 
+_options = {
+    'DT': DecisionTree,
+    'RF': RandomForest,
+    'LR': LogisticRegression,
+    'MLP': MultilayerPerceptron,
+    'GBDT': GradientBoostingDecisionTree,
+    'ENLR': ElasticNetLR,
+    'SVM': SupportVectorMachine,
+    'ADABOOST': AdaBoost,
+    'CNBAYES': ComplementNaiveBayes,
+    'GNBAYES': GaussianNaiveBayes
+}
 
-
-
-
+algorithm_config = namedtuple('options', _options.keys())(**_options)

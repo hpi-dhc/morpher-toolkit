@@ -16,18 +16,18 @@ from sklearn.metrics import confusion_matrix, classification_report, roc_auc_sco
 class Evaluate(MorpherJob):
 
     def do_execute(self):
-        
+
         #if we have a list of filenames coming from 'Split', we pass over the 'test' set for evaluation (pos. 1); otherwise we pass over the file we got
         if type(self.get_input("filenames")) == list:
             filename = self.get_input("filenames")[1]
-            experiment_mode = 0            
+            experiment_mode = 0
         else:
             filename = self.get_input("filename")
             experiment_mode = 1
 
         df = pd.read_csv(filepath_or_buffer= filename)
 
-        model_ids = self.get_input("model_ids")  
+        model_ids = self.get_input("model_ids")
         models = [jp.decode(json.dumps(model["content"])) for model in Retrieve(self.session).get_models(model_ids)]
 
         #go for zip here, model_id_mapping
@@ -58,7 +58,7 @@ class Evaluate(MorpherJob):
         return response.get('status')
 
     def add_experiment(self, **kwargs):
-     
+
         response = self.api("experiments", "new", data=kwargs)
 
         if response.get("status") == "success":
@@ -71,7 +71,7 @@ class Evaluate(MorpherJob):
             if not data.empty and models and target:
                 results = {}
                 labels = data[target] #true labels
-                features = data.drop(target, axis=1)                
+                features = data.drop(target, axis=1)
                 for clf_name in models:
                     clf = models[clf_name]
                     y_true, y_pred, y_probs = labels, clf.predict(features), clf.predict_proba(features)[:,1]
@@ -104,7 +104,3 @@ class Evaluate(MorpherJob):
         dor = (tp/fp)/(fn/tn)
         print(dor)
         print("***\n")
-
-
-
-

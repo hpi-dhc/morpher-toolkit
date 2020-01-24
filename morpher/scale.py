@@ -1,41 +1,47 @@
 import traceback
 import logging
-from morpher.exceptions import kvarg_not_empty
-from morpher.imputers import *
-import morpher.config as config
+from collections import namedtuple
+from morpher.exceptions import kwarg_not_empty
 import pandas as pd
-import numpy as np
 
-from sklearn.preprocessing import StandardScaler, RobustScaler, Normalizer
+from sklearn.preprocessing import (
+    Normalizer,
+    QuantileTransformer,
+    RobustScaler,
+    StandardScaler,
+)
 
-def scale(data, **kvargs):
+
+def scale(data, **kwargs):
     try:
-      #TODO: test is this is null
-      if not data.empty:
+        # TODO: test is this is null
+        if not data.empty:
 
-        method = kvargs.get("method")
-        kvarg_not_empty(method,"method")
+            scaling_class = kwargs.get("method")
+            kwarg_not_empty(scaling_class, "method")
+            scaler = scaling_class()
 
-        if (method == config.DEFAULT):
-          scaler = StandardScaler()        
+            # TODO: think about how to solve the issue of fit x fit_transform()
+            scaled_df = pd.DataFrame(scaler.fit_transform(data))
+            scaled_df.columns = data.columns
+            scaled_df.index = data.index
 
-        elif (method == config.ROBUST):      
-          scaler = RobustScaler()
+            data = scaled_df
 
-        elif (method == config.NORMALIZER):      
-          scaler = Normalizer()
+        else:
+            raise AttributeError("No data provided")
 
-        #TODO: think about how to solve the issue of fit x fit_transform()
-        scaled_df = pd.DataFrame(scaler.fit_transform(data))
-        scaled_df.columns = data.columns
-        scaled_df.index = data.index
-
-        data = scaled_df
-
-      else:
-        raise AttributeError("No data provided")		
-
-    except Exception as e:
-      logging.error(traceback.format_exc())
+    except Exception:
+        logging.error(traceback.format_exc())
 
     return data
+
+
+_options = {
+    'DEFAULT': StandardScaler,
+    'ROBUST': RobustScaler,
+    'NORMALIZER': Normalizer,
+    'QUANTILE_TRANSFORMER': QuantileTransformer
+}
+
+scaler_config = namedtuple('options', _options.keys())(**_options)

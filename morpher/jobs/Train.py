@@ -15,16 +15,16 @@ import jsonpickle as jp
 class Train(MorpherJob):
 
     def do_execute(self):
-        
+
         #if we have a list of filenames coming from 'Split', we pass over the 'train' set for training; otherwise we pass over the file we got
         filename = self.get_input("filename") or self.get_input("filenames")[0]
         df = pd.read_csv(filepath_or_buffer= filename)
         algorithms = self.get_input_variables("algorithms")
-        
+
         assert algorithms != ""
         if type(algorithms) is str: #make it become a list if not already
             algorithms = [algorithms]
-        
+
         target = self.get_input_variables("target")
         models = self.execute(df, target=target, algorithms=algorithms)
 
@@ -33,7 +33,7 @@ class Train(MorpherJob):
         params["user_id"] = self.get_input("user_id")
         params["target"] = target
         params["features"] = list(df.drop(target, axis=1).columns)
-        
+
         #store each model in the database and generate a dict in the form {"DecisionTree":999}
         model_ids = self.persist(models, params)
 
@@ -42,7 +42,7 @@ class Train(MorpherJob):
             self.add_output("filenames", self.get_input("filenames"))
         else:
             self.add_output("filename", filename)
-        
+
         self.add_output("target", target)
         self.add_output("model_ids", model_ids)
         self.add_output("cohort_id", params["cohort_id"])
@@ -57,14 +57,14 @@ class Train(MorpherJob):
         return model_ids
 
     def add(self, model, params):
-        
+
         params["hyperparameters"] = model.get_params()
         data = {}
         data["task_id"] = self.task_id
         data["cohort_id"] = params["cohort_id"]
         data["user_id"] = params["user_id"]
         data["name"] = model.__class__.__name__ + " for " + params["target"]
-        data["fqn"] =  model.clf.__class__.__module__ + '.' + model.clf.__class__.__qualname__        
+        data["fqn"] =  model.clf.__class__.__module__ + '.' + model.clf.__class__.__qualname__
         data["content"] = json.loads(jp.encode(model))
         data["parameters"] = params
 
@@ -100,15 +100,15 @@ class Train(MorpherJob):
                 features = data.drop(drop, axis=1)
 
             for algorithm in algorithms:
-                
-                clf = globals()[algorithm](hyperparams=hyperparams, optimize=optimize, param_grid=param_grid, crossval=crossval, n_splits=n_splits) #instantiate the algorithm in runtime
-                
+
+                clf = algorithm(hyperparams=hyperparams, optimize=optimize, param_grid=param_grid, crossval=crossval, n_splits=n_splits) #instantiate the algorithm in runtime
+
                 ''' if fit returns anything, it will be the cross_validated metrics '''
-                if crossval:                    
+                if crossval:
                     crossval_metrics[algorithm] = clf.fit(features, labels)
                 else:
                     clf.fit(features, labels)
-                    
+
                 trained_models[algorithm] = clf
 
             if kwargs.get("persist") is True:
@@ -122,7 +122,7 @@ class Train(MorpherJob):
             return trained_models
 
           else:
-            raise AttributeError("No data provided")        
+            raise AttributeError("No data provided")
 
         except Exception as e:
             print(traceback.format_exc())

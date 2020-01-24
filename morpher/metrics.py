@@ -1,14 +1,11 @@
-#!/usr/bin/env python
-import traceback
-import logging
-import pandas as pd
 import numpy as np
-from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve, brier_score_loss, explained_variance_score, mean_squared_error, mean_absolute_error
-from sklearn.preprocessing import scale, MinMaxScaler, StandardScaler
+from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.calibration import calibration_curve
 from collections import defaultdict
 from scipy.stats import linregress
 import math
+
 
 def get_discrimination_metrics(y_true, y_pred, y_probs, label="1.0"):
     '''
@@ -16,7 +13,7 @@ def get_discrimination_metrics(y_true, y_pred, y_probs, label="1.0"):
     '''
     results = defaultdict(lambda: {})
     report = classification_report(y_true, y_pred, output_dict=True)[label]
-    for metric in ['precision','recall','f1-score','support']:
+    for metric in ['precision', 'recall', 'f1-score', 'support']:
         results[metric] = float(report[metric])
     results['confusion_matrix'] = confusion_matrix(y_true, y_pred).tolist()
     results['auc'] = float(roc_auc_score(y_true, y_probs))
@@ -28,14 +25,15 @@ def get_discrimination_metrics(y_true, y_pred, y_probs, label="1.0"):
     results['dor'] = 0.0
 
     try:
-        results['dor'] = float((tp/fp)/(fn/tn))
-    except ZeroDivisionError as e:
-        results['dor'] = 0.0 # undefined
+        results['dor'] = float((tp / fp) / (fn / tn))
+    except ZeroDivisionError:
+        results['dor'] = 0.0  # undefined
 
     if results['dor'] == math.inf or results['dor'] == -math.inf or math.isnan(results['dor']):
-        results['dor'] = 0.0 # undefined
+        results['dor'] = 0.0  # undefined
 
     return dict(results)
+
 
 def get_calibration_metrics(y_true, y_pred, y_probs, n_bins=10):
 
@@ -51,6 +49,7 @@ def get_calibration_metrics(y_true, y_pred, y_probs, n_bins=10):
 
     return dict(results)
 
+
 def get_clinical_usefulness_metrics(discrimination_metrics, tr=0.7):
     '''
     Returns clinical usefulness of the prediction results in a dictionary
@@ -65,8 +64,8 @@ def get_clinical_usefulness_metrics(discrimination_metrics, tr=0.7):
     '''
     calculate the benefit of treating vs of not treating
     '''
-    net_benefit_treated = (tp/n) - (fp/n) * (tr/(1-tr))
-    net_benefit_untreated = (tn/n) - (fn/n) * ((1-tr)/tr)
+    net_benefit_treated = (tp / n) - (fp / n) * (tr / (1 - tr))
+    net_benefit_untreated = (tn / n) - (fn / n) * ((1 - tr) / tr)
 
     '''
     pi indicates disease prevalence or event rate
@@ -77,8 +76,7 @@ def get_clinical_usefulness_metrics(discrimination_metrics, tr=0.7):
     net benefit for treating all patients in the given threshould, according to disease prevalence
     net_benefit_treated_all = π – (1–π )pt/ (1-pt )
     '''
-    net_benefit_treated_all = pi - (1-pi) * tr / (1-tr)
-
+    net_benefit_treated_all = pi - (1 - pi) * tr / (1 - tr)
 
     '''
     ADAPT average deviation about the probability threshold
@@ -98,7 +96,7 @@ def get_clinical_usefulness_metrics(discrimination_metrics, tr=0.7):
     return dict(results)
 
 
-def get_calibration_metrics(y_true, y_probs, n_bins=10):
+def get_calibration_metrics(y_true, y_probs, n_bins=10):  # Why the redefinition?
 
     '''
      Returns calibration metrics of the prediction results in a dictionary:
@@ -112,31 +110,32 @@ def get_calibration_metrics(y_true, y_probs, n_bins=10):
 
     return dict(results)
 
-def get_weighted_explanations(explanations, friendly_names=None, weighting={'importance': 1,'support': 1}):
+
+def get_weighted_explanations(explanations, friendly_names=None, weighting={'importance': 1, 'support': 1}):
 
     '''
      Returns a triple of all the important features from a list of explanations
     '''
 
-    #list of available interpretability methods
+    # list of available interpretability methods
     methods = list(explanations.keys())
 
-    #list of all features mentioned across all methods
+    # list of all features mentioned across all methods
     features = defaultdict(lambda: [])
 
     weights = {}
 
     n_weights = {}
-    
+
     scaler = MinMaxScaler(feature_range=(0.1, 1))
 
     # first normalize all feature importance values between 0.1 and 1
     for method in methods:
-        
-        importances =  np.array(list(explanations[method].values())).reshape(-1,1)
+
+        importances = np.array(list(explanations[method].values())).reshape(-1, 1)
         scaler.fit(importances)
         n_importances = list(scaler.fit_transform(importances).ravel())
-        explanations[method].update({ key : value  for key,value in zip(list(explanations[method].keys()), n_importances)})
+        explanations[method].update({key: value for key, value in zip(list(explanations[method].keys()), n_importances)})
 
         for feat in explanations[method]:
             features[feat].append(explanations[method][feat])
@@ -144,13 +143,13 @@ def get_weighted_explanations(explanations, friendly_names=None, weighting={'imp
     # calculate mean while retaining the weights
     for feat in features:
         weights[feat] = len(features[feat])
-        features[feat] = float(np.mean(features[feat]))    
+        features[feat] = float(np.mean(features[feat]))
 
     # normalize weight values also between 0.1 and 1
-    scaler.fit(np.array(list(weights.values())).reshape(-1,1))
+    scaler.fit(np.array(list(weights.values())).reshape(-1, 1))
     for feat in features:
         n_weights[feat] = np.asscalar(scaler.transform([[weights[feat]]]))
-        features[feat] = (features[feat]*weighting['importance'] + n_weights[feat]*weighting['support']) / (weighting['importance'] + weighting['support'])
+        features[feat] = (features[feat] * weighting['importance'] + n_weights[feat] * weighting['support']) / (weighting['importance'] + weighting['support'])
 
     names, vals, weights, n_weights = list(features.keys()), list(features.values()), list(weights.values()), list(n_weights.values())
     if friendly_names:
@@ -159,16 +158,3 @@ def get_weighted_explanations(explanations, friendly_names=None, weighting={'imp
     exps = list(sorted(zip(names, vals, weights, n_weights), key=lambda x: x[1]))
 
     return exps
-    
-
-    
-
-
-
-
-
-
-
-    
-
-
