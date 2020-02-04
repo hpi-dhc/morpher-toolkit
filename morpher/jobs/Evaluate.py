@@ -95,7 +95,7 @@ class Evaluate(MorpherJob):
         '''
         Prints performance of the prediction results
         '''
-        print("***Performance report for {}".format(clf_name))
+        print("***Performance report for {}".format(clf_name.__class__.__name__))
 
         ''' report predictions '''
         print("Confusion Matrix:")

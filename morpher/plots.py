@@ -79,7 +79,8 @@ def plot_prc(results, title="Precision-Recall Curve", ax=None, figsize=None, leg
         clf_label = clf_name().__class__.__name__
         ax.step(recall, precision, label='{0} (AP={1:.2f})'.format(clf_label, average_precision_score(y_true, y_probs)), where='post')
 
-    ax.plot([0, 1], [0.5, 0.5], label='No skill', color='lightgray', linestyle='--')
+    no_skill_ratio = y_true.sum() / len(y_true)
+    ax.plot([0, 1], [no_skill_ratio, no_skill_ratio], label='No skill', color='lightgray', linestyle='--')
 
     ax.legend(loc=legend_loc, fancybox=True, shadow=True)
     ax.autoscale(enable=True)
