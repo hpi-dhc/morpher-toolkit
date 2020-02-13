@@ -15,7 +15,7 @@ class NoSampler(object):
     def __init__(self, **kwargs):
         pass
 
-    def fit_resample(self, **kwargs):
+    def fit_resample(self, X, y):
         pass
 
     def __bool(self):
