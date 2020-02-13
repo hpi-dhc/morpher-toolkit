@@ -27,7 +27,7 @@ class Sample(MorpherJob):
         try:
             if not data.empty:
                 if sampling_method:
-                    print(f"Performing sampling with {sampling_method.__class__.__name__} ...")
+                    print(f"Performing sampling with {sampling_method.__name__} ...")
 
                     sampler = sampling_method(**kwargs)
                     features, labels = data.drop(target, axis=1), data[target]
