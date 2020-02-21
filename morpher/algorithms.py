@@ -139,12 +139,12 @@ class Base:
 
         return None
 
-    def get_params(self):
-        '''
+    def get_params(self, deep=True):
+        """
         Provides the algorithm's hyperparameter list
-        '''
+        """
         try:
-            return self.clf.get_params()
+            return self.clf.get_params(deep)
 
         except Exception:
             logging.error(traceback.format_exc())
