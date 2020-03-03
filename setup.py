@@ -42,6 +42,7 @@ setup(
         "mpld3",
         "shap",
         "xgboost==1.0.1",
+        "lightgbm==2.3.1",
     ],
     # specifying a given version: 'chardet==3.0.4',
     zip_safe=False,
