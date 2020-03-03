@@ -447,6 +447,57 @@ class GradientBoostingDecisionTree(Base):
         return True
 
 
+class XGBoost(Base):
+    def __init__(
+        self,
+        hyperparams=None,
+        optimize=None,
+        param_grid=None,
+        crossval=None,
+        n_splits=None,
+    ):
+
+        if not hyperparams:
+            hyperparams = {"objective": "binary:logistic"}
+
+        if not optimize:
+            """
+            Trains and stores a XGBoost classifier on the
+            current data using the current pipeline.
+            """
+
+            clf = xgb.XGBClassifier(**hyperparams)
+        else:
+            """ gridsearch """
+            if not param_grid:
+                param_grid = {
+                    "n_estimators": [50, 100, 150, 200],
+                    "learning_rate": [0.01, 0.1, 0.2, 0.3],
+                    "max_depth": range(3, 10),
+                    "colsample_bytree": [i/10.0 for i in range(1, 3)],
+                    "clf__gamma": [i/10.0 for i in range(3)],
+                }
+            clf = GridSearchCV(
+                estimator=xgb.XGBClassifier(**hyperparams),
+                cv=5,
+                n_jobs=-1,
+                scoring=self.score_auroc,
+                param_grid=param_grid,
+            )
+
+        super().__init__(
+            clf, hyperparams, optimize, param_grid, crossval, n_splits
+        )
+
+    @property
+    def feature_importances_(self):
+        return self.clf.feature_importances_
+
+    @property
+    def is_tree_(self):
+        return True
+
+
 class AdaBoost(Base):
     def __init__(
         self,
@@ -756,6 +807,7 @@ _options = {
     "ADABOOST": AdaBoost,
     "CNBAYES": ComplementNaiveBayes,
     "GNBAYES": GaussianNaiveBayes,
+    "XGBOOST": XGBoost
 }
 
 algorithm_config = namedtuple("options", _options.keys())(**_options)
