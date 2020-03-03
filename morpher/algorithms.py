@@ -4,6 +4,7 @@ from collections import namedtuple
 from datetime import datetime
 
 import numpy as np
+import xgboost as xgb
 from sklearn.ensemble import (
     AdaBoostClassifier,
     GradientBoostingClassifier,
