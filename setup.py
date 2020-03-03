@@ -21,7 +21,7 @@ setup(
     author="Harry Freitas da Cruz",
     author_email="harrycruz@gmail.com",
     license="MIT",
-    packages=["morpher", "morpher.*"],
+    packages=["morpher", "morpher.jobs"],
     tests_require=["pytest"],
     setup_requires=["pytest-runner"],
     install_requires=[
