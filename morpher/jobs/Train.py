@@ -10,7 +10,6 @@ from morpher.jobs import MorpherJob
 
 
 class Train(MorpherJob):
-
     def do_execute(self):
 
         # if we have a list of filenames coming from 'Split', we pass over the 'train' set for training; otherwise we pass over the file we got
@@ -61,14 +60,22 @@ class Train(MorpherJob):
         data["cohort_id"] = params["cohort_id"]
         data["user_id"] = params["user_id"]
         data["name"] = model.__class__.__name__ + " for " + params["target"]
-        data["fqn"] = model.clf.__class__.__module__ + '.' + model.clf.__class__.__qualname__
+        data["fqn"] = (
+            model.clf.__class__.__module__
+            + "."
+            + model.clf.__class__.__qualname__
+        )
         data["content"] = json.loads(jp.encode(model))
         data["parameters"] = params
 
         response = self.api("models", "new", data)
 
         if response.get("status") == "error":
-            raise Exception("Error inserting new model. Check the server. Message returned: {msg}".format(msg=response.get("msg")))
+            raise Exception(
+                "Error inserting new model. Check the server. Message returned: {msg}".format(
+                    msg=response.get("msg")
+                )
+            )
 
         return response.get("model_id")
 
@@ -77,7 +84,7 @@ class Train(MorpherJob):
 
             if not data.empty:
 
-                ''' if split_data was called beforehand, data contains a subset of the original available data '''
+                """ if split_data was called beforehand, data contains a subset of the original available data """
                 labels = data[target]
                 features = data.drop(target, axis=1)
                 params = {}
@@ -98,9 +105,15 @@ class Train(MorpherJob):
 
                 for algorithm in algorithms:
 
-                    clf = algorithm(hyperparams=hyperparams, optimize=optimize, param_grid=param_grid, crossval=crossval, n_splits=n_splits)  # instantiate the algorithm in runtime
+                    clf = algorithm(
+                        hyperparams=hyperparams,
+                        optimize=optimize,
+                        param_grid=param_grid,
+                        crossval=crossval,
+                        n_splits=n_splits,
+                    )  # instantiate the algorithm in runtime
 
-                    ''' if fit returns anything, it will be the cross_validated metrics '''
+                    """ if fit returns anything, it will be the cross_validated metrics """
                     if crossval:
                         crossval_metrics[algorithm] = clf.fit(features, labels)
                     else:

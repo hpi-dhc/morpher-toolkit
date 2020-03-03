@@ -7,7 +7,6 @@ from morpher.jobs import MorpherJob
 
 
 class Retrieve(MorpherJob):
-
     def do_execute(self):
 
         filename = self.get_input("filename")
@@ -25,8 +24,12 @@ class Retrieve(MorpherJob):
         models = self.get_models(model_ids, details=True)
 
         params = {}
-        params["cohort_id"] = self.get_input("cohort_id") or task["parameters"]["cohort_id"]
-        params["user_id"] = self.get_input("user_id") or task["parameters"]["user_id"]
+        params["cohort_id"] = (
+            self.get_input("cohort_id") or task["parameters"]["cohort_id"]
+        )
+        params["user_id"] = (
+            self.get_input("user_id") or task["parameters"]["user_id"]
+        )
         params["target"] = target
         params["features"] = list(df.drop(target, axis=1).columns)
 
@@ -40,10 +43,14 @@ class Retrieve(MorpherJob):
 
                 error_msg = ""
                 if model["parameters"]["target"] != target:
-                    error_msg += "Targets do not match for model '{0}'. Expected '{1}', but '{2}' was provided. \n".format(model["name"], model["target"], target)
+                    error_msg += "Targets do not match for model '{0}'. Expected '{1}', but '{2}' was provided. \n".format(
+                        model["name"], model["target"], target
+                    )
 
                 if model["parameters"]["features"] != params["features"]:
-                    error_msg += "Features do not match for model '{0}'. Please check data provided. \n".format(model["name"])
+                    error_msg += "Features do not match for model '{0}'. Please check data provided. \n".format(
+                        model["name"]
+                    )
 
                 if error_msg == "":
                     model_ids.append(model["id"])
@@ -51,7 +58,11 @@ class Retrieve(MorpherJob):
                 error_summary += error_msg
 
             if error_summary != "":
-                raise AttributeError("Error while validating models and inputs. Error summary: {0}".format(error_summary))
+                raise AttributeError(
+                    "Error while validating models and inputs. Error summary: {0}".format(
+                        error_summary
+                    )
+                )
 
         except Exception:
             print(traceback.format_exc())
@@ -81,4 +92,6 @@ class Retrieve(MorpherJob):
         if response.get("status") == "success":
             return response.get("models")
         else:
-            raise Exception("There was an error retrieving the trained models. Check the server")
+            raise Exception(
+                "There was an error retrieving the trained models. Check the server"
+            )

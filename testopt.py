@@ -8,24 +8,21 @@ target = "AKI"
 
 train = Impute().execute(
     Load().execute(source=config.FILE, filename="train"),
-    imputation_method=config.DEFAULT
+    imputation_method=config.DEFAULT,
 )
 test = Impute().execute(
     Load().execute(source=config.FILE, filename="test"),
-    imputation_method=config.DEFAULT
+    imputation_method=config.DEFAULT,
 )
 
 param_grid_lr = {
-    "penalty": ['none', 'l2'],
+    "penalty": ["none", "l2"],
     "C": np.logspace(0, 4, 10),
-    "solver": ['lbfgs'],
-    "max_iter": [10000]
+    "solver": ["lbfgs"],
+    "max_iter": [10000],
 }
 
-hyperparams_rf = {
-    'n_estimators': 300,
-    'max_depth': 2
-}
+hyperparams_rf = {"n_estimators": 300, "max_depth": 2}
 
 models = {}
 
@@ -33,9 +30,9 @@ models.update(
     Train().execute(
         train,
         target=target,
-        optimize='yes',
+        optimize="yes",
         param_grid=param_grid_lr,
-        algorithms=[config.LOGISTIC_REGRESSION]
+        algorithms=[config.LOGISTIC_REGRESSION],
     )
 )
 models.update(
@@ -43,7 +40,7 @@ models.update(
         train,
         target=target,
         hyperparams=hyperparams_rf,
-        algorithms=[config.RANDOM_FOREST]
+        algorithms=[config.RANDOM_FOREST],
     )
 )
 

@@ -8,7 +8,6 @@ from morpher.jobs import MorpherJob
 
 
 class Scale(MorpherJob):
-
     def do_execute(self):
 
         filename = self.get_input("filename")
@@ -23,7 +22,14 @@ class Scale(MorpherJob):
         self.add_output("target", target)
         self.logger.info("Data scaled successfully.")
 
-    def execute(self, data, target, scaling_method=scalers.DEFAULT, scaler=None, **kwargs):
+    def execute(
+        self,
+        data,
+        target,
+        scaling_method=scalers.DEFAULT,
+        scaler=None,
+        **kwargs
+    ):
         try:
 
             if not data.empty:
@@ -35,7 +41,7 @@ class Scale(MorpherJob):
                     scaler = scaling_method(**kwargs)
                     scaler.fit(features)
 
-                ''' We refrain from transforming the label, that's why we need to concat both frames '''
+                """ We refrain from transforming the label, that's why we need to concat both frames """
                 df_labels = labels.to_frame()
                 df_features = pd.DataFrame(scaler.transform(features))
                 df_labels.reset_index(drop=True, inplace=True)

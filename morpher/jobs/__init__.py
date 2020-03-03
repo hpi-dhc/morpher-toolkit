@@ -13,17 +13,17 @@ from morpher.jobs.Explain import Explain
 from morpher.jobs.Calibrate import Calibrate
 
 __all__ = [
-    'Job',
-    'MorpherJob',
-    'Load',
-    'Impute',
-    'Scale',
-    'Sample',
-    'Transform',
-    'Split',
-    'Train',
-    'Retrieve',
-    'Evaluate',
-    'Explain',
-    'Calibrate'
+    "Job",
+    "MorpherJob",
+    "Load",
+    "Impute",
+    "Scale",
+    "Sample",
+    "Transform",
+    "Split",
+    "Train",
+    "Retrieve",
+    "Evaluate",
+    "Explain",
+    "Calibrate",
 ]

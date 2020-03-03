@@ -23,17 +23,17 @@ LOGISTIC_REGRESSION = "LogisticRegression"
 MULTILAYER_PERCEPTRON = "MultilayerPerceptron"
 GRADIENT_BOOSTING_DECISION_TREE = "GradientBoostingDecisionTree"
 
-db_user = os.getenv('DB_USER') or input('DB User: ')
-db_password = os.getenv('DB_PASSWORD') or getpass('DB Password: ')
-db_address = os.getenv('DB_ADDRESS') or input('DB Address: ')
-db_port = os.getenv('DB_PORT') or input('DB Port: ')
+db_user = os.getenv("DB_USER") or input("DB User: ")
+db_password = os.getenv("DB_PASSWORD") or getpass("DB Password: ")
+db_address = os.getenv("DB_ADDRESS") or input("DB Address: ")
+db_port = os.getenv("DB_PORT") or input("DB Port: ")
 
 
 __all__ = [
-    'algorithms',
-    'imputers',
-    'scalers',
-    'encoders',
-    'samplers',
-    'explainers'
+    "algorithms",
+    "imputers",
+    "scalers",
+    "encoders",
+    "samplers",
+    "explainers",
 ]

@@ -38,10 +38,10 @@ def scale(data, **kwargs):
 
 
 _options = {
-    'DEFAULT': StandardScaler,
-    'ROBUST': RobustScaler,
-    'NORMALIZER': Normalizer,
-    'QUANTILE_TRANSFORMER': QuantileTransformer
+    "DEFAULT": StandardScaler,
+    "ROBUST": RobustScaler,
+    "NORMALIZER": Normalizer,
+    "QUANTILE_TRANSFORMER": QuantileTransformer,
 }
 
-scaler_config = namedtuple('options', _options.keys())(**_options)
+scaler_config = namedtuple("options", _options.keys())(**_options)

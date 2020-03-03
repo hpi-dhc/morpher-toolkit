@@ -5,14 +5,17 @@ from collections import defaultdict
 
 import pandas as pd
 import jsonpickle as jp
-from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score
+from sklearn.metrics import (
+    confusion_matrix,
+    classification_report,
+    roc_auc_score,
+)
 
 from morpher.jobs import MorpherJob, Retrieve
 from morpher.exceptions import kwargs_not_empty
 
 
 class Explain(MorpherJob):
-
     def do_execute(self):
 
         # experiment_mode 2 is an interpretation experiment, running different interpretation algorithm
@@ -25,19 +28,26 @@ class Explain(MorpherJob):
             train, test = self.get_input("filenames")
         else:
             task = self.get_task()
-            users_path = os.path.abspath(self.config.get('paths', 'user_files'))
+            users_path = os.path.abspath(
+                self.config.get("paths", "user_files")
+            )
             filename = task["parameters"]["file"]["name"]
             filename = os.path.join(users_path, filename)
-            train, test = f'{filename}_train', f'{filename}_test'
+            train, test = f"{filename}_train", f"{filename}_test"
 
         train = pd.read_csv(filepath_or_buffer=train)
         test = pd.read_csv(filepath_or_buffer=test)
 
         model_ids = self.get_input("model_ids")
-        models = [jp.decode(json.dumps(model["content"])) for model in Retrieve(self.session).get_models(model_ids)]
+        models = [
+            jp.decode(json.dumps(model["content"]))
+            for model in Retrieve(self.session).get_models(model_ids)
+        ]
 
         # go for zip here, model_id_mapping
-        model_id_mapping = dict(zip([model.__class__.__name__ for model in models], model_ids))
+        model_id_mapping = dict(
+            zip([model.__class__.__name__ for model in models], model_ids)
+        )
 
         cohort_id = self.get_input("cohort_id")
         user_id = self.get_input("user_id")
@@ -50,13 +60,29 @@ class Explain(MorpherJob):
         if type(explainers) is str:
             explainers = [explainers]
 
-        explanations = self.execute(train, target=target, models={model.__class__.__name__: model for model in models}, explainers=explainers, exp_kwargs={'test': test})
+        explanations = self.execute(
+            train,
+            target=target,
+            models={model.__class__.__name__: model for model in models},
+            explainers=explainers,
+            exp_kwargs={"test": test},
+        )
 
         for model in models:
             clf_name = model.__class__.__name__
             model_id = model_id_mapping[clf_name]
-            description = "Explanations for target '{target}' based on {methods}".format(target=target, methods=", ".join(explainers))
-            self.add_experiment(cohort_id=cohort_id, model_id=model_id, user_id=user_id, description=description, target=target, experiment_mode=experiment_mode, parameters=explanations[clf_name])
+            description = "Explanations for target '{target}' based on {methods}".format(
+                target=target, methods=", ".join(explainers)
+            )
+            self.add_experiment(
+                cohort_id=cohort_id,
+                model_id=model_id,
+                user_id=user_id,
+                description=description,
+                target=target,
+                experiment_mode=experiment_mode,
+                parameters=explanations[clf_name],
+            )
 
         self.logger.info("Models explained successfully.")
 
@@ -67,7 +93,10 @@ class Explain(MorpherJob):
         if response.get("status") == "success":
             return response.get("experiment_id")
         else:
-            raise Exception("There was an error creating an Experiment. Server returned: %s" % response.get("msg"))
+            raise Exception(
+                "There was an error creating an Experiment. Server returned: %s"
+                % response.get("msg")
+            )
 
     def execute(self, data, **kwargs):
 
@@ -86,24 +115,30 @@ class Explain(MorpherJob):
                 for model_name in models:
                     model = models[model_name]
                     for exp_name in explainers:
-                        explainer = exp_name(data, model, target, **exp_kwargs)  # instantiate the algorithm in runtime
-                        explanations[model_name][exp_name] = explainer.explain(**exp_kwargs)
+                        explainer = exp_name(
+                            data, model, target, **exp_kwargs
+                        )  # instantiate the algorithm in runtime
+                        explanations[model_name][exp_name] = explainer.explain(
+                            **exp_kwargs
+                        )
 
                 return explanations
 
             else:
-                raise AttributeError("No data provided, models or target not available")
+                raise AttributeError(
+                    "No data provided, models or target not available"
+                )
         except Exception:
             self.logger.error(traceback.format_exc())
             return None
 
     def print_clf_performance(self, clf_name, y_true, y_pred, y_probs):
-        '''
+        """
         Prints performance of the prediction results
-        '''
+        """
         print("***Performance report for {}".format(clf_name))
 
-        ''' report predictions '''
+        """ report predictions """
         print("Confusion Matrix:")
         print(confusion_matrix(y_true, y_pred))
         print("Classification report:")

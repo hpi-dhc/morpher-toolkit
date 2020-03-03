@@ -5,7 +5,7 @@ import numpy as np
 np.random.seed(1729)
 
 logging.basicConfig(
-    filename='morpher.log',
+    filename="morpher.log",
     level=logging.DEBUG,
-    format='%(asctime)s : %(levelname)s : %(message)s'
+    format="%(asctime)s : %(levelname)s : %(message)s",
 )

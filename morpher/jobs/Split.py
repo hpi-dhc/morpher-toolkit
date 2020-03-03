@@ -8,7 +8,6 @@ from morpher.jobs import MorpherJob
 
 
 class Split(MorpherJob):
-
     def do_execute(self):
 
         filename = self.get_input("filename")
@@ -19,7 +18,11 @@ class Split(MorpherJob):
         try:
             test_size = float(test_size)
         except ValueError:
-            self.logger.error("Could not convert test_size to float, provided: {0}. Please check the parameter.".format(test_size))
+            self.logger.error(
+                "Could not convert test_size to float, provided: {0}. Please check the parameter.".format(
+                    test_size
+                )
+            )
             return
 
         train_data, test_data = self.execute(df, test_size=test_size)
@@ -27,10 +30,20 @@ class Split(MorpherJob):
         task = self.get_task()
         task_file = task["parameters"]["file"]["name"]
 
-        self.add_output("filenames", [self.save_to_file(train_data, filename=f"{task_file}_train"), self.save_to_file(test_data, filename=f"{task_file}_test")])
+        self.add_output(
+            "filenames",
+            [
+                self.save_to_file(train_data, filename=f"{task_file}_train"),
+                self.save_to_file(test_data, filename=f"{task_file}_test"),
+            ],
+        )
         self.add_output("cohort_id", self.get_input("cohort_id"))
         self.add_output("user_id", self.get_input("user_id"))
-        self.logger.info("Data split successfully, reserving {0:.0%} for test.".format(test_size))
+        self.logger.info(
+            "Data split successfully, reserving {0:.0%} for test.".format(
+                test_size
+            )
+        )
 
     def execute(self, data, **kwargs):
 
@@ -39,7 +52,9 @@ class Split(MorpherJob):
                 stratify = kwargs.get("stratify")
                 test_size = kwargs.get("test_size")
                 kwargs_not_empty(test_size, "test_size")
-                return train_test_split(data, test_size=test_size, stratify=stratify)
+                return train_test_split(
+                    data, test_size=test_size, stratify=stratify
+                )
             else:
                 raise AttributeError("No data provided")
         except Exception as e:

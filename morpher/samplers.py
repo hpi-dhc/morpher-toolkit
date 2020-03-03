@@ -4,13 +4,13 @@ from imblearn.over_sampling import (
     ADASYN,
     BorderlineSMOTE,
     RandomOverSampler,
-    SMOTE
+    SMOTE,
 )
 from imblearn.under_sampling import ClusterCentroids, RandomUnderSampler
 
 
 class NoSampler(object):
-    __name__ = 'no sampler'
+    __name__ = "no sampler"
 
     def __init__(self, **kwargs):
         pass
@@ -26,13 +26,13 @@ class NoSampler(object):
 
 
 _options = {
-    'SMOTE': SMOTE,
-    'BORDERLINE': BorderlineSMOTE,
-    'ADASYN': ADASYN,
-    'RANDOM': RandomOverSampler,
-    'URANDOM': RandomUnderSampler,
-    'CLUSTER': ClusterCentroids,
-    'NOSAMPLER': NoSampler,
+    "SMOTE": SMOTE,
+    "BORDERLINE": BorderlineSMOTE,
+    "ADASYN": ADASYN,
+    "RANDOM": RandomOverSampler,
+    "URANDOM": RandomUnderSampler,
+    "CLUSTER": ClusterCentroids,
+    "NOSAMPLER": NoSampler,
 }
 
-sampler_config = namedtuple('options', _options.keys())(**_options)
+sampler_config = namedtuple("options", _options.keys())(**_options)

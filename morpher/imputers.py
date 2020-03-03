@@ -10,6 +10,7 @@ class KNNImputer:
     """
     Perform KNN imputation.
     """
+
     def __init__(self, k=10):
         """
         Params:
@@ -29,7 +30,11 @@ class KNNImputer:
         df               input data to run the imputation on
         """
 
-        return pd.DataFrame(data=self._imputer.fit_transform(df.as_matrix()), columns=df.columns, index=df.index)
+        return pd.DataFrame(
+            data=self._imputer.fit_transform(df.as_matrix()),
+            columns=df.columns,
+            index=df.index,
+        )
 
     def fit(self, df):
 
@@ -38,7 +43,11 @@ class KNNImputer:
 
     def transform(self, df):
         print("*** Performing imputation using fitted kNN imputer...")
-        return pd.DataFrame(data=self._imputer.transform(df.as_matrix()), columns=df.columns, index=df.index)
+        return pd.DataFrame(
+            data=self._imputer.transform(df.as_matrix()),
+            columns=df.columns,
+            index=df.index,
+        )
 
 
 class SoftImputer:
@@ -68,7 +77,11 @@ class SoftImputer:
         df               input data to run the imputation on
         """
 
-        return pd.DataFrame(data=self._imputer.fit_transform(df.as_matrix()), columns=df.columns, index=df.index)
+        return pd.DataFrame(
+            data=self._imputer.fit_transform(df.as_matrix()),
+            columns=df.columns,
+            index=df.index,
+        )
 
     def fit(self, df):
         return
@@ -98,16 +111,16 @@ class KNNExt(KNN):
         X_filled = self.fill(X, missing_mask, inplace=True)
         if not isinstance(X_filled, np.ndarray):
             raise TypeError(
-                "Expected %s.fill() to return NumPy array but got %s" % (
-                    self.__class__.__name__,
-                    type(X_filled)))
+                "Expected %s.fill() to return NumPy array but got %s"
+                % (self.__class__.__name__, type(X_filled))
+            )
 
         X_result = self.solve(X_filled, missing_mask)
         if not isinstance(X_result, np.ndarray):
             raise TypeError(
-                "Expected %s.solve() to return NumPy array but got %s" % (
-                    self.__class__.__name__,
-                    type(X_result)))
+                "Expected %s.solve() to return NumPy array but got %s"
+                % (self.__class__.__name__, type(X_result))
+            )
 
         X_result = self.project_result(X=X_result)
         X_result[observed_mask] = X_original[observed_mask]
@@ -115,10 +128,10 @@ class KNNExt(KNN):
 
 
 _options = {
-    'DEFAULT': SimpleImputer,
-    'KNN': KNNImputer,
-    'KNNext': KNNExt,
-    'SOFT': SoftImputer
+    "DEFAULT": SimpleImputer,
+    "KNN": KNNImputer,
+    "KNNext": KNNExt,
+    "SOFT": SoftImputer,
 }
 
-imputer_config = namedtuple('options', _options.keys())(**_options)
+imputer_config = namedtuple("options", _options.keys())(**_options)

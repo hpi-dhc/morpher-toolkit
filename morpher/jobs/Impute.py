@@ -8,7 +8,6 @@ from morpher.jobs import MorpherJob
 
 
 class Impute(MorpherJob):
-
     def do_execute(self):
 
         filename = self.get_input("filename")
@@ -21,12 +20,14 @@ class Impute(MorpherJob):
         self.add_output("user_id", self.get_input("user_id"))
         self.logger.info("Data imputed successfully.")
 
-    def execute(self, data, imputation_method=imputers.DEFAULT, imputer=None, **kwargs):
+    def execute(
+        self, data, imputation_method=imputers.DEFAULT, imputer=None, **kwargs
+    ):
         try:
 
             if not data.empty:
 
-                ''' columns where all values are NaN get assigned 0, otherwise imputer will throw them away '''
+                """ columns where all values are NaN get assigned 0, otherwise imputer will throw them away """
                 data.loc[:, data.isna().all()] = 0.0
 
                 if not imputer:

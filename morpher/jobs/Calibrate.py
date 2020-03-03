@@ -10,7 +10,6 @@ from morpher.jobs import Retrieve
 
 
 class Calibrate(MorpherJob):
-
     def do_execute(self):
 
         # if we have a list of filenames coming from 'Split', we pass over the 'test' set for evaluation (pos. 1); otherwise we pass over the file we got
@@ -34,8 +33,16 @@ class Calibrate(MorpherJob):
         params["calibration_method"] = calibration_method
         params["features"] = list(df.drop(target, axis=1).columns)
 
-        models = [jp.decode(json.dumps(model["content"])) for model in Retrieve(self.session).get_models(model_ids)]
-        calibrated_models = self.execute(df, target=target, models={model.__class__.__name__: model for model in models}, method=calibration_method)
+        models = [
+            jp.decode(json.dumps(model["content"]))
+            for model in Retrieve(self.session).get_models(model_ids)
+        ]
+        calibrated_models = self.execute(
+            df,
+            target=target,
+            models={model.__class__.__name__: model for model in models},
+            method=calibration_method,
+        )
 
         # store each model in the database and generate a dict in the form {"DecisionTree":999}
         calibrated_model_ids = self.persist(calibrated_models, params)
@@ -60,19 +67,32 @@ class Calibrate(MorpherJob):
         data["task_id"] = self.task_id
         data["cohort_id"] = params["cohort_id"]
         data["user_id"] = params["user_id"]
-        data["name"] = model.__class__.__name__ + " for " + params["target"] + " with Calibration (" + params['calibration_method'] + ")"
-        data["fqn"] = model.__class__.__module__ + '.' + model.__class__.__qualname__
+        data["name"] = (
+            model.__class__.__name__
+            + " for "
+            + params["target"]
+            + " with Calibration ("
+            + params["calibration_method"]
+            + ")"
+        )
+        data["fqn"] = (
+            model.__class__.__module__ + "." + model.__class__.__qualname__
+        )
         data["content"] = json.loads(jp.encode(model))
         data["parameters"] = params
 
         response = self.api("models", "new", data)
 
         if response.get("status") == "error":
-            raise Exception("Error inserting new model. Check the server. Message returned: {msg}".format(msg=response.get("msg")))
+            raise Exception(
+                "Error inserting new model. Check the server. Message returned: {msg}".format(
+                    msg=response.get("msg")
+                )
+            )
 
         return response.get("model_id")
 
-    def execute(self, data, target, models, method='isotonic', **kwargs):
+    def execute(self, data, target, models, method="isotonic", **kwargs):
 
         calibrated_models = {}
 
@@ -84,12 +104,16 @@ class Calibrate(MorpherJob):
                 for clf_name in models:
                     clf = models[clf_name].clf
                     print(f"Performing calibration for {clf_name}")
-                    calibrated_clf = CalibratedClassifierCV(clf, cv='prefit', method=method)
+                    calibrated_clf = CalibratedClassifierCV(
+                        clf, cv="prefit", method=method
+                    )
                     calibrated_clf.fit(X_train, y_train)
                     calibrated_models[clf_name] = calibrated_clf
                 return calibrated_models
             else:
-                raise AttributeError("No data provided, algorithms or target not available")
+                raise AttributeError(
+                    "No data provided, algorithms or target not available"
+                )
         except Exception as e:
             print(e)
             self.logger.error(traceback.format_exc())

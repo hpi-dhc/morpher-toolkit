@@ -1,6 +1,10 @@
 import traceback
 import logging
-from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score
+from sklearn.metrics import (
+    confusion_matrix,
+    classification_report,
+    roc_auc_score,
+)
 
 
 def evaluate(data, target, algorithms, **kvargs):
@@ -11,24 +15,34 @@ def evaluate(data, target, algorithms, **kvargs):
             features = data.drop(target, axis=1)
             for clf in algorithms:
                 clf_name = clf.__class__.__name__
-                y_true, y_pred, y_probs = labels, clf.predict(features), clf.predict_proba(features)
-                results[clf_name] = {"y_true": y_true, "y_pred": y_pred, "y_probs": y_probs}
+                y_true, y_pred, y_probs = (
+                    labels,
+                    clf.predict(features),
+                    clf.predict_proba(features),
+                )
+                results[clf_name] = {
+                    "y_true": y_true,
+                    "y_pred": y_pred,
+                    "y_probs": y_probs,
+                }
                 print_clf_performance(clf_name, y_true, y_pred, y_probs)
             return results
         else:
-            raise AttributeError("No data provided, algorithms or target not available")
+            raise AttributeError(
+                "No data provided, algorithms or target not available"
+            )
     except Exception:
         logging.error(traceback.format_exc())
     return None
 
 
 def print_clf_performance(clf_name, y_true, y_pred, y_probs):
-    '''
+    """
     Prints performance of the prediction results
-    '''
+    """
     print("***Performance report for {}".format(clf_name))
 
-    ''' report predictions '''
+    """ report predictions """
     print("Confusion Matrix:")
     print(confusion_matrix(y_true, y_pred))
     print("Classification report:")

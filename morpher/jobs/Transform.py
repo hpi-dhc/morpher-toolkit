@@ -8,7 +8,6 @@ from morpher.jobs import MorpherJob
 
 
 class Transform(MorpherJob):
-
     def do_execute(self):
 
         filename = self.get_input("filename")
@@ -24,14 +23,21 @@ class Transform(MorpherJob):
         self.add_output("target", target)
         self.logger.info("Data transformed successfully.")
 
-    def execute(self, data, transforms=None, drop=None, **kwargs):
+    def execute(
+        self, data, transforms=None, drop=None, default=None, **kwargs
+    ):
         try:
 
             if not data.empty:
 
                 if transforms:
-                    mapping = [(feature, transform_method(**kwargs)) for feature, transform_method in transforms]
-                    mapper = DataFrameMapper(mapping, df_out=True, default=None)
+                    mapping = [
+                        (feature, transform_method(**kwargs))
+                        for feature, transform_method in transforms
+                    ]
+                    mapper = DataFrameMapper(
+                        mapping, df_out=True, default=default
+                    )
                     data = mapper.fit_transform(data.copy())
 
                 if drop:

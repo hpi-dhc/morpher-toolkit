@@ -4,7 +4,6 @@ from morpher.jobs import Job
 
 
 class Sleep(Job):
-
     def do_execute(self):
 
         minutes = self.get_input_variables("minutes")
