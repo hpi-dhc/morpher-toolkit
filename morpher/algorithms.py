@@ -36,6 +36,7 @@ class Base:
         param_grid=None,
         crossval=None,
         n_splits=None,
+        n_jobs=None
         **kwargs,
     ):
 
@@ -58,6 +59,11 @@ class Base:
         Indicates how many folds to cross-validate
         """
         self.n_splits = n_splits
+
+        """
+        Indicates how many jobs for fit should run in parallel
+        """
+        self.n_jobs = n_jobs
 
     def fit(self, features, labels):
 
@@ -112,15 +118,23 @@ class Base:
                 skf = StratifiedKFold(n_splits=n_splits)
 
                 """ performs cross validation and stores the results in the respective variables """
+                n_jobs = self.n_jobs or 1
                 y_true, y_pred, y_probs = (
                     labels,
-                    cross_val_predict(self.clf, features, labels, cv=skf),
+                    cross_val_predict(
+                        self.clf,
+                        features,
+                        labels,
+                        cv=skf,
+                        n_jobs=n_jobs
+                    ),
                     cross_val_predict(
                         self.clf,
                         features,
                         labels,
                         cv=skf,
                         method="predict_proba",
+                        n_jobs=n_jobs
                     ),
                 )
 
