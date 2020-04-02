@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import traceback
 import json
+import simplejson
 import os
 import uuid
 from urllib.parse import urlencode
@@ -31,8 +32,8 @@ class MorpherJob(Job):
  
         try:
 
-            request = Request(endpoint, data=json.dumps(data).encode('utf8'), headers={'content-type': 'application/json'})
-            response = urlopen(request).read().decode()            
+            request = Request(endpoint, data=simplejson.dumps(data, ignore_nan=True).encode('utf8'), headers={'content-type': 'application/json'})
+            response = urlopen(request).read().decode()
             return json.loads(response)
 
         except Exception as e:
