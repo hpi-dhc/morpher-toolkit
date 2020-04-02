@@ -11,7 +11,7 @@ from scipy.stats import linregress
 import math
 
 
-def get_discrimination_metrics(y_true, y_pred, y_probs, label="True"):
+def get_discrimination_metrics(y_true, y_pred, y_probs, label="1.0"):
     """
     Returns discriminative performance of the prediction results in a dictionary
     """

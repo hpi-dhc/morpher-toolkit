@@ -6,6 +6,7 @@ from datetime import datetime
 import lightgbm
 import numpy as np
 import xgboost as xgb
+from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import (
     AdaBoostClassifier,
     GradientBoostingClassifier,
@@ -39,7 +40,6 @@ class Base:
         crossval=None,
         n_splits=None,
         n_jobs=None
-        **kwargs,
     ):
 
         """
@@ -211,7 +211,11 @@ class Base:
         return False
 
 
-class DecisionTree(Base):
+    def set_params(self, **kwargs):
+        self.clf.set_params(**kwargs)
+        return self
+
+class Dummy(Base):
     def __init__(
         self,
         hyperparams=None,
@@ -220,12 +224,46 @@ class DecisionTree(Base):
         crossval=None,
         n_splits=None,
     ):
+        if not hyperparams:
+            hyperparams = {"strategy": "most_frequent"}
+        if not optimize:
+            clf = DummyClassifier(**hyperparams)
+        else:
+            """ gridsearch """
+            if not param_grid:
+                param_grid = {}
+            clf = GridSearchCV(
+                estimator=DummyClassifier(**hyperparams),
+                cv=5,
+                n_jobs=-1,
+                scoring=self.score_auroc,
+                param_grid=param_grid,
+            )
+
+        super().__init__(
+            clf, hyperparams, optimize, param_grid, crossval, n_splits
+        )
+
+
+class DecisionTree(Base):
+    def __init__(
+        self,
+        hyperparams=None,
+        optimize=None,
+        param_grid=None,
+        crossval=None,
+        n_splits=None,
+        **kwargs
+    ):
 
         if not hyperparams:
             hyperparams = {"max_depth": 5, "class_weight": "balanced"}
 
         if not optimize:
-            clf = DecisionTreeClassifier(**hyperparams)
+            if kwargs:
+                clf = DecisionTreeClassifier(**kwargs)
+            else:
+                clf = DecisionTreeClassifier(**hyperparams)
         else:
             """ gridsearch """
             if not param_grid:
@@ -236,7 +274,7 @@ class DecisionTree(Base):
                     "min_impurity_decrease": np.arange(0.0, 0.3, 0.025),
                 }
             clf = GridSearchCV(
-                estimator=DecisionTreeClassifier(),
+                estimator=DecisionTreeClassifier(**hyperparams),
                 cv=5,
                 n_jobs=-1,
                 scoring=self.score_auroc,
@@ -265,8 +303,6 @@ class RandomForest(Base):
         hyperparams={},
         optimize=None,
         param_grid=None,
-        crossval=None,
-        n_splits=None,
         **kwargs,
     ):
         if not hyperparams:
@@ -274,7 +310,6 @@ class RandomForest(Base):
             hyperparams = {
                 "n_estimators": 300,
                 "max_depth": 16,
-                "max_features": 8,
                 "min_samples_leaf": 4,
                 "min_samples_split": 8,
                 "n_estimators": 300,
@@ -286,7 +321,10 @@ class RandomForest(Base):
             Trains and stores a random forest classifier on the
             current data using the current pipeline.
             """
-            clf = RandomForestClassifier({**hyperparams + kwargs})
+            if kwargs:
+                clf = RandomForestClassifier(**kwargs)
+            else:
+                clf = RandomForestClassifier(**hyperparams)
 
         else:
             """ gridsearch """
@@ -301,7 +339,7 @@ class RandomForest(Base):
                     "class_weight": ["balanced"],
                 }
             clf = GridSearchCV(
-                estimator=RandomForestClassifier(),
+                estimator=RandomForestClassifier(**hyperparams),
                 cv=5,
                 n_jobs=-1,
                 scoring=self.score_auroc,
@@ -309,7 +347,7 @@ class RandomForest(Base):
             )
 
         super().__init__(
-            clf, hyperparams, optimize, param_grid, crossval, n_splits
+            clf, hyperparams, optimize, param_grid, **kwargs
         )
 
     """
@@ -336,6 +374,7 @@ class MultilayerPerceptron(Base):
         param_grid=None,
         crossval=None,
         n_splits=None,
+        **kwargs
     ):
         if not hyperparams:
 
@@ -352,7 +391,10 @@ class MultilayerPerceptron(Base):
             Trains and stores a multilayer perceptron classifier on the
             current data using the current pipeline.
             """
-            clf = MLPClassifier(**hyperparams)
+            if kwargs:
+                clf = MLPClassifier(**kwargs)
+            else:
+                clf = MLPClassifier(**hyperparams)
         else:
             """ gridsearch """
             if not param_grid:
@@ -386,7 +428,7 @@ class MultilayerPerceptron(Base):
                     }
                 ]
             clf = GridSearchCV(
-                estimator=MLPClassifier(),
+                estimator=MLPClassifier(**hyperparams),
                 cv=5,
                 n_jobs=-1,
                 scoring=self.score_auroc,
@@ -406,6 +448,7 @@ class GradientBoostingDecisionTree(Base):
         param_grid=None,
         crossval=None,
         n_splits=None,
+        **kwargs
     ):
 
         if not hyperparams:
@@ -420,8 +463,10 @@ class GradientBoostingDecisionTree(Base):
             Trains and stores a random forest classifier on the
             current data using the current pipeline.
             """
-
-            clf = GradientBoostingClassifier(**hyperparams)
+            if kwargs:
+                clf = GradientBoostingClassifier(**kwargs)
+            else:
+                clf = GradientBoostingClassifier(**hyperparams)
         else:
             """ gridsearch """
             if not param_grid:
@@ -436,15 +481,16 @@ class GradientBoostingDecisionTree(Base):
                         0.5,
                         1,
                     ],
-                    "max_depth": range(2, 4),
+                    "max_depth": range(2, 10),
                     "n_estimators": range(100, 200, 25),
                 }
             clf = GridSearchCV(
-                estimator=GradientBoostingClassifier(),
+                estimator=GradientBoostingClassifier(**hyperparams),
                 cv=5,
                 n_jobs=-1,
                 scoring=self.score_auroc,
                 param_grid=param_grid,
+                verbose=1
             )
 
         super().__init__(
@@ -471,6 +517,7 @@ class XGBoost(Base):
         param_grid=None,
         crossval=None,
         n_splits=None,
+        **kwargs
     ):
 
         if not hyperparams:
@@ -481,8 +528,10 @@ class XGBoost(Base):
             Trains and stores a XGBoost classifier on the
             current data using the current pipeline.
             """
-
-            clf = xgb.XGBClassifier(**hyperparams)
+            if kwargs:
+                clf = xgb.XGBClassifier(**kwargs)
+            else:
+                clf = xgb.XGBClassifier(**hyperparams)
         else:
             """ gridsearch """
             if not param_grid:
@@ -522,6 +571,7 @@ class LightGBM(Base):
         param_grid=None,
         crossval=None,
         n_splits=None,
+        **kwargs
     ):
 
         if not hyperparams:
@@ -532,8 +582,10 @@ class LightGBM(Base):
             Trains and stores a XGBoost classifier on the
             current data using the current pipeline.
             """
-
-            clf = lightgbm.LGBMClassifier(**hyperparams)
+            if kwargs:
+                clf = lightgbm.LGBMClassifier(**kwargs)
+            else:
+                clf = lightgbm.LGBMClassifier(**hyperparams)
         else:
             """ gridsearch """
             if not param_grid:
@@ -572,6 +624,7 @@ class AdaBoost(Base):
         param_grid=None,
         crossval=None,
         n_splits=None,
+        **kwargs
     ):
 
         if not hyperparams:
@@ -582,8 +635,10 @@ class AdaBoost(Base):
             Trains and stores a random forest classifier on the
             current data using the current pipeline.
             """
-
-            clf = AdaBoostClassifier(**hyperparams)
+            if kwargs:
+                clf = AdaBoostClassifier(**kwargs)
+            else:
+                clf = AdaBoostClassifier(**hyperparams)
         else:
             """ gridsearch """
             if not param_grid:
@@ -601,7 +656,7 @@ class AdaBoost(Base):
                     "n_estimators": range(100, 200, 25),
                 }
             clf = GridSearchCV(
-                estimator=AdaBoostClassifier(),
+                estimator=AdaBoostClassifier(**hyperparams),
                 cv=5,
                 n_jobs=-1,
                 scoring=self.score_auroc,
@@ -632,6 +687,7 @@ class LogisticRegression(Base):
         param_grid=None,
         crossval=None,
         n_splits=None,
+        **kwargs
     ):
 
         if not hyperparams:
@@ -648,7 +704,10 @@ class LogisticRegression(Base):
             Trains and stores a random forest classifier on the
             current data using the current pipeline.
             """
-            clf = sklearnLogisticRegression(**hyperparams)
+            if kwargs:
+                clf = sklearnLogisticRegression(**kwargs)
+            else:
+                clf = sklearnLogisticRegression(**hyperparams)
 
         else:
             """ gridsearch """
@@ -660,7 +719,7 @@ class LogisticRegression(Base):
                     "class_weight": ["balanced"],
                 }
             clf = GridSearchCV(
-                estimator=sklearnLogisticRegression(),
+                estimator=sklearnLogisticRegression(**hyperparams),
                 cv=5,
                 n_jobs=-1,
                 scoring=self.score_auroc,
@@ -687,6 +746,7 @@ class SupportVectorMachine(Base):
         param_grid=None,
         crossval=None,
         n_splits=None,
+        **kwargs
     ):
 
         if not hyperparams:
@@ -703,7 +763,10 @@ class SupportVectorMachine(Base):
             Trains and stores a support vector machine on the
             current data using the current pipeline.
             """
-            clf = SVC(**hyperparams)
+            if kwargs:
+                clf = SVC(**kwargs)
+            else:
+                clf = SVC(**hyperparams)
 
         else:
             """ gridsearch """
@@ -715,7 +778,7 @@ class SupportVectorMachine(Base):
                     "class_weight": ["balanced"],  # penalize
                 }
             clf = GridSearchCV(
-                estimator=SVC(),
+                estimator=SVC(**hyperparams),
                 cv=5,
                 n_jobs=-1,
                 scoring=self.score_auroc,
@@ -753,8 +816,10 @@ class ElasticNetLR(Base):
             Trains and stores a logistic regression classifier using elastic net on the
             current data using the current pipeline.
             """
-            clf = SGDClassifier(**hyperparams)
-
+            if kwargs:
+                clf = SGDClassifier(**kwargs)
+            else:
+                clf = SGDClassifier(**hyperparams)
         else:
             """ gridsearch """
             if not param_grid:
@@ -765,7 +830,7 @@ class ElasticNetLR(Base):
                     "l1_ratio": [0, 0.2, 0.4, 0.6, 0.8, 1.0],
                 }
             clf = GridSearchCV(
-                estimator=SGDClassifier(),
+                estimator=SGDClassifier(**hyperparams),
                 cv=5,
                 n_jobs=-1,
                 scoring=self.score_auroc,
@@ -792,6 +857,7 @@ class ComplementNaiveBayes(Base):
         param_grid=None,
         crossval=None,
         n_splits=None,
+        **kwargs
     ):
 
         if not hyperparams:
@@ -803,7 +869,10 @@ class ComplementNaiveBayes(Base):
             Trains and stores a logistic regression classifier using elastic net on the
             current data using the current pipeline.
             """
-            clf = ComplementNB(**hyperparams)
+            if kwargs:
+                clf = ComplementNB(**kwargs)
+            else:
+                clf = ComplementNB(**hyperparams)
 
         else:
             """ gridsearch """
@@ -813,7 +882,7 @@ class ComplementNaiveBayes(Base):
                     "fit_prior": [True],
                 }
             clf = GridSearchCV(
-                estimator=ComplementNB(),
+                estimator=ComplementNB(**hyperparams),
                 cv=5,
                 n_jobs=-1,
                 scoring=self.score_auroc,
@@ -833,6 +902,7 @@ class GaussianNaiveBayes(Base):
         param_grid=None,
         crossval=None,
         n_splits=None,
+        **kwargs
     ):
 
         if not hyperparams:
@@ -843,14 +913,17 @@ class GaussianNaiveBayes(Base):
             Trains and stores a logistic regression classifier using elastic net on the
             current data using the current pipeline.
             """
-            clf = GaussianNB(**hyperparams)
+            if kwargs:
+                clf = GaussianNB(**kwargs)
+            else:
+                clf = GaussianNB(**hyperparams)
 
         else:
             """ gridsearch """
             if not param_grid:
                 param_grid = {}
             clf = GridSearchCV(
-                estimator=GaussianNB(),
+                estimator=GaussianNB(**hyperparams),
                 cv=5,
                 n_jobs=-1,
                 scoring=self.score_auroc,
@@ -863,6 +936,7 @@ class GaussianNaiveBayes(Base):
 
 
 _options = {
+    "DUMMY": Dummy,
     "DT": DecisionTree,
     "RF": RandomForest,
     "LR": LogisticRegression,
