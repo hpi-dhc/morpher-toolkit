@@ -18,6 +18,11 @@ class Train(MorpherJob):
         
         #if we have a list of filenames coming from 'Split', we pass over the 'train' set for training; otherwise we pass over the file we got
         filename = self.get_input("filename") or self.get_input("filenames")[0]
+        task = self.get_task()
+        cohort_params = task["parameters"].get("cohort_params")
+        drop = [] # cohort features to be removed are stored as a 'remove' list
+        if cohort_params:
+            drop = cohort_params.get("remove") or []
         df = pd.read_csv(filepath_or_buffer= filename)
         algorithms = self.get_input_variables("algorithms")
         
@@ -26,13 +31,14 @@ class Train(MorpherJob):
             algorithms = [algorithms]
         
         target = self.get_input_variables("target")
-        models = self.execute(df, target=target, algorithms=algorithms)
+        models = self.execute(df, target=target, algorithms=algorithms, drop=drop)
 
         params = {}
         params["cohort_id"] = self.get_input("cohort_id")
         params["user_id"] = self.get_input("user_id")
         params["target"] = target
-        params["features"] = list(df.drop(target, axis=1).columns)
+        #params["features"] = list(df.drop(target, axis=1).columns)
+        params["features"] = [feat for feat in df.drop(target, axis=1).columns if feat not in drop]
         
         #store each model in the database and generate a dict in the form {"DecisionTree":999}
         model_ids = self.persist(models, params)
@@ -97,7 +103,8 @@ class Train(MorpherJob):
             crossval_metrics = {}
 
             if drop:
-                features = data.drop(drop, axis=1)
+                cols_to_drop = [col for col in drop if col in data.columns]
+                features = data.drop(cols_to_drop, axis=1)
 
             for algorithm in algorithms:
                 

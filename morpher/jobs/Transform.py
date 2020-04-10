@@ -38,7 +38,7 @@ class Transform(MorpherJob):
                 data = mapper.fit_transform(data.copy())
             
             if drop:
-                data.drop(drop, axis=1, inplace=True)
+                data.drop([col for col in drop if col in data.columns], axis=1, inplace=True)
 
           else:
             raise AttributeError("No data provided")        
