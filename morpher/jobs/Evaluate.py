@@ -88,10 +88,12 @@ class Evaluate(MorpherJob):
 
                     # include zero-out features, in case not all are available
                     # get the features in the correct order
-                    if models_features.get(clf_name):
-                        feats = models_features.get(clf_name)
-                        for feat in feats not in df_features.columns:
-                            df_features[feat] = 0.0
+                    feats = models_features.get(clf_name)
+
+                    if feats:                        
+                        for feat in feats:
+                            if feat not in list(df_features.columns):
+                                df_features[feat] = 0.0
                         df_features = df_features[feats]
 
                     y_true, y_pred, y_probs = labels, clf.predict(df_features), clf.predict_proba(df_features)[:,1]
