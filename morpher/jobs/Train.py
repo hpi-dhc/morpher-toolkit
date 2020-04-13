@@ -103,8 +103,8 @@ class Train(MorpherJob):
             crossval_metrics = {}
 
             if drop:
-                cols_to_drop = [col for col in drop if col in data.columns]
-                features = data.drop(cols_to_drop, axis=1)
+                cols_to_drop = [col for col in drop if col in features.columns]
+                features = features.drop(cols_to_drop, axis=1)
 
             for algorithm in algorithms:
                 

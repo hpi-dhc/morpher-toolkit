@@ -27,8 +27,11 @@ class Evaluate(MorpherJob):
 
         df = pd.read_csv(filepath_or_buffer= filename)
 
-        model_ids = self.get_input("model_ids")  
-        models = [jp.decode(json.dumps(model["content"])) for model in Retrieve(self.session).get_models(model_ids)]
+        model_ids = self.get_input("model_ids")
+        response = [(jp.decode(json.dumps(model["content"])), model["parameters"]) for model in Retrieve(self.session).get_models(model_ids)]
+        models = [model[0] for model in response]
+        features = [model[1]["features"] for model in response]
+        models_features = dict(zip([model.__class__.__name__ for model in models],[feat for feat in features]))
 
         #go for zip here, model_id_mapping
         model_id_mapping = dict(zip([model.__class__.__name__ for model in models], model_ids))
@@ -37,7 +40,7 @@ class Evaluate(MorpherJob):
         user_id = self.get_input("user_id")
         target = self.get_input("target")
 
-        results = self.execute(df, target=target, models={model.__class__.__name__: model for model in models})
+        results = self.execute(df, target=target, models={model.__class__.__name__: model for model in models}, models_features=models_features)
 
         for model in models:
             clf_name = model.__class__.__name__
@@ -67,14 +70,31 @@ class Evaluate(MorpherJob):
             raise Exception("There was an error creating an Experiment. Server returned: %s" % response.get("msg"))
 
     def execute(self, data, target, models, print_performance=False, **kwargs):
+
+        drop = kwargs.get("models_features") # list of features to drop
         try:
             if not data.empty and models and target:
                 results = {}
                 labels = data[target] #true labels
-                features = data.drop(target, axis=1)                
+                features = data.drop(target, axis=1)
+
                 for clf_name in models:
+
+                    # obtain copy of feature to avoid memory issues
+                    df_features = features.copy()
+
+                    # get classifier
                     clf = models[clf_name]
-                    y_true, y_pred, y_probs = labels, clf.predict(features), clf.predict_proba(features)[:,1]
+
+                    # include zero-out features, in case not all are available
+                    # get the features in the correct order
+                    if models_features.get(clf_name):
+                        feats = models_features.get(clf_name)
+                        for feat in feats not in df_features.columns:
+                            df_features[feat] = 0.0
+                        df_features = df_features[feats]
+
+                    y_true, y_pred, y_probs = labels, clf.predict(df_features), clf.predict_proba(df_features)[:,1]
                     results[clf_name] = { "y_true": y_true, "y_pred": y_pred, "y_probs": y_probs}
                     if print_performance:
                         self.print_clf_performance(clf_name, y_true, y_pred, y_probs)
