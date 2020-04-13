@@ -71,7 +71,7 @@ class Evaluate(MorpherJob):
 
     def execute(self, data, target, models, print_performance=False, **kwargs):
 
-        drop = kwargs.get("models_features") # list of features to drop
+        models_features = kwargs.get("models_features") # list of features to drop
         try:
             if not data.empty and models and target:
                 results = {}
