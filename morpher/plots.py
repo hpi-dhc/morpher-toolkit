@@ -17,8 +17,8 @@ from sklearn.calibration import CalibratedClassifierCV, calibration_curve
 from sklearn.preprocessing import MinMaxScaler
 
 from morpher.metrics import (
-    get_clinical_usefulness_metrics,
     get_discrimination_metrics,
+    get_net_benefit_metrics,
 )
 
 prop_cycle = cycler(
@@ -254,7 +254,7 @@ def plot_dc(
         ax = plt.gca()
 
     ax.set_xlabel("Threshold Probability")
-    ax.set_label("Net Benefit")
+    ax.set_ylabel("Net Benefit")
     ax.set_title(title)
     plt.rc("axes", prop_cycle=prop_cycle)
     ax.set_xticks(np.arange(0, 1.25, step=0.25))
@@ -268,30 +268,25 @@ def plot_dc(
 
     for clf_name in results:
         y_true = results[clf_name]["y_true"]
-        y_pred = results[clf_name]["y_pred"]
         y_probs = results[clf_name]["y_probs"]
 
-        discrimination_metrics = get_discrimination_metrics(
-            y_true, y_pred, y_probs
+        net_benefit, net_benefit_treated_all = get_net_benefit_metrics(
+            y_true,
+            y_probs,
+            tr_probs,
+            metric_type
         )
-        net_benefit = [
-            get_clinical_usefulness_metrics(discrimination_metrics, tr)[
-                metric_type
-            ]
-            for tr in tr_probs
-        ]
-        net_benefit_treated_all = [
-            get_clinical_usefulness_metrics(discrimination_metrics, tr)[
-                "treated_all"
-            ]
-            for tr in tr_probs
-        ]
-        clf_label = clf_name().__class__.__name__
+
+        if results[clf_name]["label"]:
+            label = results[clf_name]["label"]
+        else:
+            label = clf_name().__class__.__name__
+
         ax.plot(
             tr_probs,
             net_benefit,
             label="{0} (ANBC={1:.2f})".format(
-                clf_label, auc(tr_probs, net_benefit)
+                label, auc(tr_probs, net_benefit)
             ),
         )
 
@@ -304,7 +299,7 @@ def plot_dc(
 
     ax.plot(tr_probs, net_benefit_treated_all, label=metric_type + " (all)")
     ax.axhline(
-        y=0.0, color="gray", linestyle="--", label=metric_type + " (none)"
+       y=0.0, color="gray", linestyle="--", label=metric_type + " (none)"
     )
     ax.legend(loc=legend_loc, fancybox=True, shadow=True)
 

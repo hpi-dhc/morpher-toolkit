@@ -11,6 +11,37 @@ from scipy.stats import linregress
 import math
 
 
+def get_confusion_matrix(y_true, y_probs, p_t=0.5):
+    y_pred = y_probs > p_t
+    tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
+    return {
+        'tn': tn,
+        'fp': fp,
+        'fn': fn,
+        'tp': tp,
+        'n': len(y_true)
+    }
+
+
+def get_net_benefit_metrics(y_true, y_probs, tr_probs, metric_type):
+    net_benefit = []
+    net_benefit_treated_all = []
+    for p_t in tr_probs:
+        discrimination_metrics = get_confusion_matrix(y_true, y_probs, p_t)
+        net_benefit.append(get_clinical_usefulness_metrics(
+            discrimination_metrics, p_t)[
+                metric_type
+            ]
+        )
+
+        net_benefit_treated_all.append(get_clinical_usefulness_metrics(
+            discrimination_metrics, p_t)[
+                "treated_all"
+            ]
+        )
+    return net_benefit, net_benefit_treated_all
+
+
 def get_discrimination_metrics(y_true, y_pred, y_probs, label="1.0"):
     """
     Returns discriminative performance of the prediction results in a dictionary
@@ -48,24 +79,22 @@ def get_discrimination_metrics(y_true, y_pred, y_probs, label="1.0"):
     return dict(results)
 
 
-def get_clinical_usefulness_metrics(discrimination_metrics, tr=0.7):
+def get_clinical_usefulness_metrics(discrimination_metrics, p_t=0.7):
     """
     Returns clinical usefulness of the prediction results in a dictionary
     Based on:
     Zhang, Z., Rousson, V., Lee, W.-C., Ferdynus, C., Chen, M., Qian, X., … written on behalf of AME Big-Data Clinical Trial Collaborative Group. (2018). Decision curve analysis: a technical note. Annals of Translational Medicine, 6(15), 308–308. https://doi.org/10.21037/atm.2018.07.02
     """
 
-    results = discrimination_metrics
-
     tn, fp, fn, tp, n = list(
-        [results.get(metric) for metric in ["tn", "fp", "fn", "tp", "n"]]
+        [discrimination_metrics.get(metric) for metric in ["tn", "fp", "fn", "tp", "n"]]
     )
 
     """
     calculate the benefit of treating vs of not treating
     """
-    net_benefit_treated = (tp / n) - (fp / n) * (tr / (1 - tr))
-    net_benefit_untreated = (tn / n) - (fn / n) * ((1 - tr) / tr)
+    net_benefit_treated = (tp / n) - ((fp / n) * (p_t / (1 - p_t)))
+    net_benefit_untreated = (tn / n) - ((fn / n) * ((1 - p_t) / p_t))
 
     """
     pi indicates disease prevalence or event rate
@@ -76,12 +105,12 @@ def get_clinical_usefulness_metrics(discrimination_metrics, tr=0.7):
     net benefit for treating all patients in the given threshould, according to disease prevalence
     net_benefit_treated_all = π – (1–π )pt/ (1-pt )
     """
-    net_benefit_treated_all = pi - (1 - pi) * tr / (1 - tr)
+    net_benefit_treated_all = pi - (1 - pi) * p_t / (1 - p_t)
 
     """
     ADAPT average deviation about the probability threshold
     """
-    adapt = (1 - tr) * net_benefit_treated + tr * net_benefit_untreated
+    adapt = ((1 - p_t) * net_benefit_treated) + (p_t * net_benefit_untreated)
 
     results = {}
 

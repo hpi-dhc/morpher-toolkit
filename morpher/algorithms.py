@@ -347,7 +347,7 @@ class RandomForest(Base):
             )
 
         super().__init__(
-            clf, hyperparams, optimize, param_grid, **kwargs
+            clf, hyperparams, optimize, param_grid
         )
 
     """
