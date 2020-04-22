@@ -48,8 +48,8 @@ class Retrieve(MorpherJob):
                 if model["parameters"]["target"] != target:
                     error_msg += "Targets do not match for model '{0}'. Expected '{1}', but '{2}' was provided. \n".format(model["name"], model["target"], target)
 
-                if model["parameters"]["features"] != params["features"]:
-                    error_msg += "Features do not match for model '{0}'. Please check data provided. \n".format(model["name"])
+                #if model["parameters"]["features"] != params["features"]:
+                #    error_msg += "Features do not match for model '{0}'. Please check data provided. \n".format(model["name"])
                 
                 if error_msg == "":
                     model_ids.append(model["id"])
