@@ -85,7 +85,9 @@ class Explain(MorpherJob):
         kwarg_not_empty(target,"target")
         models_features = kwargs.get("models_features") or {}
         exp_kwargs = kwargs.get("exp_kwargs") or {}
-        test = exp_kwargs.get("test") or pd.DataFrame()
+        test = exp_kwargs.get("test")
+        if not isinstance(test, pd.DataFrame)
+            test = pd.DataFrame()
 
         try:
             if not data.empty and models and target and explainers:
