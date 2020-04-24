@@ -571,7 +571,8 @@ def plot_explanation_heatmap(
             friendly_names.get(feat_name) or feat_name
             for feat_name in features
         ]
-
+    if methods[0].__class__.__name__ == 'type':
+        methods = [m.__name__ for m in methods]
     im, cbar = heatmap(
         data, features, methods, ax=ax, cmap="YlGn", cbarlabel=cbarlabel
     )

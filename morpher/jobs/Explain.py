@@ -131,22 +131,3 @@ class Explain(MorpherJob):
         except Exception:
             self.logger.error(traceback.format_exc())
             return None
-
-    def print_clf_performance(self, clf_name, y_true, y_pred, y_probs):
-        """
-        Prints performance of the prediction results
-        """
-        print("***Performance report for {}".format(clf_name))
-
-        """ report predictions """
-        print("Confusion Matrix:")
-        print(confusion_matrix(y_true, y_pred))
-        print("Classification report:")
-        print(classification_report(y_true, y_pred))
-        print("AUROC score:")
-        print(roc_auc_score(y_true, y_probs))
-        print("DOR:")
-        tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
-        dor = (tp / fp) / (fn / tn)
-        print(dor)
-        print("***\n")
