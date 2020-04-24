@@ -85,7 +85,7 @@ class Explain(MorpherJob):
         kwarg_not_empty(target,"target")
         models_features = kwargs.get("models_features") or {}
         exp_kwargs = kwargs.get("exp_kwargs") or {}
-        test = exp_kwargs.get("test")
+        test = exp_kwargs.get("test") or pd.DataFrame()
 
         try:
             if not data.empty and models and target and explainers:
@@ -94,18 +94,18 @@ class Explain(MorpherJob):
                 for clf_name in models:
 
                     # include zero-out features, in case not all are available
-                    # get the features in the correct order
-                    feats = models_features.get(clf_name) + [target]
+                    # get the features in the correct order that model expects them
+                    feats = [target] + models_features.get(clf_name)
 
                     if feats:
                         for feat in feats:
                             if feat not in list(data.columns):
                                 data[feat] = 0.0
-                            if test:
+                            if not test.empty:
                                 if feat not in list(test.columns):
                                     test[feat] = 0.0
                         data = data[feats]
-                        if test:                        
+                        if test.empty:                        
                             exp_kwargs["test"] = test[feats]
 
                     model = models[clf_name]

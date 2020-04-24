@@ -71,7 +71,7 @@ class Evaluate(MorpherJob):
 
     def execute(self, data, target, models, print_performance=False, **kwargs):
 
-        models_features = kwargs.get("models_features") # list of features to drop
+        models_features = kwargs.get("models_features") or {} # list of features to drop
         try:
             if not data.empty and models and target:
                 results = {}
@@ -90,7 +90,7 @@ class Evaluate(MorpherJob):
                     # get the features in the correct order
                     feats = models_features.get(clf_name)
 
-                    if feats:                        
+                    if feats:
                         for feat in feats:
                             if feat not in list(df_features.columns):
                                 df_features[feat] = 0.0
