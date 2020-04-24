@@ -28,16 +28,19 @@ class Explain(MorpherJob):
             train, test = self.get_input("filenames")
         else:
             task = self.get_task()
-            users_path = os.path.abspath(self.config.get('paths', 'user_files'))            
-            filename = task["parameters"]["file"]["name"]            
-            filename = os.path.join(users_path, filename)
+            users_path = os.path.abspath(self.config.get('paths', 'user_files'))
+            filename = task["parameters"]["file"]["name"]
+            filename = os.path.join(users_path, 'mpr', filename)
             train, test = f'{filename}_train', f'{filename}_test'
 
         train = pd.read_csv(filepath_or_buffer=train)
         test = pd.read_csv(filepath_or_buffer=test)
 
-        model_ids = self.get_input("model_ids")  
-        models = [jp.decode(json.dumps(model["content"])) for model in Retrieve(self.session).get_models(model_ids)]
+        model_ids = self.get_input("model_ids")
+        response = [(jp.decode(json.dumps(model["content"])), model["parameters"]) for model in Retrieve(self.session).get_models(model_ids)]
+        models = [model[0] for model in response]
+        features = [model[1]["features"] for model in response]
+        models_features = dict(zip([model.__class__.__name__ for model in models],[feat for feat in features]))
 
         #go for zip here, model_id_mapping
         model_id_mapping = dict(zip([model.__class__.__name__ for model in models], model_ids))
@@ -48,12 +51,11 @@ class Explain(MorpherJob):
         explainers = self.get_input_variables("explainers")
         
         #make it become a list if not already
-        print(explainers)
         assert explainers != ""
         if type(explainers) is str:
             explainers = [explainers]
 
-        explanations = self.execute(train, target=target, models={model.__class__.__name__: model for model in models}, explainers=explainers, exp_kwargs={'test':test})
+        explanations = self.execute(train, target=target, models={model.__class__.__name__: model for model in models}, explainers=explainers, models_features=models_features, exp_kwargs={'test':test})
 
         for model in models:
             clf_name = model.__class__.__name__
@@ -81,17 +83,35 @@ class Explain(MorpherJob):
         kwarg_not_empty(models,"models")
         kwarg_not_empty(explainers,"explainers")
         kwarg_not_empty(target,"target")
+        models_features = kwargs.get("models_features") or {}
         exp_kwargs = kwargs.get("exp_kwargs") or {}
+        test = exp_kwargs.get("test")
 
         try:
             if not data.empty and models and target and explainers:
                 
-                explanations = defaultdict(lambda: {})                
-                for model_name in models:
-                    model = models[model_name]
-                    for exp_name in explainers:                     
+                explanations = defaultdict(lambda: {})
+                for clf_name in models:
+
+                    # include zero-out features, in case not all are available
+                    # get the features in the correct order
+                    feats = models_features.get(clf_name) + [target]
+
+                    if feats:
+                        for feat in feats:
+                            if feat not in list(data.columns):
+                                data[feat] = 0.0
+                            if test:
+                                if feat not in list(test.columns):
+                                    test[feat] = 0.0
+                        data = data[feats]
+                        if test:                        
+                            exp_kwargs["test"] = test[feats]
+
+                    model = models[clf_name]
+                    for exp_name in explainers:
                         explainer = globals()[exp_name](data, model, target, **exp_kwargs) #instantiate the algorithm in runtime
-                        explanations[model_name][exp_name] = explainer.explain(**exp_kwargs)
+                        explanations[clf_name][exp_name] = explainer.explain(**exp_kwargs)
 
                 return explanations
 
