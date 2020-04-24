@@ -51,7 +51,7 @@ class MorpherJob(Job):
             # if filename is provided, we also save a persistent copy in the user's directory for ulterior use
             if filename:                
                 users_path = os.path.abspath(self.config.get('paths', 'user_files'))
-                persistent_file_path = os.path.join(users_path, filename)
+                persistent_file_path = os.path.join(users_path, 'mpr', filename)
                 data.to_csv(path_or_buf = persistent_file_path, index=False)
                 self.logger.info("Data stored persistently to file {0}".format(persistent_file_path))
 
