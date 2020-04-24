@@ -107,7 +107,7 @@ class Explain(MorpherJob):
                                 if feat not in list(test.columns):
                                     test[feat] = 0.0
                         data = data[feats]
-                        if test.empty:
+                        if not test.empty:
                             exp_kwargs["test"] = test[feats]
 
                     model = models[clf_name]
