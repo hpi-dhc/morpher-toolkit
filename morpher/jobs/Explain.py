@@ -97,9 +97,13 @@ class Explain(MorpherJob):
 
                     # include zero-out features, in case not all are available
                     # get the features in the correct order that model expects them
-                    feats = [target] + models_features.get(clf_name)
+                    feats = models_features.get(clf_name)
 
                     if feats:
+                        
+                        # include target, because explain jobs needs it
+                        feats = [target] + feats                            
+
                         for feat in feats:
                             if feat not in list(data.columns):
                                 data[feat] = 0.0

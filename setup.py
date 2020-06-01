@@ -37,7 +37,7 @@ setup(name='morpher',
           'jinja2',
           'pyhdb',
           'mpld3',
-          'shap',
+          'shap==0.34.0',
           'simplejson'
       ],
       #specifying a given version: 'chardet==3.0.4',
