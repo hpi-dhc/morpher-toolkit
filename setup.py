@@ -6,7 +6,7 @@ def readme():
 
 setup(
     name="morpher",
-    version="0.0.1",
+    version="0.0.2",
     description="Modeling of Outcome and Risk Prediction in Health Research",
     long_description=readme(),
     classifiers=[
