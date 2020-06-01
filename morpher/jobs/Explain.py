@@ -1,49 +1,61 @@
-#!/usr/bin/env python
-import traceback
-import logging
-from morpher.jobs import MorpherJob
-from morpher.jobs import Retrieve
-from morpher.exceptions import kwarg_not_empty
-from morpher.algorithms import *
-from morpher.explainers import *
-from morpher.metrics import *
-import os.path
-import pandas as pd
 import json
+import os.path
+import traceback
+from collections import defaultdict
+
+import pandas as pd
 import jsonpickle as jp
-from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve, brier_score_loss, explained_variance_score, mean_squared_error, mean_absolute_error
+from sklearn.metrics import (
+    confusion_matrix,
+    classification_report,
+    roc_auc_score,
+)
+
+from morpher.jobs import MorpherJob, Retrieve
+from morpher.exceptions import kwargs_not_empty
 
 
 class Explain(MorpherJob):
-
     def do_execute(self):
-        
-        #experiment_mode 2 is an interpretation experiment, running different interpretation algorithm
+
+        # experiment_mode 2 is an interpretation experiment, running different interpretation algorithm
         experiment_mode = 2
 
-        #if we have a list of filenames coming from 'Split', we pass over 'train' and 'test' respectively;
-        #otherwise we pass over the file we got, which by default is the one file attached to the cohort which generated the model
+        # if we have a list of filenames coming from 'Split', we pass over 'train' and 'test' respectively;
+        # otherwise we pass over the file we got, which by default is the one file attached to the cohort which generated the model
 
         if type(self.get_input("filenames")) == list:
             train, test = self.get_input("filenames")
         else:
             task = self.get_task()
-            users_path = os.path.abspath(self.config.get('paths', 'user_files'))
+            users_path = os.path.abspath(
+                self.config.get("paths", "user_files")
+            )
             filename = task["parameters"]["file"]["name"]
-            filename = os.path.join(users_path, 'mpr', filename)
-            train, test = f'{filename}_train', f'{filename}_test'
+            filename = os.path.join(users_path, filename)
+            train, test = f"{filename}_train", f"{filename}_test
 
         train = pd.read_csv(filepath_or_buffer=train)
         test = pd.read_csv(filepath_or_buffer=test)
 
         model_ids = self.get_input("model_ids")
-        response = [(jp.decode(json.dumps(model["content"])), model["parameters"]) for model in Retrieve(self.session).get_models(model_ids)]
+        response = [
+            (jp.decode(json.dumps(model["content"])), model["parameters"])
+            for model in Retrieve(self.session).get_models(model_ids)
+        ]
         models = [model[0] for model in response]
         features = [model[1]["features"] for model in response]
-        models_features = dict(zip([model.__class__.__name__ for model in models],[feat for feat in features]))
-
-        #go for zip here, model_id_mapping
-        model_id_mapping = dict(zip([model.__class__.__name__ for model in models], model_ids))
+        models_features = dict(
+            zip(
+                [model.__class__.__name__ for model in models],
+                [feat for feat in features]
+            )
+        )
+        
+        # go for zip here, model_id_mapping
+        model_id_mapping = dict(
+            zip([model.__class__.__name__ for model in models], model_ids)
+        )
 
         cohort_id = self.get_input("cohort_id")
         user_id = self.get_input("user_id")
@@ -55,35 +67,55 @@ class Explain(MorpherJob):
         if type(explainers) is str:
             explainers = [explainers]
 
-        explanations = self.execute(train, target=target, models={model.__class__.__name__: model for model in models}, explainers=explainers, models_features=models_features, exp_kwargs={'test':test})
+        explanations = self.execute(
+            train,
+            target=target,
+            models={model.__class__.__name__: model for model in models},
+            explainers=explainers,
+            models_features=models_features, 
+            exp_kwargs={"test": test}
+        )
 
         for model in models:
             clf_name = model.__class__.__name__
             model_id = model_id_mapping[clf_name]
-            description = "Explanations for target '{target}' based on {methods}".format(target=target, methods=", ".join(explainers))
-            self.add_experiment(cohort_id=cohort_id, model_id=model_id,user_id=user_id,description=description,target=target,experiment_mode=experiment_mode,parameters=explanations[clf_name])
-        
+            description = "Explanations for target '{target}' based on {methods}".format(
+                target=target, methods=", ".join(explainers)
+            )
+            self.add_experiment(
+                cohort_id=cohort_id,
+                model_id=model_id,
+                user_id=user_id,
+                description=description,
+                target=target,
+                experiment_mode=experiment_mode,
+                parameters=explanations[clf_name],
+            )
 
         self.logger.info("Models explained successfully.")
 
     def add_experiment(self, **kwargs):
-     
+
         response = self.api("experiments", "new", data=kwargs)
 
         if response.get("status") == "success":
             return response.get("experiment_id")
         else:
-            raise Exception("There was an error creating an Experiment. Server returned: %s" % response.get("msg"))
+            raise Exception(
+                "There was an error creating an Experiment. Server returned: %s"
+                % response.get("msg")
+            )
 
     def execute(self, data, **kwargs):
 
         models = kwargs.get("models")
         explainers = kwargs.get("explainers")
         target = kwargs.get("target")
-        kwarg_not_empty(models,"models")
-        kwarg_not_empty(explainers,"explainers")
-        kwarg_not_empty(target,"target")
+        kwargs_not_empty(models, "models")
+        kwargs_not_empty(explainers, "explainers")
+        kwargs_not_empty(target, "target")
         models_features = kwargs.get("models_features") or {}
+
         exp_kwargs = kwargs.get("exp_kwargs") or {}
         test = exp_kwargs.get("test")
         if not isinstance(test, pd.DataFrame):
@@ -94,15 +126,14 @@ class Explain(MorpherJob):
                 
                 explanations = defaultdict(lambda: {})
                 for clf_name in models:
-
+        
                     # include zero-out features, in case not all are available
                     # get the features in the correct order that model expects them
                     feats = models_features.get(clf_name)
 
                     if feats:
-                        
-                        # include target, because explain jobs needs it
-                        feats = [target] + feats                            
+                        # include target, because explain job needs it
+                        feats = [target] + feats
 
                         for feat in feats:
                             if feat not in list(data.columns):
@@ -116,36 +147,22 @@ class Explain(MorpherJob):
 
                     model = models[clf_name]
                     for exp_name in explainers:
-                        explainer = globals()[exp_name](data, model, target, **exp_kwargs) #instantiate the algorithm in runtime
-                        explanations[clf_name][exp_name] = explainer.explain(**exp_kwargs)
+                        explainer = exp_name(
+                            data,
+                            model,
+                            target,
+                            **exp_kwargs
+                        ) #instantiate the algorithm in runtime
+                        explanations[clf_name][exp_name] = explainer.explain(
+                            **exp_kwargs
+                        )
 
                 return explanations
 
             else:
-                raise AttributeError("No data provided, models or target not available")
-        except Exception as e:
+                raise AttributeError(
+                    "No data provided, models or target not available"
+                )
+        except Exception:
             self.logger.error(traceback.format_exc())
             return None
-
-    def print_clf_performance(self, clf_name, y_true, y_pred, y_probs):
-        '''
-        Prints performance of the prediction results
-        '''
-        print("***Performance report for {}".format(clf_name))
-
-        ''' report predictions '''
-        print("Confusion Matrix:")
-        print(confusion_matrix(y_true, y_pred))
-        print("Classification report:")
-        print(classification_report(y_true, y_pred))
-        print("AUROC score:")
-        print(roc_auc_score(y_true, y_probs))
-        print("DOR:")
-        tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
-        dor = (tp/fp)/(fn/tn)
-        print(dor)
-        print("***\n")
-
-
-
-

@@ -1,4 +1,13 @@
-from collections import namedtuple
+import os
+from getpass import getpass
+
+from morpher.algorithms import algorithm_config as algorithms
+from morpher.encoders import encoder_config as encoders
+from morpher.explainers import explainer_config as explainers
+from morpher.imputers import imputer_config as imputers
+from morpher.samplers import sampler_config as samplers
+from morpher.scale import scaler_config as scalers
+
 
 FILE = "file"
 DATABASE = "database"
@@ -7,54 +16,24 @@ KNN = "knn"
 ROBUST = "robust"
 NORMALIZER = "normalizer"
 
-# retaining constants for retrocompatibility
+#  retaining constants for retrocompatibility
 DECISION_TREE = "DecisionTree"
 RANDOM_FOREST = "RandomForest"
 LOGISTIC_REGRESSION = "LogisticRegression"
 MULTILAYER_PERCEPTRON = "MultilayerPerceptron"
 GRADIENT_BOOSTING_DECISION_TREE = "GradientBoostingDecisionTree"
 
-options = [
-	# supported algorithms
-	{'DT' : 'DecisionTree',
-	 'RF' : 'RandomForest',
-	 'LR' : 'LogisticRegression',
-	 'MLP': 'MultilayerPerceptron',
-	 'GBDT': 'GradientBoostingDecisionTree',
-	 'ENLR': 'ElasticNetLR',
-	 'SVM': 'SupportVectorMachine',
-	 'ADABOOST': 'AdaBoost',
-	 'CNBAYES': 'ComplementNaiveBayes',
-	 'GNBAYES': 'GaussianNaiveBayes'},	
-	# supported imputers
-	{'DEFAULT' : 'SimpleImputer',
-	 'KNN' : 'KNNImputer',
-	 'SOFT' : 'SoftImputer'},
-	# supported scalers
-	{'DEFAULT' : 'StandardScaler',
-	 'ROBUST' : 'RobustScaler',
-	 'NORMALIZER' : 'Normalizer',
-	 'QUANTILE_TRANSFORMER' : 'QuantileTransformer'},
-	# supported encoders
-	{'DEFAULT' : None,
-	 'BINARIZER' : 'LabelBinarizer',
-	 'LABEL' : 'LabelEncoder', 
-	 'ONEHOT':'OneHotEncoder',
-	 'ORDINAL':'OrdinalEncoder'},	
-	 # supported samplers
-	{'SMOTE' : 'SMOTE',	 
-	 'BORDERLINE' : 'BorderlineSMOTE',
-	 'ADASYN' : 'ADASYN',
-	 'RANDOM' : 'RandomOverSampler',
-	 'URANDOM' : 'RandomUnderSampler',
-	 'CLUSTER' : 'ClusterCentroids'},
-	 # supported interpreters
-	{'LIME' : 'LimeExplainer',
-	 'MIMIC' : 'MimicExplainer',
-	 'SHAP' : 'ShapExplainer',
-	 'FEAT_CONTRIB' : 'FeatContribExplainer'}]
+db_user = os.getenv("DB_USER") or input("DB User: ")
+db_password = os.getenv("DB_PASSWORD") or getpass("DB Password: ")
+db_address = os.getenv("DB_ADDRESS") or input("DB Address: ")
+db_port = os.getenv("DB_PORT") or input("DB Port: ")
 
-# create the named tuples
-algorithms, imputers, scalers, encoders, samplers, explainers = \
-	[ namedtuple('options', attr.keys())(**attr) \
-		for attr in options ]
+
+__all__ = [
+    "algorithms",
+    "imputers",
+    "scalers",
+    "encoders",
+    "samplers",
+    "explainers",
+]
