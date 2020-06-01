@@ -303,6 +303,8 @@ class RandomForest(Base):
         hyperparams={},
         optimize=None,
         param_grid=None,
+        crossval=None,
+        n_splits=None,
         **kwargs,
     ):
         if not hyperparams:
@@ -805,6 +807,7 @@ class ElasticNetLR(Base):
         param_grid=None,
         crossval=None,
         n_splits=None,
+        **kwargs
     ):
 
         if not hyperparams:
