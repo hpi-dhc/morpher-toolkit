@@ -31,10 +31,18 @@ class Evaluate(MorpherJob):
         df = pd.read_csv(filepath_or_buffer=filename)
 
         model_ids = self.get_input("model_ids")
-        models = [
-            jp.decode(json.dumps(model["content"]))
+        response = [
+            (jp.decode(json.dumps(model["content"])), model["parameters"])
             for model in Retrieve(self.session).get_models(model_ids)
         ]
+        models = [model[0] for model in response]
+        features = [model[1]["features"] for model in response]
+        models_features = dict(
+            zip(
+                [model.__class__.__name__ for model in models],
+                [feat for feat in features]
+            )
+        )
 
         # go for zip here, model_id_mapping
         model_id_mapping = dict(
@@ -49,6 +57,7 @@ class Evaluate(MorpherJob):
             df,
             target=target,
             models={model.__class__.__name__: model for model in models},
+            models_features=models_features
         )
 
         for model in models:
@@ -114,17 +123,35 @@ class Evaluate(MorpherJob):
             )
 
     def execute(self, data, target, models, print_performance=False, **kwargs):
+      
+        models_features = kwargs.get("models_features") or {} # list of features to drop
         try:
             if not data.empty and models and target:
                 results = {}
                 labels = data[target]  # true labels
                 features = data.drop(target, axis=1)
                 for clf_name in models:
+                    
+                    # obtain copy of feature to avoid memory issues
+                    df_features = features.copy()
+
+                    # get classifier
                     clf = models[clf_name]
+
+                    # include zero-out features, in case not all are available
+                    # get the features in the correct order
+                    feats = models_features.get(clf_name)
+                    
+                    if feats:
+                        for feat in feats:
+                            if feat not in list(df_features.columns):
+                                df_features[feat] = 0.0
+                        df_features = df_features[feats]
+
                     y_true, y_pred, y_probs = (
                         labels,
-                        clf.predict(features),
-                        clf.predict_proba(features)[:, 1],
+                        clf.predict(df_features),
+                        clf.predict_proba(df_features)[:, 1],
                     )
                     results[clf_name] = {
                         "y_true": y_true,

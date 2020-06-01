@@ -1,5 +1,6 @@
 import traceback
 import json
+import simplejson
 import os
 import uuid
 from urllib.request import Request, urlopen
@@ -44,7 +45,7 @@ class MorpherJob(Job):
 
             request = Request(
                 endpoint,
-                data=json.dumps(data).encode("utf8"),
+                data=simplejson.dumps(data, ignore_nan=True).encode("utf8"),
                 headers={"content-type": "application/json"},
             )
             response = urlopen(request).read().decode()

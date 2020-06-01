@@ -1,10 +1,8 @@
 from setuptools import setup
 
-
 def readme():
     with open("README.md") as f:
         return f.read()
-
 
 setup(
     name="morpher",
@@ -40,9 +38,11 @@ setup(
         "jinja2",
         "pyhdb",
         "mpld3",
-        "shap",
+        "shap==0.34.0",
         "xgboost==1.0.1",
         "lightgbm==2.3.1",
+        "simplejson"
+
     ],
     # specifying a given version: 'chardet==3.0.4',
     zip_safe=False,

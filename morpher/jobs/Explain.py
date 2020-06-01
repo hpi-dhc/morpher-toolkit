@@ -33,17 +33,25 @@ class Explain(MorpherJob):
             )
             filename = task["parameters"]["file"]["name"]
             filename = os.path.join(users_path, filename)
-            train, test = f"{filename}_train", f"{filename}_test"
+            train, test = f"{filename}_train", f"{filename}_test
 
         train = pd.read_csv(filepath_or_buffer=train)
         test = pd.read_csv(filepath_or_buffer=test)
 
         model_ids = self.get_input("model_ids")
-        models = [
-            jp.decode(json.dumps(model["content"]))
+        response = [
+            (jp.decode(json.dumps(model["content"])), model["parameters"])
             for model in Retrieve(self.session).get_models(model_ids)
         ]
-
+        models = [model[0] for model in response]
+        features = [model[1]["features"] for model in response]
+        models_features = dict(
+            zip(
+                [model.__class__.__name__ for model in models],
+                [feat for feat in features]
+            )
+        )
+        
         # go for zip here, model_id_mapping
         model_id_mapping = dict(
             zip([model.__class__.__name__ for model in models], model_ids)
@@ -53,9 +61,8 @@ class Explain(MorpherJob):
         user_id = self.get_input("user_id")
         target = self.get_input("target")
         explainers = self.get_input_variables("explainers")
-
-        # make it become a list if not already
-        print(explainers)
+        
+        #make it become a list if not already
         assert explainers != ""
         if type(explainers) is str:
             explainers = [explainers]
@@ -65,7 +72,8 @@ class Explain(MorpherJob):
             target=target,
             models={model.__class__.__name__: model for model in models},
             explainers=explainers,
-            exp_kwargs={"test": test},
+            models_features=models_features, 
+            exp_kwargs={"test": test}
         )
 
         for model in models:
@@ -106,19 +114,46 @@ class Explain(MorpherJob):
         kwargs_not_empty(models, "models")
         kwargs_not_empty(explainers, "explainers")
         kwargs_not_empty(target, "target")
+        models_features = kwargs.get("models_features") or {}
+
         exp_kwargs = kwargs.get("exp_kwargs") or {}
+        test = exp_kwargs.get("test")
+        if not isinstance(test, pd.DataFrame):
+            test = pd.DataFrame()
 
         try:
             if not data.empty and models and target and explainers:
-
+                
                 explanations = defaultdict(lambda: {})
-                for model_name in models:
-                    model = models[model_name]
+                for clf_name in models:
+        
+                    # include zero-out features, in case not all are available
+                    # get the features in the correct order that model expects them
+                    feats = models_features.get(clf_name)
+
+                    if feats:
+                        # include target, because explain job needs it
+                        feats = [target] + feats
+
+                        for feat in feats:
+                            if feat not in list(data.columns):
+                                data[feat] = 0.0
+                            if not test.empty:
+                                if feat not in list(test.columns):
+                                    test[feat] = 0.0
+                        data = data[feats]
+                        if not test.empty:
+                            exp_kwargs["test"] = test[feats]
+
+                    model = models[clf_name]
                     for exp_name in explainers:
                         explainer = exp_name(
-                            data, model, target, **exp_kwargs
-                        )  # instantiate the algorithm in runtime
-                        explanations[model_name][exp_name] = explainer.explain(
+                            data,
+                            model,
+                            target,
+                            **exp_kwargs
+                        ) #instantiate the algorithm in runtime
+                        explanations[clf_name][exp_name] = explainer.explain(
                             **exp_kwargs
                         )
 

@@ -23,9 +23,7 @@ class Transform(MorpherJob):
         self.add_output("target", target)
         self.logger.info("Data transformed successfully.")
 
-    def execute(
-        self, data, transforms=None, drop=None, default=None, **kwargs
-    ):
+    def execute(self, data, transforms=None, drop=None, default=None, **kwargs):
         try:
 
             if not data.empty:
@@ -41,8 +39,12 @@ class Transform(MorpherJob):
                     data = mapper.fit_transform(data.copy())
 
                 if drop:
-                    data.drop(drop, axis=1, inplace=True)
-
+                    data.drop(
+                        [col for col in drop if col in data.columns],
+                        axis=1,
+                        inplace=True
+                    )
+                    
             else:
                 raise AttributeError("No data provided")
 
