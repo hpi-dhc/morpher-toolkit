@@ -33,7 +33,7 @@ class Explain(MorpherJob):
             )
             filename = task["parameters"]["file"]["name"]
             filename = os.path.join(users_path, filename)
-            train, test = f"{filename}_train", f"{filename}_test
+            train, test = f"{filename}_train", f"{filename}_test"
 
         train = pd.read_csv(filepath_or_buffer=train)
         test = pd.read_csv(filepath_or_buffer=test)
