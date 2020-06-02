@@ -21,7 +21,7 @@ class Impute(MorpherJob):
         self.logger.info("Data imputed successfully.")
 
     def execute(
-        self, data, imputation_method=imputers.DEFAULT, imputer=None, **kwargs
+        self, data, imputation_method=imputers.DEFAULT, target=None, imputer=None, **kwargs
     ):
         try:
 
@@ -29,16 +29,23 @@ class Impute(MorpherJob):
 
                 """ columns where all values are NaN get assigned 0, otherwise imputer will throw them away """
                 data.loc[:, data.isna().all()] = 0.0
+                
+                columns = list(data.columns)
+
+                """ if target is passed, we do not impute it, in order to support nominal labels """
+                if target:
+                    columns = [col for col in columns if col != target]
 
                 if not imputer:
                     imputer = imputation_method(**kwargs)
-                    imputer.fit(data)
+                    imputer.fit(data[columns])
 
-                imputed_df = pd.DataFrame(imputer.transform(data))
-                imputed_df.columns = data.columns
-                imputed_df.index = data.index
+                imputed_df = pd.DataFrame(imputer.transform(data[columns]))
+                imputed_df.columns = data[columns].columns
+                imputed_df.index = data[columns].index
 
-                data = imputed_df
+
+                data[columns] = imputed_df[columns]
 
             else:
                 raise AttributeError("No data provided")

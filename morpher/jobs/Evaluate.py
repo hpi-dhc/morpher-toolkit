@@ -122,7 +122,7 @@ class Evaluate(MorpherJob):
                 % response.get("msg")
             )
 
-    def execute(self, data, target, models, print_performance=False, **kwargs):
+    def execute(self, data, target, models, print_performance=False, pos_label=None, **kwargs):
       
         models_features = kwargs.get("models_features") or {} # list of features to drop
         try:
@@ -148,19 +148,25 @@ class Evaluate(MorpherJob):
                                 df_features[feat] = 0.0
                         df_features = df_features[feats]
 
+                    # by default, positive label is position 1
+                    # this is consistent with alphabetical order of classes_ in, e.g., sklearn
+                    pos_label_index = 1
+                    if pos_label:
+                        pos_label_index = list(clf.classes_).get(pos_label)
+
                     y_true, y_pred, y_probs = (
                         labels,
                         clf.predict(df_features),
-                        clf.predict_proba(df_features)[:, 1],
+                        clf.predict_proba(df_features)[:, pos_label_index],
                     )
                     results[clf_name] = {
                         "y_true": y_true,
                         "y_pred": y_pred,
-                        "y_probs": y_probs,
+                        "y_probs": y_probs
                     }
                     if print_performance:
                         self.print_clf_performance(
-                            clf_name, y_true, y_pred, y_probs
+                            clf_name(), y_true, y_pred, y_probs
                         )
                 return results
             else:

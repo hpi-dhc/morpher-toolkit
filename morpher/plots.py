@@ -51,7 +51,7 @@ def plot_roc(
     title="Receiver Operating Curve",
     ax=None,
     figsize=None,
-    legend_loc=None,
+    legend_loc=None
 ):
     """
     Plots the receiver operating curve of currently loaded results in a new
@@ -147,6 +147,7 @@ def plot_cc(
     ax=None,
     figsize=None,
     legend_loc=None,
+    verbose=False
 ):
     """
     Plots calibration curve, we need the original train dataset to do this (!)
@@ -184,9 +185,9 @@ def plot_cc(
         calibrated_clf.fit(X_train, y_train)
 
         for clf, name in [
-            (clf, clf_name),
-            (calibrated_clf, clf_name + " + isotonic"),
-            (calibrated_clf_sig, clf_name + " + sigmoid"),
+            (clf, clf.__class__.__name__),
+            (calibrated_clf, clf.__class__.__name__ + " + isotonic"),
+            (calibrated_clf_sig, clf.__class__.__name__ + " + sigmoid"),
         ]:
 
             y_probs = clf.predict_proba(X_test)
@@ -206,7 +207,8 @@ def plot_cc(
             score = brier_score_loss(
                 y_test, y_probs[:, 1], pos_label=y_test.max()
             )
-            print("*** Brier for %s: %1.3f" % (name, score))
+            if verbose:
+                print("*** Brier for %s: %1.3f" % (name, score))
 
     ax.plot([0, 1], [0, 1], "k:", label="Perfectly calibrated")
     ax.set_ylabel("Fraction of Positives")
@@ -214,8 +216,9 @@ def plot_cc(
     ax.set_ylim([-0.05, 1.05])
     ax.legend(loc=legend_loc, fancybox=True, shadow=True)
     ax.set_title(title)
-
-    print("*** Model calibration performed.\n")
+    
+    if verbose:
+        print("*** Model calibration performed.\n")
 
 
 def plot_dc(
@@ -277,7 +280,7 @@ def plot_dc(
             metric_type
         )
 
-        if results[clf_name]["label"]:
+        if results[clf_name].get("label"):
             label = results[clf_name]["label"]
         else:
             label = clf_name().__class__.__name__

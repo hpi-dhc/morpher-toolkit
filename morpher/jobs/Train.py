@@ -102,6 +102,7 @@ class Train(MorpherJob):
                 crossval = kwargs.get("crossval")
                 n_splits = kwargs.get("n_splits")
                 drop = kwargs.get("drop")  # list of features to drop
+                verbose = kwargs.get("verbose")  # verbose mode
 
                 trained_models = {}
                 crossval_metrics = {}
@@ -118,6 +119,8 @@ class Train(MorpherJob):
                         param_grid=param_grid,
                         crossval=crossval,
                         n_splits=n_splits,
+                        verbose=verbose,
+
                     )  # instantiate the algorithm in runtime
 
                     """ if fit returns anything, it will be the cross_validated metrics """

@@ -8,7 +8,7 @@ import shap
 
 
 class Base:
-    def __init__(self, data, model, target):
+    def __init__(self, data, model, target, verbose=False):
 
         """
         Base interpreter
@@ -34,6 +34,11 @@ class Base:
         Required target
         """
         self.target = target
+
+        """
+        Is it verbose mode or not?
+        """
+        self.verbose = verbose
 
     def _initialize(self):
         raise NotImplementedError(
@@ -78,8 +83,9 @@ class LimeExplainer(Base):
         self._initialize(**kwargs)
 
     def _initialize(self, **kwargs):
-
-        print("Setting up LIME explainer")
+        if self.verbose:
+            print("Setting up LIME explainer")
+        
         features = self.data.drop([self.target], axis=1)
         self.explainer = lime_tabular.LimeTabularExplainer(
             features,
@@ -109,8 +115,9 @@ class LimeExplainer(Base):
         features = self.data.drop([self.target], axis=1)
 
         if index is None:
-            print("*** Generating explanations using Submodular Pick...")
-            print("Sample size chosen: {}".format(round(sample_size)))
+            if self.verbose:
+                print("*** Generating explanations using Submodular Pick...")
+                print("Sample size chosen: {}".format(round(sample_size)))
 
             sp_obj = submodular_pick.SubmodularPick(
                 self.explainer,
@@ -150,19 +157,24 @@ class LimeExplainer(Base):
 
         else:
             try:
-                print(f"Explaining prediction for case #{index}")
+                if self.verbose:
+                    print(f"Explaining prediction for case #{index}")
+                
                 row_feat = np.asarray(features)[int(index), :].reshape(1, -1)
                 y_true, y_pred, y_prob = (
                     self.data[self.target][int(index)],
                     self.model.predict(row_feat),
                     self.model.predict_proba(row_feat),
                 )
-                print(
-                    "Model predicted class {0} with class score {1:.3f}".format(
-                        y_pred, y_prob[0, int(y_pred)]
+
+                if self.verbose:                    
+                    print(
+                        "Model predicted class {0} with class score {1:.3f}".format(
+                            y_pred, y_prob[0, int(y_pred)]
+                        )
                     )
-                )
-                print("Actual class is {0}".format(y_true))
+                    print("Actual class is {0}".format(y_true))
+                
                 exp = self.explainer.explain_instance(
                     row_feat[0], self.model.predict_proba
                 )
@@ -200,7 +212,9 @@ class FeatContribExplainer(Base):
         print_exps = kwargs.get("print_exps") or False
 
         if hasattr(self.model, "feature_importances_"):
-            print("*** Obtaining feature importances via classifier:")
+            if self.verbose:
+                print("*** Obtaining feature importances via classifier.")
+            
             columns = self.data.drop(self.target, axis=1).columns
             exp = sorted(
                 zip(columns, self.model.feature_importances_),
@@ -236,8 +250,9 @@ class MimicExplainer(Base):
         """
         Displays feature importances of a model if it has feature_importances_
         """
-
-        print("Setting up Mimic explainer")
+        if self.verbose:
+            print("Setting up Mimic explainer")
+        
         features = self.data.drop([self.target], axis=1)
         y_probs = self.model.predict_proba(features)
         self.mimic = self.mimic.fit(features, y_probs[:, 1])
@@ -252,7 +267,9 @@ class MimicExplainer(Base):
         print_exps = kwargs.get("print_exps") or False
 
         if hasattr(self.mimic, "coef_"):
-            print("*** Obtaining feature importances via mimic classifier:")
+            if self.verbose:
+                print("*** Obtaining feature importances via mimic classifier:")
+            
             columns = self.data.drop(self.target, axis=1).columns
             exp = sorted(
                 zip(columns, self.mimic.coef_),
@@ -287,10 +304,13 @@ class ShapExplainer(Base):
         nsamples = kwargs.get("nsamples") or 100
 
         if self.model.is_tree_:
-            print("Setting up SHAP TreeExplainer")
+            if self.verbose:
+                print("Setting up SHAP TreeExplainer")
             self.explainer = shap.TreeExplainer(self.model.clf)
         else:
-            print("Setting up SHAP KernelExplainer")
+            if self.verbose:
+                print("Setting up SHAP KernelExplainer")
+            
             self.explainer = shap.KernelExplainer(
                 self.model.predict_proba,
                 np.asarray(features),

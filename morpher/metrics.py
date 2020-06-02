@@ -11,7 +11,7 @@ from scipy.stats import linregress
 import math
 
 
-def get_confusion_matrix(y_true, y_probs, p_t=0.5):
+def get_confusion_matrix(y_true, y_probs, p_t=0.5, **kwargs):
     y_pred = y_probs > p_t
     tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
     return {
@@ -23,7 +23,7 @@ def get_confusion_matrix(y_true, y_probs, p_t=0.5):
     }
 
 
-def get_net_benefit_metrics(y_true, y_probs, tr_probs, metric_type):
+def get_net_benefit_metrics(y_true, y_probs, tr_probs, metric_type, **kwargs):
     net_benefit = []
     net_benefit_treated_all = []
     for p_t in tr_probs:
@@ -42,12 +42,16 @@ def get_net_benefit_metrics(y_true, y_probs, tr_probs, metric_type):
     return net_benefit, net_benefit_treated_all
 
 
-def get_discrimination_metrics(y_true, y_pred, y_probs, label="1.0"):
+def get_discrimination_metrics(y_true, y_pred, y_probs, pos_label=None, **kwargs):
     """
     Returns discriminative performance of the prediction results in a dictionary
     """
+
+    if pos_label is None:
+        pos_label = str(y_true.max())
+
     results = defaultdict(lambda: {})
-    report = classification_report(y_true, y_pred, output_dict=True)[label]
+    report = classification_report(y_true, y_pred, output_dict=True)[pos_label]
     for metric in ["precision", "recall", "f1-score", "support"]:
         results[metric] = float(report[metric])
     results["confusion_matrix"] = confusion_matrix(y_true, y_pred).tolist()
@@ -79,7 +83,7 @@ def get_discrimination_metrics(y_true, y_pred, y_probs, label="1.0"):
     return dict(results)
 
 
-def get_clinical_usefulness_metrics(discrimination_metrics, p_t=0.7):
+def get_clinical_usefulness_metrics(discrimination_metrics, p_t=0.7, **kwargs):
     """
     Returns clinical usefulness of the prediction results in a dictionary
     Based on:
@@ -125,7 +129,7 @@ def get_clinical_usefulness_metrics(discrimination_metrics, p_t=0.7):
     return dict(results)
 
 
-def get_calibration_metrics(y_true, y_probs, n_bins=10):
+def get_calibration_metrics(y_true, y_probs, n_bins=10, **kwargs):
     """
      Returns calibration metrics of the prediction results in a dictionary:
     """

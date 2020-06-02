@@ -39,7 +39,9 @@ class Base:
         param_grid=None,
         crossval=None,
         n_splits=None,
-        n_jobs=None
+        n_jobs=None,
+        verbose=False,
+
     ):
 
         """
@@ -67,6 +69,17 @@ class Base:
         """
         self.n_jobs = n_jobs
 
+        """
+        Verbose mode will print statistics to prompt while training
+        """
+        self.verbose = verbose
+
+        """
+        Keeps track of the classes used in the classifier, here for compatibility with sklearn and others
+        """
+        self.classes_ = None
+
+
     def fit(self, features, labels):
 
         """
@@ -81,10 +94,10 @@ class Base:
                     self.clf.__class__.__name__
                 )
                 logging.info(msg)
-                print(msg)
-                #               print(features, labels)
-                #               print(type(features))
-                #               print(type(labels))
+
+                if self.verbose:
+                    print(msg)
+                
                 self.clf.fit(features, labels)
 
             else:
@@ -92,10 +105,16 @@ class Base:
                     self.clf.estimator.__class__.__name__
                 )
                 logging.info(msg)
-                print(msg)
+                
+                if self.verbose:
+                    print(msg)
+                
                 self.clf.fit(np.asarray(features), np.asarray(labels))
-                print("Came up with params: {0}".format(self.clf.best_params_))
-                print("Achieved AUROC of {0}\n".format(self.clf.best_score_))
+                
+                if self.verbose:
+                    print("Came up with params: {0}".format(self.clf.best_params_))
+                    print("Achieved AUROC of {0}\n".format(self.clf.best_score_))
+                
                 """ clf now becomes the best estimator """
                 self.clf = self.clf.best_estimator_
 
@@ -103,8 +122,12 @@ class Base:
             msg = "*** Training of classifier ready. Time elapsed: {}ms\n".format(
                 (end - start).microseconds / 1000
             )
+            self.classes_ = self.clf.classes_
+            
             logging.info(msg)
-            print(msg)
+
+            if self.verbose:
+                print(msg)
 
             if self.crossval:
 
@@ -113,7 +136,8 @@ class Base:
                     self.clf.__class__.__name__
                 )
                 logging.info(msg)
-                print(msg)
+                if self.verbose:
+                    print(msg)
                 """ keeps class proportion balanced across folds """
                 n_splits = self.n_splits or 10
                 print(f"Number of splits: {n_splits}")
@@ -141,11 +165,13 @@ class Base:
                 )
 
                 """ performing cross validation """
-                logging.info(
-                    "Model cross-validation performed for {0}.".format(
-                        self.clf.__class__.__name__
-                    )
+                msg = "Model cross-validation performed for {0}.".format(
+                    self.clf.__class__.__name__
                 )
+
+                logging.info(msg)
+                if self.verbose:
+                    print(msg)
 
                 """ if cross validation was required, return the discrimination metrics from crossvalidation """
                 """ note slicing of y_probs, we do it to get the prediction for label = 1"""
@@ -223,6 +249,7 @@ class Dummy(Base):
         param_grid=None,
         crossval=None,
         n_splits=None,
+        verbose=None,
     ):
         if not hyperparams:
             hyperparams = {"strategy": "most_frequent"}
@@ -253,6 +280,7 @@ class DecisionTree(Base):
         param_grid=None,
         crossval=None,
         n_splits=None,
+        verbose=None,
         **kwargs
     ):
 
@@ -305,6 +333,7 @@ class RandomForest(Base):
         param_grid=None,
         crossval=None,
         n_splits=None,
+        verbose=None,
         **kwargs,
     ):
         if not hyperparams:
@@ -349,7 +378,7 @@ class RandomForest(Base):
             )
 
         super().__init__(
-            clf, hyperparams, optimize, param_grid
+            clf, hyperparams, optimize, param_grid, crossval, n_splits
         )
 
     """
@@ -376,6 +405,7 @@ class MultilayerPerceptron(Base):
         param_grid=None,
         crossval=None,
         n_splits=None,
+        verbose=None,
         **kwargs
     ):
         if not hyperparams:
@@ -450,6 +480,7 @@ class GradientBoostingDecisionTree(Base):
         param_grid=None,
         crossval=None,
         n_splits=None,
+        verbose=None,
         **kwargs
     ):
 
@@ -519,6 +550,7 @@ class XGBoost(Base):
         param_grid=None,
         crossval=None,
         n_splits=None,
+        verbose=None,
         **kwargs
     ):
 
@@ -573,6 +605,7 @@ class LightGBM(Base):
         param_grid=None,
         crossval=None,
         n_splits=None,
+        verbose=None,
         **kwargs
     ):
 
@@ -626,6 +659,7 @@ class AdaBoost(Base):
         param_grid=None,
         crossval=None,
         n_splits=None,
+        verbose=None,
         **kwargs
     ):
 
@@ -689,6 +723,7 @@ class LogisticRegression(Base):
         param_grid=None,
         crossval=None,
         n_splits=None,
+        verbose=None,
         **kwargs
     ):
 
@@ -748,6 +783,7 @@ class SupportVectorMachine(Base):
         param_grid=None,
         crossval=None,
         n_splits=None,
+        verbose=None,
         **kwargs
     ):
 
@@ -807,6 +843,7 @@ class ElasticNetLR(Base):
         param_grid=None,
         crossval=None,
         n_splits=None,
+        verbose=None,
         **kwargs
     ):
 
@@ -860,6 +897,7 @@ class ComplementNaiveBayes(Base):
         param_grid=None,
         crossval=None,
         n_splits=None,
+        verbose=None,
         **kwargs
     ):
 
@@ -905,6 +943,7 @@ class GaussianNaiveBayes(Base):
         param_grid=None,
         crossval=None,
         n_splits=None,
+        verbose=None,
         **kwargs
     ):
 
