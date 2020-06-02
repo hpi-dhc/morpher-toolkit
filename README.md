@@ -38,7 +38,11 @@ data = Impute().execute(data, imputation_method=imputers.DEFAULT)
 train, test = Split().execute(data, test_size=0.2)
 
 ''' The we train the given algorithms on the training set '''
-models = Train().execute(train, target=target, algorithms=[algorithms.LR, algorithms.DT, algorithms.RF, algorithms.GBDT, algorithms.MLP])
+models = Train().execute(
+    train, 
+    target=target,
+    algorithms=[algorithms.LR, algorithms.DT, algorithms.RF, algorithms.GBDT, algorithms.MLP]
+)
 
 ''' And evaluate them on the test set '''
 results = Evaluate().execute(test, target=target, models=models)
@@ -59,6 +63,23 @@ plt.show()
      alt="ROC Curve"
      style="float: left; margin-right: 10px;" width="512" />
 
+To explain the model you just created, we need to run the Explain job using one of the available explainers, such as feature contribution or LIME. The dictionary `explanations` contains the feature rankings indexed by each algorithm.
+
+```python
+
+from morpher.config import explainers
+explanations = Explain().execute(
+    train,
+    models=models,
+    explainers = [explainers.FEAT_CONTRIB, explainers.LIME],
+    target=target,
+    exp_args = {'test': test}                 
+)
+
+plot_explanation_heatmap(explanations[algorithms.RF])
+
+```
+You can check another examples using Jupyter under `notebooks`, such as for predicting diabetes.
 
 ## Library Dependencies
 
@@ -75,3 +96,6 @@ plt.show()
 *   jinja2
 *   mpld3
 *   shap
+*   simplejson
+*   lightgbm
+*   xgboost
