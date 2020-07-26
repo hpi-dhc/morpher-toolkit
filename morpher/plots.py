@@ -579,7 +579,8 @@ def plot_explanation_heatmap(
     im, cbar = heatmap(
         data, features, methods, ax=ax, cmap="YlGn", cbarlabel=cbarlabel
     )
-
+    
+    annotate_heatmap(im, valfmt=valfmt) 
     ax.set_aspect("auto")
 
     """
