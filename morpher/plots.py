@@ -558,26 +558,22 @@ def plot_explanation_heatmap(
     display_features = [key for key, value in feature_means[:top_features]]
 
     # build / shape the data array in the order it should appear
-    data = [
-        [explanations[method][feature] for method in methods]
-        for feature in features
-        if feature in display_features
-    ]
-
     data = np.array(
-        sorted(data, key=lambda x: np.mean(x), reverse=True)
-    )  # build / shape the data array in the order it should appear
+	[[explanations[method][feature] for method in explanations] for feature in display_features]
+    )
 
     # if we got friendly names, we substitute it here
     if friendly_names:
-        features = [
+        display_features = [
             friendly_names.get(feat_name) or feat_name
-            for feat_name in features
+            for feat_name in display_features
         ]
+    
     if methods[0].__class__.__name__ == 'type':
         methods = [m.__name__ for m in methods]
+
     im, cbar = heatmap(
-        data, features, methods, ax=ax, cmap="YlGn", cbarlabel=cbarlabel
+        data, display_features, methods, ax=ax, cmap="YlGn", cbarlabel=cbarlabel
     )
     
     annotate_heatmap(im, valfmt=valfmt) 
