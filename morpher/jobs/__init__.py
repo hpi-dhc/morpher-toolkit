@@ -11,6 +11,7 @@ from morpher.jobs.Retrieve import Retrieve
 from morpher.jobs.Evaluate import Evaluate
 from morpher.jobs.Explain import Explain
 from morpher.jobs.Calibrate import Calibrate
+from morpher.jobs.Select import Select
 
 __all__ = [
     "Job",
@@ -26,4 +27,5 @@ __all__ = [
     "Evaluate",
     "Explain",
     "Calibrate",
+    "Select",
 ]

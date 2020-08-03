@@ -7,7 +7,7 @@ from morpher.explainers import explainer_config as explainers
 from morpher.imputers import imputer_config as imputers
 from morpher.samplers import sampler_config as samplers
 from morpher.scale import scaler_config as scalers
-
+from morpher.selectors import selector_config as selectors
 
 FILE = "file"
 DATABASE = "database"
@@ -23,11 +23,10 @@ LOGISTIC_REGRESSION = "LogisticRegression"
 MULTILAYER_PERCEPTRON = "MultilayerPerceptron"
 GRADIENT_BOOSTING_DECISION_TREE = "GradientBoostingDecisionTree"
 
-db_user = os.getenv("DB_USER") or input("DB User: ")
-db_password = os.getenv("DB_PASSWORD") or getpass("DB Password: ")
-db_address = os.getenv("DB_ADDRESS") or input("DB Address: ")
-db_port = os.getenv("DB_PORT") or input("DB Port: ")
-
+db_user = os.getenv("DB_USER")
+db_password = os.getenv("DB_PASSWORD")
+db_address = os.getenv("DB_ADDRESS")
+db_port = os.getenv("DB_PORT")
 
 __all__ = [
     "algorithms",
@@ -36,4 +35,5 @@ __all__ = [
     "encoders",
     "samplers",
     "explainers",
+    "selectors",
 ]

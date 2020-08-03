@@ -41,8 +41,10 @@ setup(
         "shap==0.34.0",
         "xgboost==1.0.1",
         "lightgbm==2.3.1",
-        "simplejson"
-
+        "simplejson",
+        "skrebate",
+        "joblib",
+        "Boruta",
     ],
     # specifying a given version: 'chardet==3.0.4',
     zip_safe=False,
