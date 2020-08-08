@@ -5,6 +5,7 @@ from sklearn.feature_selection import SelectKBest, mutual_info_classif, f_classi
 from boruta import BorutaPy
 from sklearn.linear_model import ElasticNet, ElasticNetCV
 from sklearn.base import BaseEstimator
+import numpy as np
 
 class NoSelector(object):
     __name__ = "no selector"
@@ -35,9 +36,17 @@ class ReliefF(skrebate.ReliefF):
 
     def __init__(self, top=10, **kwargs):
         super().__init__(n_features_to_select=top, **kwargs)
+    """
+    Gets the index sorted by the feature scores, optionally reverse-sorted
+    """
+    def get_indices(self, reverse=False):
+        indices = list(np.argsort(self.feature_importances_))
+        if reverse:
+            indices = indices[::-1][:self.n_features_to_select]
+        else:
+            indices = indices[-self.n_features_to_select:]
 
-    def get_indices(self):
-        return self.top_features_[:self.n_features_to_select]
+        return indices
 
 class MutualInfo(SelectKBest):
     """
@@ -48,9 +57,14 @@ class MutualInfo(SelectKBest):
     def __init__(self, top=10, **kwargs):
 
         super().__init__(mutual_info_classif, k=top, **kwargs)
-
-    def get_indices(self):
-        return list(self.get_support(indices=True))
+    """
+    Gets the index sorted by the feature scores, optionally reverse-sorted
+    """
+    def get_indices(self, reverse=False):
+        indices = self.get_support(indices=True)
+        sorted_indices = list(sorted(zip(indices, self.scores_[indices]), key=lambda x: x[1], reverse=reverse))
+        sorted_indices = [i[0] for i in sorted_indices]
+        return list(sorted_indices)
 
 class FTest(SelectKBest):
     """
@@ -61,8 +75,11 @@ class FTest(SelectKBest):
     def __init__(self, top=10, **kwargs):
         super().__init__(f_classif, k=top, **kwargs)
     
-    def get_indices(self):
-        return list(self.get_support(indices=True))
+    def get_indices(self, reverse=False):
+        indices = self.get_support(indices=True)
+        sorted_indices = list(sorted(zip(indices, self.scores_[indices]), key=lambda x: x[1], reverse=reverse))
+        sorted_indices = [i[0] for i in sorted_indices]
+        return list(sorted_indices)
 
 class Boruta(BorutaPy):
     """
@@ -75,7 +92,10 @@ class Boruta(BorutaPy):
         rf = RandomForestClassifier(n_jobs=-1, class_weight='balanced', max_depth=5)
         self.top_ = top
         super().__init__(rf, n_estimators='auto', **kwargs)
-    
+
+    """
+    Boruta does not follow the concept of 'importance', but rather relevance, so all relevant features are included.
+    """
     def get_indices(self):
         return [idx for idx, val in enumerate(self.support_) if val][:self.top_]
 
@@ -142,8 +162,17 @@ class ElasticNetSelector(BaseEstimator):
     def __repr__(self):
         return self.__name__
     
-    def get_indices(self):
-        return [idx for idx, val in enumerate(self.classifier_.coef_) if val != 0.0][:self.top_]
+    def get_indices(self, reverse=False):
+
+        non_zero = [idx for idx, val in enumerate(self.classifier_.coef_) if val != 0.0]
+        indices = np.argsort(np.abs(self.classifier_.coef_[non_zero]))
+        if reverse:
+            indices = indices[::-1][:self.top_]
+        else:
+            indices = indices[-self.top_:]
+
+        return indices
+
 
 _options = {
     "RELIEF_F": ReliefF,

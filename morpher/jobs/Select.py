@@ -34,18 +34,21 @@ class Select(MorpherJob):
 
     """
     def execute(
-        self, data, selection_method=None, target=None, top=10, verbose=False, **kwargs
+        self, data, selection_method=None, target=None, top=None, reverse=False, verbose=False, **kwargs
     ):
         try:
             if not data.empty:
+                
+                features, labels = data.drop(target, axis=1), data[target]
+
                 if selection_method:
                     if verbose:
                         print(
                             f"Performing feature selection with {selection_method.__name__} ..."
                         )
-
-                    selector = selection_method(top, **kwargs)
-                    features, labels = data.drop(target, axis=1), data[target]
+                    
+                    n_top = top or features.shape[1]
+                    selector = selection_method(top=n_top, **kwargs)
                     
                     if verbose:
                         print(f"Total features prior to selection: {features.shape[1]}")
@@ -53,11 +56,11 @@ class Select(MorpherJob):
                             print(f"{feat}")
                             for feat in features.columns
                         ]
-                    selector.fit(features.to_numpy(), labels.to_numpy())                    
+                    selector.fit(features.to_numpy(), labels.to_numpy())
                     
                     ''' Empty selector will return empty list '''
-                    if selector.get_indices():
-                        features = features.iloc[:, selector.get_indices()]
+                    if len(selector.get_indices()) > 0:
+                        features = features.iloc[:, selector.get_indices(reverse=reverse)]
 
                     if verbose:
                         print(f"Total features after selection: {features.shape[1]}")
@@ -77,4 +80,4 @@ class Select(MorpherJob):
             print(traceback.format_exc())
             logging.error(traceback.format_exc())
 
-        return data, selector
+        return data, features.columns.tolist()
