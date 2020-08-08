@@ -95,8 +95,9 @@ class Boruta(BorutaPy):
 
     """
     Boruta does not follow the concept of 'importance', but rather relevance, so all relevant features are included.
+    and no possibility to 'reverse'
     """
-    def get_indices(self):
+    def get_indices(self, reverse=None):
         return [idx for idx, val in enumerate(self.support_) if val][:self.top_]
 
 class ElasticNetSelector(BaseEstimator):
