@@ -75,10 +75,11 @@ def plot_roc(
         y_probs = results[clf_name]["y_probs"]
         fpr, tpr, thresh = roc_curve(y_true, y_probs)
         # for compatibility issues
-        if type(x) == str:
+        if type(clf_name) == str:
             clf_label == clf_name
         else:        
-            clf_label = clf_name().__class__.__name__        
+            clf_label = clf_name().__class__.__name__
+            
         ax.plot(
             fpr,
             tpr,
@@ -119,7 +120,13 @@ def plot_prc(
         y_true = results[clf_name]["y_true"]
         y_probs = results[clf_name]["y_probs"]
         precision, recall, _ = precision_recall_curve(y_true, y_probs)
-        clf_label = clf_name().__class__.__name__
+        
+        # for compatibility issues
+        if type(clf_name) == str:
+            clf_label == clf_name
+        else:        
+            clf_label = clf_name().__class__.__name__
+            
         ax.step(
             recall,
             precision,
@@ -287,7 +294,10 @@ def plot_dc(
         if results[clf_name].get("label"):
             label = results[clf_name]["label"]
         else:
-            label = clf_name().__class__.__name__
+            if type(clf_name) == str:
+                label = clf_name
+            else:
+                label = clf_name().__class__.__name__
 
         ax.plot(
             tr_probs,
