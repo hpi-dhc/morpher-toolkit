@@ -74,7 +74,11 @@ def plot_roc(
         y_true = results[clf_name]["y_true"]
         y_probs = results[clf_name]["y_probs"]
         fpr, tpr, thresh = roc_curve(y_true, y_probs)
-        clf_label = clf_name().__class__.__name__
+        # for compatibility issues
+        if type(x) == str:
+            clf_label == clf_name
+        else:        
+            clf_label = clf_name().__class__.__name__        
         ax.plot(
             fpr,
             tpr,
