@@ -76,7 +76,7 @@ def plot_roc(
         fpr, tpr, thresh = roc_curve(y_true, y_probs)
         # for compatibility issues
         if type(clf_name) == str:
-            clf_label == clf_name
+            clf_label = clf_name
         else:        
             clf_label = clf_name().__class__.__name__
             
@@ -123,7 +123,7 @@ def plot_prc(
         
         # for compatibility issues
         if type(clf_name) == str:
-            clf_label == clf_name
+            clf_label = clf_name
         else:        
             clf_label = clf_name().__class__.__name__
             
