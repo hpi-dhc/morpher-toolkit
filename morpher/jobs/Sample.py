@@ -22,21 +22,29 @@ class Sample(MorpherJob):
         self.add_output("target", target)
         self.logger.info("Data sampled successfully.")
 
-    def execute(self, data, target, sampling_method=None, **kwargs):
+    def execute(self, data, target, sampling_method=None, verbose=False, **kwargs):
         try:
             if not data.empty:
                 if sampling_method:
-                    print(
-                        f"Performing sampling with {sampling_method.__name__} ..."
-                    )
+
+                    """ here for compatibility purposes """
+                    if not callable(sampling_method):
+                        sampling_method = self.get_callable('morpher.samplers', sampling_method)
+
+                    if verbose:
+                        print(
+                            f"Performing sampling with {sampling_method.__name__} ..."
+                        )
 
                     sampler = sampling_method(**kwargs)
                     features, labels = data.drop(target, axis=1), data[target]
-                    print("Prior label distribution: ")
-                    [
-                        print(f"Class:{k}/N={v}")
-                        for k, v in dict(Counter(data[target])).items()
-                    ]
+                    
+                    if verbose:
+                        print("Prior label distribution: ")
+                        [
+                            print(f"Class:{k}/N={v}")
+                            for k, v in dict(Counter(data[target])).items()
+                        ]
 
                     X, y = sampler.fit_resample(features, labels)
                     data = pd.concat(
@@ -44,11 +52,12 @@ class Sample(MorpherJob):
                     )
                     data.columns = list(features.columns) + [target]
 
-                    print("Label distribution after sampling: ")
-                    [
-                        print(f"Class:{k}/N={v}")
-                        for k, v in dict(Counter(data[target])).items()
-                    ]
+                    if verbose:
+                        print("Label distribution after sampling: ")
+                        [
+                            print(f"Class:{k}/N={v}")
+                            for k, v in dict(Counter(data[target])).items()
+                        ]
 
             else:
                 raise AttributeError("No data provided")

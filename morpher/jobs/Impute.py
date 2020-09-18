@@ -14,7 +14,7 @@ class Impute(MorpherJob):
 
         df = pd.read_csv(filepath_or_buffer=filename)
         imputation_method = self.get_input_variables("imputation_method")
-        df, imputer = self.execute(df, imputation_method=imputation_method)
+        df, _ = self.execute(df, imputation_method=imputation_method)
         self.add_output("filename", self.save_to_file(df))
         self.add_output("cohort_id", self.get_input("cohort_id"))
         self.add_output("user_id", self.get_input("user_id"))
@@ -37,6 +37,10 @@ class Impute(MorpherJob):
                     columns = [col for col in columns if col != target]
 
                 if not imputer:
+
+                    if not callable(imputation_method):
+                        imputation_method = self.get_callable('morpher.imputers', imputation_method)
+
                     imputer = imputation_method(**kwargs)
                     imputer.fit(data[columns])
 

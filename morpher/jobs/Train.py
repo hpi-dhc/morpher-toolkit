@@ -8,7 +8,6 @@ import pandas as pd
 from morpher.exceptions import kwargs_not_empty
 from morpher.jobs import MorpherJob
 
-
 class Train(MorpherJob):
     def do_execute(self):
 
@@ -112,6 +111,10 @@ class Train(MorpherJob):
                     features = features.drop(cols_to_drop, axis=1)
 
                 for algorithm in algorithms:
+
+                    """ here for compatibility purposes """
+                    if not callable(algorithm):
+                        algorithm = self.get_callable('morpher.algorithms', algorithm)
 
                     clf = algorithm(
                         hyperparams=hyperparams,

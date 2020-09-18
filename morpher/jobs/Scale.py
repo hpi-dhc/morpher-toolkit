@@ -37,6 +37,10 @@ class Scale(MorpherJob):
                 labels = data[target]
                 features = data.drop(target, axis=1)
 
+                """ here for compatibility purposes """
+                if not callable(scaling_method):
+                    scaling_method = self.get_callable('morpher.scalers', scaling_method)
+
                 if not scaler:
                     scaler = scaling_method(**kwargs)
                     scaler.fit(features)

@@ -10,6 +10,7 @@ try:
 except ImportError:
     from morpher.jobs import Job
 
+import importlib
 
 class MorpherJob(Job):
     def api(self, blueprint, action, data):
@@ -110,3 +111,15 @@ class MorpherJob(Job):
         except Exception:
             self.logger.error(traceback.format_exc())
             return None
+
+    def get_callable(self, module_name, class_name):
+        """
+        Gets a callable, i.e., class definition from a pair of module and class
+        This is useful to instantiate a class from a given string if needed
+        """
+        module = importlib.import_module(module_name)
+        return getattr(module, class_name)
+         
+
+
+

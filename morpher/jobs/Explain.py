@@ -147,6 +147,10 @@ class Explain(MorpherJob):
 
                     model = models[clf_name]
                     for exp_name in explainers:
+
+                        if not callable(exp_name):
+                            exp_name = self.get_callable('morpher.explainers', exp_name)
+
                         explainer = exp_name(
                             data,
                             model,

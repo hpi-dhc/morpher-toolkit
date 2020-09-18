@@ -42,6 +42,11 @@ class Select(MorpherJob):
                 features, labels = data.drop(target, axis=1), data[target]
 
                 if selection_method:
+
+                    """ here for compatibility purposes """
+                    if not callable(selection_method):
+                        selection_method = self.get_callable('morpher.selectors', selection_method)
+
                     if verbose:
                         print(
                             f"Performing feature selection with {selection_method.__name__} ..."
