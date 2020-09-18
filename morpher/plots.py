@@ -136,7 +136,7 @@ def plot_prc(
             where="post",
         )
 
-    no_skill_ratio = y_true.sum() / len(y_true)
+    no_skill_ratio = np.array(y_true).sum() / len(y_true)
     ax.plot(
         [0, 1],
         [no_skill_ratio, no_skill_ratio],
