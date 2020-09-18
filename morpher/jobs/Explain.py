@@ -82,6 +82,14 @@ class Explain(MorpherJob):
             description = "Explanations for target '{target}' based on {methods}".format(
                 target=target, methods=", ".join(explainers)
             )
+
+            #remove type reference to allow deserialization
+            explanations[clf_name] = {
+                exp_name.__class__.__name__ if callable(exp_name) \
+                else exp_name : explanations[clf_name][exp_name] \
+                for exp_name in explanations[clf_name]
+            }
+
             self.add_experiment(
                 cohort_id=cohort_id,
                 model_id=model_id,
