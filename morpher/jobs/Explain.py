@@ -85,7 +85,7 @@ class Explain(MorpherJob):
 
             #remove type reference to allow deserialization
             explanations[clf_name] = {
-                exp_name.__class__.__name__ if callable(exp_name) \
+                exp_name.__name__ if callable(exp_name) \
                 else exp_name : explanations[clf_name][exp_name] \
                 for exp_name in explanations[clf_name]
             }
