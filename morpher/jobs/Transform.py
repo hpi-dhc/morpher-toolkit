@@ -47,11 +47,11 @@ class Transform(MorpherJob):
                         features, labels = data.drop(target), data[target]
 
                     if labels is None:
-                        data = mapper.fit_transform(features.copy())
+                        features = mapper.fit_transform(features.copy())
                     else:
-                        data = mapper.fit_transform(features.copy(), labels.copy())
+                        features = mapper.fit_transform(features.copy(), labels.copy())
                 else:
-                    data = mapper.transform(features.copy())
+                    features = mapper.transform(features.copy())
 
                 if drop:
 
@@ -60,6 +60,11 @@ class Transform(MorpherJob):
                         axis=1,
                         inplace=True
                     )
+
+                data = features
+                
+                if labels is not None:
+                    data[target] = labels
                     
             else:
                 raise AttributeError("No data provided")
