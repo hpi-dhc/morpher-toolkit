@@ -44,7 +44,7 @@ class Transform(MorpherJob):
                     )
 
                     if target is not None:
-                        features, labels = data.drop(target), data[labels]
+                        features, labels = data.drop(target), data[target]
 
                     if labels is None:
                         data = mapper.fit_transform(features.copy())
@@ -54,7 +54,7 @@ class Transform(MorpherJob):
                     data = mapper.transform(features.copy())
 
                 if drop:
-                    
+
                     features.drop(
                         [col for col in drop if col in features.columns],
                         axis=1,
