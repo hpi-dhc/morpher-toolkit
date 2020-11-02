@@ -23,24 +23,40 @@ class Transform(MorpherJob):
         self.add_output("target", target)
         self.logger.info("Data transformed successfully.")
 
-    def execute(self, data, transforms=None, drop=None, default=None, **kwargs):
+    def execute(self, data, transforms=None, target=None, mapper=None, drop=None, default=None, **kwargs):
         try:
 
             if not data.empty:
 
-                if transforms:
-                    mapping = [
-                        (feature, transform_method(**kwargs))
-                        for feature, transform_method in transforms
-                    ]
+                features, labels = data, None
+
+                if mapper is None:
+
+                    mapping = []
+                    if transforms:
+                        mapping = [
+                            (feature, transform_method(**kwargs))
+                            for feature, transform_method in transforms
+                        ]
+
                     mapper = DataFrameMapper(
                         mapping, df_out=True, default=default
                     )
-                    data = mapper.fit_transform(data.copy())
+
+                    if target is not None:
+                        features, labels = data.drop(target), data[labels]
+
+                    if labels is None:
+                        data = mapper.fit_transform(features.copy())
+                    else:
+                        data = mapper.fit_transform(features.copy(), labels.copy())
+                else:
+                    data = mapper.transform(features.copy())
 
                 if drop:
-                    data.drop(
-                        [col for col in drop if col in data.columns],
+                    
+                    features.drop(
+                        [col for col in drop if col in features.columns],
                         axis=1,
                         inplace=True
                     )
@@ -52,4 +68,4 @@ class Transform(MorpherJob):
             print(traceback.format_exc())
             logging.error(traceback.format_exc())
 
-        return data
+        return data, mapper
