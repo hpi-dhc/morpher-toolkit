@@ -3,6 +3,9 @@ from sklearn.metrics import (
     confusion_matrix,
     classification_report,
     roc_auc_score,
+    average_precision_score,
+    precision_recall_curve,
+    auc
 )
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.calibration import calibration_curve
@@ -57,6 +60,12 @@ def get_discrimination_metrics(y_true, y_pred, y_probs, pos_label=None, **kwargs
     results["confusion_matrix"] = confusion_matrix(y_true, y_pred).tolist()
     results["auc"] = float(roc_auc_score(y_true, y_probs))
     results["n"] = len(y_true)
+
+    """ both auprc and ap are ways to summarize the AUPRC, arguably AP is less biased """
+    precision, recall, _ = precision_recall_curve(y_true, y_probs)
+    sort_by = precision.argsort()
+    results["auprc"] = float(auc(precision[sort_by], recall[sort_by]))
+    results["ap"] = float(average_precision_score(y_true, y_probs))
 
     tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
     results["tn"], results["fp"], results["fn"], results["tp"] = (
