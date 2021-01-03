@@ -31,7 +31,7 @@ class KNNImputer:
         """
 
         return pd.DataFrame(
-            data=self._imputer.fit_transform(df.as_matrix()),
+            data=self._imputer.fit_transform(df.to_numpy()),
             columns=df.columns,
             index=df.index,
         )
@@ -39,12 +39,12 @@ class KNNImputer:
     def fit(self, df):
 
         print("*** Fitting kNN imputer...")
-        self._imputer.fit(df.as_matrix())
+        self._imputer.fit(df.to_numpy())
 
     def transform(self, df):
         print("*** Performing imputation using fitted kNN imputer...")
         return pd.DataFrame(
-            data=self._imputer.transform(df.as_matrix()),
+            data=self._imputer.transform(df.to_numpy()),
             columns=df.columns,
             index=df.index,
         )
@@ -78,7 +78,7 @@ class SoftImputer:
         """
 
         return pd.DataFrame(
-            data=self._imputer.fit_transform(df.as_matrix()),
+            data=self._imputer.fit_transform(df.to_numpy()),
             columns=df.columns,
             index=df.index,
         )
