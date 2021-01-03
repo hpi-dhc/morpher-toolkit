@@ -976,6 +976,48 @@ class GaussianNaiveBayes(Base):
             clf, hyperparams, optimize, param_grid, crossval, n_splits
         )
 
+class CatBoost(Base):
+    def __init__(
+        self,
+        hyperparams=None,
+        optimize=None,
+        param_grid=None,
+        crossval=None,
+        n_splits=None,
+        verbose=None,
+        **kwargs
+    ):
+
+        from catboost import CatBoostClassifier 
+
+        if not hyperparams:
+            hyperparams = {}
+
+        if not optimize:
+            """
+            Trains and stores a cat boost classifier using elastic net on the
+            current data using the current pipeline.
+            """
+            if kwargs:
+                clf = CatBoostClassifier(**kwargs)
+            else:
+                clf = CatBoostClassifier(**hyperparams)
+
+        else:
+            """ gridsearch """
+            if not param_grid:
+                param_grid = {}
+            clf = GridSearchCV(
+                estimator=CatBoostClassifier(**hyperparams),
+                cv=5,
+                n_jobs=-1,
+                scoring=self.score_auroc,
+                param_grid=param_grid,
+            )
+
+        super().__init__(
+            clf, hyperparams, optimize, param_grid, crossval, n_splits
+        )
 
 _options = {
     "DUMMY": Dummy,
@@ -991,6 +1033,8 @@ _options = {
     "GNBAYES": GaussianNaiveBayes,
     "XGBOOST": XGBoost,
     "LIGHTGBM": LightGBM,
+    "CATBOOST": CatBoost,
+
 }
 
 algorithm_config = namedtuple("options", _options.keys())(**_options)

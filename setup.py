@@ -45,6 +45,7 @@ setup(
         "skrebate",
         "joblib",
         "Boruta",
+        "catboost",
     ],
     # specifying a given version: 'chardet==3.0.4',
     zip_safe=False,
