@@ -1019,6 +1019,22 @@ class CatBoost(Base):
             clf, hyperparams, optimize, param_grid, crossval, n_splits
         )
 
+    """
+    Stores model-based feature importance, for models such as trees
+    """
+
+    @property
+    def feature_importances_(self):
+        if hasattr(self.clf, "get_feature_importance"):
+            return self.clf.get_feature_importance()
+        else:
+            return False
+
+    @property
+    def is_tree_(self):
+        return True
+
+
 _options = {
     "DUMMY": Dummy,
     "DT": DecisionTree,
