@@ -1,12 +1,16 @@
 # MORPHER Toolkit
 
-This library provides ready-to-use capabilities to automate common tasks necessary for clinical predictive modeling. It provides a common interface to enable extension of existing machine learning algorithms.
+This library provides ready-to-use capabilities to automate common tasks necessary for clinical predictive modeling. It provides a common interface to enable extension of existing machine learning algorithms. A more comprehensive description is available in the [MORPHER publication](https://ieeexplore.ieee.org/document/8941940).
 
-## Model Protyping
+![alt text](modeling_process.png "Clinical Predictive Modeling Process")
+**Figure 1**. Predictive modeling process.
+
+## Model Prototyping
 
 Among other functions, it provides encapsulated functionalities for the following routine tasks in clinical modeling:
 
 *   Imputation
+*   Feature selection
 *   Transformation
 *   Training
 *   Evaluation and
@@ -21,23 +25,31 @@ The toolkit functionalities are exposed by means of MORPHER Jobs to impute, trai
 
 ```python
 import morpher
-from morpher.config import algorithms, imputers
+from morpher.config import algorithms, imputers, selectors
 from morpher.jobs import *
 from morpher.metrics import *
 ```
 
-Say you are interested to test different models on on the task of predicting Acute Kidney Injury (AKI). Assuming you have a extracted a .CSV file named `cohort.csv` with a number of numeric features for the target `AKI` , you can generate a Receiver Operating Characteristc Curve (ROC) curve with the following commands:
+Say you are interested to test different models on on the task of predicting Acute Kidney Injury (AKI). Assuming you have a extracted a `.csv` file named `cohort.csv` with a number of numeric features for the target `AKI`, you can generate a Receiver Operating Characteristic Curve (ROC) curve with the following commands:
 
 ```python
 
-target = "AKI"
+target = 'AKI'
 
 ''' First we load, impute and split the dataset in train and test '''
 data = Load().execute(source=config.FILE, filename="cohort.csv")
-data = Impute().execute(data, imputation_method=imputers.DEFAULT)
+data, _ = Impute().execute(data, imputation_method=imputers.DEFAULT) #returns the fitted imputer
 train, test = Split().execute(data, test_size=0.2)
 
-''' The we train the given algorithms on the training set '''
+''' Optionally, we can carry out feature selection, using one of the available selectors, e.g., F-Test
+train, selected_features = Select().execute(
+    train,
+    selection_method=selectors.F_TEST,
+    top=3,
+    target=target
+)
+
+''' Then we train the given algorithms on the training set '''
 models = Train().execute(
     train, 
     target=target,
@@ -45,6 +57,7 @@ models = Train().execute(
 )
 
 ''' And evaluate them on the test set '''
+test = test[selected_features + [target]] #get features selected + target
 results = Evaluate().execute(test, target=target, models=models)
 ```
 
@@ -83,7 +96,7 @@ You can check another examples using Jupyter under `notebooks`, such as for pred
 
 ## Library Dependencies
 
-*   Python 3.6+
+*   Python 3.6 or 3.7 (important) 
 *   scikit-learn
 *   lime
 *   scipy
@@ -99,3 +112,8 @@ You can check another examples using Jupyter under `notebooks`, such as for pred
 *   simplejson
 *   lightgbm
 *   xgboost
+*   skrebate
+*   Boruta
+*   joblib
+*   catboost
+
