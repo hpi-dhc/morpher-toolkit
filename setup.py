@@ -29,7 +29,7 @@ setup(
         "numpy==1.16.2",
         "lime",
         "scipy==1.2.1",
-        "matplotlib==3.1.0",
+        "matplotlib==3.1.1",
         "sklearn_pandas",
         "fancyimpute==0.4.2",
         "imbalanced-learn==0.4.3",
