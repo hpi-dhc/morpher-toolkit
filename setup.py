@@ -26,7 +26,7 @@ setup(
         "markdown",
         "scikit-learn==0.20.3",
         "pandas==0.24.2",
-        "numpy==1.16.2",
+        "numpy==1.22.0",
         "lime",
         "scipy==1.2.1",
         "matplotlib==3.1.1",
