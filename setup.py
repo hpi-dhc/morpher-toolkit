@@ -28,7 +28,7 @@ setup(
         "pandas==0.24.2",
         "numpy==1.16.2",
         "lime",
-        "scipy==1.2.1",
+        "scipy==1.10.0",
         "matplotlib==3.1.1",
         "sklearn_pandas",
         "fancyimpute==0.4.2",
